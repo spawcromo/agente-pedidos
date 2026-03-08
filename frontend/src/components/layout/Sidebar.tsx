@@ -1,11 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 
 const NAV_ITEMS = [
     { href: "/pedidos", label: "Pedidos", icon: "📋" },
+    { href: "/produccion", label: "Producción", icon: "📦" },
     { href: "/clientes", label: "Clientes", icon: "👥" },
     { href: "/productos", label: "Productos", icon: "🍗" },
     { href: "/reparto", label: "Reparto", icon: "🚚" },
@@ -14,6 +17,18 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
     const pathname = usePathname()
+    const router = useRouter()
+
+    async function handleLogout() {
+        const supabase = createClient()
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+            toast.error("Error al cerrar sesión")
+            return
+        }
+        router.push("/login")
+        router.refresh()
+    }
 
     return (
         <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card">
@@ -48,9 +63,17 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* Footer */}
-            <div className="border-t border-border p-4">
-                <p className="text-xs text-muted-foreground">v1.0 — Antigravity</p>
+            {/* Footer / Logout */}
+            <div className="border-t border-border p-4 space-y-2">
+                <button
+                    id="btn-logout"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                >
+                    <span>🚪</span>
+                    Cerrar sesión
+                </button>
+                <p className="text-xs text-muted-foreground px-3">v1.0 — Antigravity</p>
             </div>
         </aside>
     )
