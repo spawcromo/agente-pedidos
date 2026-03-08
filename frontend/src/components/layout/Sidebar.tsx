@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -22,6 +23,9 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
     const router = useRouter()
     const { role, user, loading } = useUser()
 
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => { setMounted(true) }, [])
+
     async function handleLogout() {
         const supabase = createClient()
         const { error } = await supabase.auth.signOut()
@@ -34,13 +38,13 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
         !role || (item.roles as readonly string[]).includes(role)
     )
 
-    if (loading) {
+    if (!mounted || loading) {
         return (
-            <div className="flex h-full flex-col p-5 space-y-4">
-                <div className="h-10 w-full bg-muted animate-pulse rounded-lg" />
-                <div className="flex-1 space-y-2">
+            <div className="flex h-full flex-col p-5 space-y-4 pt-10">
+                <div className="h-10 w-full bg-muted/10 animate-pulse rounded-full" />
+                <div className="flex-1 space-y-3 mt-8">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-12 w-full bg-muted/50 animate-pulse rounded-lg" />
+                        <div key={i} className="h-11 w-full bg-muted/5 animate-pulse rounded-xl" />
                     ))}
                 </div>
             </div>
@@ -111,7 +115,7 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
                     Cerrar sesión
                 </button>
                 <p className="text-[10px] text-[#4B5563] px-3 pt-1">
-                    Avícola Baccaro © {new Date().getFullYear()}
+                    Avícola Baccaro © {mounted ? new Date().getFullYear() : '2026'}
                 </p>
             </div>
         </div>
