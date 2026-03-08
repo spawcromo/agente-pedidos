@@ -5,20 +5,22 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/supabase/client"
+import { useUser } from "@/contexts/UserContext"
 import { toast } from "sonner"
 
 const NAV_ITEMS = [
-    { href: "/pedidos", label: "Pedidos", icon: "📋" },
-    { href: "/produccion", label: "Producción", icon: "📦" },
-    { href: "/clientes", label: "Clientes", icon: "👥" },
-    { href: "/productos", label: "Productos", icon: "🍗" },
-    { href: "/reparto", label: "Reparto", icon: "🚚" },
-    { href: "/estadisticas", label: "Estadísticas", icon: "📊" },
+    { href: "/pedidos", label: "Pedidos", icon: "📋", roles: ['admin'] },
+    { href: "/produccion", label: "Producción", icon: "📦", roles: ['admin'] },
+    { href: "/clientes", label: "Clientes", icon: "👥", roles: ['admin'] },
+    { href: "/productos", label: "Productos", icon: "🍗", roles: ['admin'] },
+    { href: "/reparto", label: "Reparto", icon: "🚚", roles: ['admin', 'repartidor'] },
+    { href: "/estadisticas", label: "Estadísticas", icon: "📊", roles: ['admin'] },
 ] as const
 
 export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void }) {
     const pathname = usePathname()
     const router = useRouter()
+    const { role, user, loading } = useUser()
 
     async function handleLogout() {
         const supabase = createClient()
@@ -26,6 +28,23 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
         if (error) { toast.error("Error al cerrar sesión"); return }
         router.push("/login")
         router.refresh()
+    }
+
+    const filteredNavItems = NAV_ITEMS.filter(item =>
+        !role || (item.roles as readonly string[]).includes(role)
+    )
+
+    if (loading) {
+        return (
+            <div className="flex h-full flex-col p-5 space-y-4">
+                <div className="h-10 w-full bg-muted animate-pulse rounded-lg" />
+                <div className="flex-1 space-y-2">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="h-12 w-full bg-muted/50 animate-pulse rounded-lg" />
+                    ))}
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -44,7 +63,7 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
 
             {/* Navigation */}
             <nav className="flex-1 space-y-0.5 px-3 py-4">
-                {NAV_ITEMS.map((item) => {
+                {filteredNavItems.map((item) => {
                     const isActive = pathname.startsWith(item.href)
                     return (
                         <Link
@@ -75,6 +94,14 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
 
             {/* Footer */}
             <div className="border-t border-[#2A2825] p-3 space-y-0.5">
+                {user && (
+                    <div className="px-3 py-2 mb-2">
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                            {role === 'admin' ? '🛡️ Administrador' : '🚚 Repartidor'}
+                        </p>
+                        <p className="text-xs text-foreground font-medium truncate">{user.email}</p>
+                    </div>
+                )}
                 <button
                     id="btn-logout"
                     onClick={handleLogout}
