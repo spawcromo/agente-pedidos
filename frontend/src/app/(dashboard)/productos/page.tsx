@@ -101,20 +101,23 @@ export default function ProductosPage() {
             </div>
 
             {/* Stats */}
-            <div className="mb-6 grid grid-cols-3 gap-4">
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Total productos</p>
-                    <p className="text-3xl font-bold">{products.length}</p>
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Productos</p>
+                    <p className="mt-1 text-3xl font-bold tabular-nums">{products.length}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Activos</p>
-                    <p className="text-3xl font-bold text-green-500">
-                        {products.filter((p) => p.active).length}
-                    </p>
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Activos</p>
+                    <div className="mt-1 flex items-baseline gap-2">
+                        <p className="text-3xl font-bold text-emerald-500 tabular-nums">
+                            {products.filter((p) => p.active).length}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium italic">en el catálogo</p>
+                    </div>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Inactivos</p>
-                    <p className="text-3xl font-bold text-muted-foreground">
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Inactivos</p>
+                    <p className="mt-1 text-3xl font-bold text-muted-foreground tabular-nums">
                         {products.filter((p) => !p.active).length}
                     </p>
                 </div>

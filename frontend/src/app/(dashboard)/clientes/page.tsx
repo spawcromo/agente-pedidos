@@ -105,23 +105,25 @@ export default function ClientesPage() {
             </div>
 
             {/* Stats */}
-            <div className="mb-6 grid grid-cols-4 gap-4">
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="text-3xl font-bold">{clients.length}</p>
+            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Clientes</p>
+                    <p className="mt-1 text-3xl font-bold tabular-nums">{clients.length}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Minoristas</p>
-                    <p className="text-3xl font-bold text-blue-400">{retail}</p>
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Minoristas</p>
+                    <p className="mt-1 text-3xl font-bold text-blue-400 tabular-nums">{retail}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Mayoristas</p>
-                    <p className="text-3xl font-bold text-purple-400">{wholesale}</p>
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Mayoristas</p>
+                    <p className="mt-1 text-3xl font-bold text-purple-400 tabular-nums">{wholesale}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-card p-4">
-                    <p className="text-sm text-muted-foreground">Con coordenadas</p>
-                    <p className="text-3xl font-bold text-green-500">{withCoords}</p>
-                    <p className="text-xs text-muted-foreground">necesarias para rutas</p>
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Ubicación</p>
+                    <div className="mt-1 flex items-baseline gap-2">
+                        <p className="text-3xl font-bold text-emerald-500 tabular-nums">{withCoords}</p>
+                        <p className="text-xs text-muted-foreground font-medium">con coordenadas</p>
+                    </div>
                 </div>
             </div>
 

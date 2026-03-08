@@ -81,7 +81,8 @@
   --input: #1C1A17;
   --ring: #FBBF24;
 
-  --radius: 0.75rem;
+  --radius: 1rem;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   /* Sidebar */
   --sidebar: #161412;
@@ -140,10 +141,12 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
   html {
     @apply font-sans;
   }
@@ -168,13 +171,16 @@
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #0F0E0C;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #2A2825;
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #3A3630;
 }

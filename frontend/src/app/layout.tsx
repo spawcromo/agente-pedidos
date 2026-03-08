@@ -3,7 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
 export const metadata: Metadata = {
   title: "Avícola Baccaro — Gestión de Pedidos",
@@ -16,10 +16,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="es" className={`${inter.variable} dark`}>
+      <body className="font-sans antialiased bg-background text-foreground min-h-screen">
         {children}
-        <Toaster />
+        <Toaster theme="dark" position="bottom-right" richColors toastOptions={{
+          style: { background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground)' }
+        }} />
       </body>
     </html>
   )
