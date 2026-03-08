@@ -26,8 +26,6 @@ import {
     type RouteStop
 } from '@/services/logistics'
 
-const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0]
-
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
@@ -36,8 +34,14 @@ const ARS = new Intl.NumberFormat('es-AR', {
 
 export default function RepartoPage() {
     const { role, user, loading: userLoading } = useUser()
-    const [date, setDate] = useState(TOMORROW)
+    const [date, setDate] = useState('') // Start empty to avoid hydration mismatch
     const [loading, setLoading] = useState(true)
+
+    // Initialize date only on client
+    useEffect(() => {
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+        setDate(tomorrow)
+    }, [])
 
     // Admin state
     const [unassignedOrders, setUnassignedOrders] = useState<OrderWithDetails[]>([])
@@ -104,8 +108,13 @@ export default function RepartoPage() {
         }
     }
 
-    if (userLoading || loading) {
+    if (userLoading || loading || !date) {
         return <div className="py-20 text-center text-muted-foreground">Cargando logística...</div>
+    }
+
+    if (!user) {
+        window.location.href = '/login'
+        return null
     }
 
     // --- VIEW: REPARTIDOR ---
