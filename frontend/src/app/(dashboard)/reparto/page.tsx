@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { getOrders, type OrderWithDetails } from '@/services/orders'
 import { useUser } from '@/contexts/UserContext'
+import { createClient } from '@/lib/supabase/client'
 import {
     getRoutes,
     getMyRoutes,
@@ -91,6 +92,30 @@ function RepartoPage() {
     }, [role, user, date, activeRouteId])
 
     useEffect(() => { loadData() }, [loadData])
+
+    // --- REALTIME UPDATES ---
+    useEffect(() => {
+        const supabase = createClient()
+
+        // Listen to changes in stops (delivery progress) and routes (assignment changes)
+        const channel = supabase
+            .channel('logistics-updates')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'delivery_stops' },
+                () => { loadData() }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'delivery_routes' },
+                () => { loadData() }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [loadData])
 
     async function handleCreateRoute() {
         if (!selectedDriver) { toast.error('Seleccioná un repartidor'); return }
