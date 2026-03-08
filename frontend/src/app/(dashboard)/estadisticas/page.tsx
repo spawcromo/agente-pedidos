@@ -1,3 +1,5 @@
+'use client'
+
 import { withRole } from '@/components/hoc/withRole'
 
 function EstadisticasPage() {
