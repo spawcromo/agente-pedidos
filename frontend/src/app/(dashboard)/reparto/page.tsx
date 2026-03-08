@@ -60,7 +60,10 @@ function RepartoPage() {
     const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
 
     const loadData = useCallback(async () => {
-        if (!role || !user) return
+        if (!role || !user) {
+            setLoading(false)
+            return
+        }
         setLoading(true)
         try {
             if (role === 'admin') {
@@ -153,7 +156,12 @@ function RepartoPage() {
     }
 
     if (!mounted || userLoading || loading || !date) {
-        return <div className="py-20 text-center text-muted-foreground">Cargando logística...</div>
+        return (
+            <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
+                <div className="animate-bounce text-4xl">🍗</div>
+                <p>Cargando logística...</p>
+            </div>
+        )
     }
 
     // --- VIEW: REPARTIDOR ---
@@ -217,7 +225,7 @@ function RepartoPage() {
 
     // --- VIEW: ADMIN ---
     return (
-        <div className="space-y-8">
+        <div className="space-y-8" suppressHydrationWarning>
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold">Logística y Reparto</h1>
@@ -245,7 +253,7 @@ function RepartoPage() {
                         )}
                     </div>
 
-                    <div className="bg-card border border-border rounded-2xl p-4 min-h-[400px]">
+                    <div className="bg-card border border-border rounded-lg p-4 min-h-[400px]">
                         {unassignedOrders.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                                 <p className="text-3xl mb-2">🎉</p>
@@ -284,7 +292,7 @@ function RepartoPage() {
                     </div>
 
                     {/* Create Route Tool */}
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 space-y-4">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 space-y-4">
                         <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
                         <Select value={selectedDriver} onValueChange={(val) => setSelectedDriver(val ?? '')}>
                             <SelectTrigger className="bg-background">
@@ -316,7 +324,7 @@ function RepartoPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {routes.map(route => (
-                                <div key={route.id} className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col group/route relative">
+                                <div key={route.id} className="bg-card border border-border rounded-lg overflow-hidden flex flex-col group/route relative">
                                     <button
                                         onClick={() => handleDeleteRoute(route.id)}
                                         className="absolute top-4 right-4 h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-full flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
