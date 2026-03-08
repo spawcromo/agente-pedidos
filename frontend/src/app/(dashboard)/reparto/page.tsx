@@ -212,7 +212,7 @@ export default function RepartoPage() {
                     {/* Create Route Tool */}
                     <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 space-y-4">
                         <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
-                        <Select value={selectedDriver} onValueChange={setSelectedDriver}>
+                        <Select value={selectedDriver} onValueChange={(val) => setSelectedDriver(val ?? '')}>
                             <SelectTrigger className="bg-background">
                                 <SelectValue placeholder="Elegir Repartidor..." />
                             </SelectTrigger>
