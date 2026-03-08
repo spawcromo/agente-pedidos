@@ -47,8 +47,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             } else {
                 setRole(null)
             }
-        } catch (err) {
-            console.error('Error in refreshProfile:', err)
+        } catch (err: any) {
+            // Don't log "Auth session missing" as an error, it's normal if not logged in
+            if (err?.name !== 'AuthSessionMissingError' && err?.message !== 'Auth session missing!') {
+                console.error('Error in refreshProfile:', err)
+            }
             setUser(null)
             setRole(null)
         } finally {
