@@ -13,7 +13,7 @@ trigger: always_on
 - **Type**: Full product (WhatsApp Bot + Web Dashboard)
 - **Start Date**: 2026-03-07
 - **Repo**: https://github.com/spawcromo/agente-pedidos
-- **Staging URL**: [URL]
+- **Staging URL**: https://agente-pedidos.vercel.app
 - **Production URL**: [URL]
 
 ## Stack
