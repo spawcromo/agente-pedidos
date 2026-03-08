@@ -6,11 +6,25 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
-    getOrders,
-    updateOrderStatus,
-    type OrderWithDetails,
-} from '@/services/orders'
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { getOrders, type OrderWithDetails } from '@/services/orders'
+import { useUser } from '@/contexts/UserContext'
+import {
+    getRoutes,
+    getMyRoutes,
+    getDrivers,
+    createRoute,
+    updateStopStatus,
+    type DeliveryRoute,
+    type RouteStop
+} from '@/services/logistics'
 
 const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
@@ -21,207 +35,316 @@ const ARS = new Intl.NumberFormat('es-AR', {
 })
 
 export default function RepartoPage() {
+    const { role, user, loading: userLoading } = useUser()
     const [date, setDate] = useState(TOMORROW)
-    const [orders, setOrders] = useState<OrderWithDetails[]>([])
     const [loading, setLoading] = useState(true)
 
-    const load = useCallback(async () => {
+    // Admin state
+    const [unassignedOrders, setUnassignedOrders] = useState<OrderWithDetails[]>([])
+    const [routes, setRoutes] = useState<DeliveryRoute[]>([])
+    const [drivers, setDrivers] = useState<{ id: string; email: string }[]>([])
+    const [selectedOrders, setSelectedOrders] = useState<string[]>([])
+    const [selectedDriver, setSelectedDriver] = useState<string>('')
+
+    // Repartidor state
+    const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
+
+    const loadData = useCallback(async () => {
+        if (!role || !user) return
+        setLoading(true)
         try {
-            setLoading(true)
-            // Solo traemos confirmados y entregados para el reparto
-            const data = await getOrders({
-                delivery_date: date,
-            })
-            // Filtramos en cliente para asegurar solo lo que va a reparto
-            setOrders(data.filter(o => o.status === 'confirmed' || o.status === 'delivered'))
+            if (role === 'admin') {
+                const [allOrders, allRoutes, allDrivers] = await Promise.all([
+                    getOrders({ delivery_date: date, status: 'confirmed' }),
+                    getRoutes(date),
+                    getDrivers()
+                ])
+
+                // Pedidos que NO estan en ninguna ruta de ese dia
+                const assignedOrderIds = new Set(
+                    allRoutes.flatMap(route => route.stops.map(stop => stop.order_id))
+                )
+                setUnassignedOrders(allOrders.filter(o => !assignedOrderIds.has(o.id)))
+                setRoutes(allRoutes)
+                setDrivers(allDrivers)
+            } else {
+                const data = await getMyRoutes(user.id)
+                setMyRoutes(data)
+            }
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Error al cargar reparto')
+            toast.error('Error al cargar datos de logística')
         } finally {
             setLoading(false)
         }
-    }, [date])
+    }, [role, user, date])
 
-    useEffect(() => { load() }, [load])
+    useEffect(() => { loadData() }, [loadData])
 
-    async function handleMarkDelivered(id: string) {
+    async function handleCreateRoute() {
+        if (!selectedDriver) { toast.error('Seleccioná un repartidor'); return }
+        if (selectedOrders.length === 0) { toast.error('Seleccioná al menos un pedido'); return }
+
         try {
-            await updateOrderStatus(id, 'delivered')
-            toast.success('Pedido marcado como entregado')
-            load()
+            await createRoute(date, selectedDriver, selectedOrders)
+            toast.success('Ruta creada y asignada')
+            setSelectedOrders([])
+            loadData()
         } catch (err) {
-            toast.error('Error al actualizar estado')
+            toast.error('Error al crear ruta')
         }
     }
 
-    const totalToCollect = orders
-        .filter(o => o.status === 'confirmed')
-        .reduce((sum, o) => sum + o.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0), 0)
+    async function handleMarkStopDelivered(stopId: string) {
+        try {
+            await updateStopStatus(stopId, 'delivered')
+            toast.success('Entrega registrada')
+            loadData()
+        } catch (err) {
+            toast.error('Error al registrar entrega')
+        }
+    }
 
-    return (
-        <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Hoja de Reparto</h1>
-                    <p className="text-muted-foreground">
-                        Pedidos confirmados para procesar la entrega.
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={() => window.print()}
-                        className="flex-1 sm:flex-none"
-                    >
-                        🖨️ Imprimir
-                    </Button>
-                </div>
+    if (userLoading || loading) {
+        return <div className="py-20 text-center text-muted-foreground">Cargando logística...</div>
+    }
+
+    // --- VIEW: REPARTIDOR ---
+    if (role === 'repartidor') {
+        const activeRoute = myRoutes[0] // Por simplicidad mostramos la primera activa
+
+        return (
+            <div className="max-w-2xl mx-auto space-y-6">
+                <header className="text-center space-y-2">
+                    <h1 className="text-3xl font-bold">Mi Ruta de Hoy</h1>
+                    <p className="text-muted-foreground">{new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                </header>
+
+                {!activeRoute ? (
+                    <div className="py-20 text-center bg-card border border-dashed border-border rounded-3xl">
+                        <p className="text-5xl mb-4">🏠</p>
+                        <p className="text-lg font-medium">No tenés rutas asignadas por ahora.</p>
+                        <p className="text-sm text-muted-foreground">Descansá o avisale al admin.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {activeRoute.stops.sort((a, b) => a.position - b.position).map((stop, index) => (
+                            <StopCard
+                                key={stop.id}
+                                stop={stop}
+                                index={index}
+                                onDone={() => handleMarkStopDelivered(stop.id)}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
+        )
+    }
 
-            {/* Date Filter & Stats */}
-            <div className="mb-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+    // --- VIEW: ADMIN ---
+    return (
+        <div className="space-y-8">
+            <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold">Logística y Reparto</h1>
+                    <p className="text-muted-foreground">Gestioná las rutas y asignaciones del día.</p>
+                </div>
+                <div className="flex items-center gap-2">
                     <Input
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="w-full sm:w-44"
+                        className="w-40"
                     />
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 sm:flex-none"
-                            onClick={() => setDate(new Date().toISOString().split('T')[0])}
-                        >
-                            Hoy
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 sm:flex-none"
-                            onClick={() => setDate(TOMORROW)}
-                        >
-                            Mañana
-                        </Button>
-                    </div>
                 </div>
+            </header>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div className="bg-card border border-border rounded-xl p-4">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Entregas</p>
-                        <p className="text-2xl font-bold">{orders.length}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Panel 1: Pedidos por asignar */}
+                <div className="lg:col-span-1 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold">Sin Asignar ({unassignedOrders.length})</h2>
+                        {selectedOrders.length > 0 && (
+                            <Badge className="bg-amber-500 text-amber-950">
+                                {selectedOrders.length} seleccionados
+                            </Badge>
+                        )}
                     </div>
-                    <div className="bg-card border border-border rounded-xl p-4">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Por Cobrar</p>
-                        <p className="text-2xl font-bold text-emerald-500 tabular-nums">{ARS.format(totalToCollect)}</p>
-                    </div>
-                    <div className="hidden sm:block bg-card border border-border rounded-xl p-4">
-                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Pendientes</p>
-                        <p className="text-2xl font-bold text-amber-500 tabular-nums">
-                            {orders.filter(o => o.status === 'confirmed').length}
-                        </p>
-                    </div>
-                </div>
-            </div>
 
-            {/* Stops List */}
-            <div className="space-y-4">
-                {loading ? (
-                    <div className="py-20 text-center text-muted-foreground">Cargando paradas...</div>
-                ) : orders.length === 0 ? (
-                    <div className="py-20 text-center bg-card border border-dashed border-border rounded-2xl">
-                        <p className="text-4xl mb-4">🚚</p>
-                        <p className="text-muted-foreground">No hay pedidos confirmados para esta fecha.</p>
-                        <p className="text-xs text-muted-foreground mt-1">Confirmá pedidos desde la sección Pedidos.</p>
-                    </div>
-                ) : (
-                    orders.map((order, index) => (
-                        <div
-                            key={order.id}
-                            className={cn(
-                                "group relative bg-card border border-border rounded-2xl p-5 transition-all shadow-sm",
-                                order.status === 'delivered' ? 'opacity-60 bg-muted/20' : 'hover:border-amber-500/50'
-                            )}
-                        >
-                            {/* Stop Number */}
-                            <div className="absolute -left-3 top-5 h-8 w-8 bg-amber-500 text-amber-950 rounded-full flex items-center justify-center font-bold shadow-lg border-4 border-background print:border-transparent">
-                                {index + 1}
+                    <div className="bg-card border border-border rounded-2xl p-4 min-h-[400px]">
+                        {unassignedOrders.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
+                                <p className="text-3xl mb-2">🎉</p>
+                                <p className="text-sm">Todo asignado o sin pedidos confirmados.</p>
                             </div>
-
-                            <div className="pl-6">
-                                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                                    {/* Client & Address */}
-                                    <div className="space-y-1 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="text-xl font-bold text-foreground">
-                                                {order.client?.name}
-                                            </h3>
-                                            <Badge variant="outline" className="text-[10px] uppercase">
-                                                {order.client?.client_type === 'wholesale' ? 'Mayorista' : 'Minorista'}
-                                            </Badge>
-                                        </div>
-                                        <p className="text-amber-500 font-medium flex items-center gap-1">
-                                            📍 {order.client?.address || 'Sin dirección cargada'}
-                                        </p>
-                                        <div className="flex gap-3 text-sm text-muted-foreground pt-1">
-                                            <a href={`tel:${order.client?.phone}`} className="hover:text-foreground">
-                                                📞 {order.client?.phone}
-                                            </a>
-                                            <a
-                                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.client?.address || '')}`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="text-blue-400 hover:underline"
-                                            >
-                                                Ver en Maps ↗
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    {/* Status & Actions */}
-                                    <div className="flex items-center gap-2 sm:flex-col sm:items-end">
-                                        {order.status === 'delivered' ? (
-                                            <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 py-1 px-3">
-                                                ✓ Entregado
-                                            </Badge>
-                                        ) : (
-                                            <Button
-                                                size="sm"
-                                                onClick={() => handleMarkDelivered(order.id)}
-                                                className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
-                                            >
-                                                Marcar Entregado
-                                            </Button>
+                        ) : (
+                            <div className="space-y-2">
+                                {unassignedOrders.map(order => (
+                                    <div
+                                        key={order.id}
+                                        className={cn(
+                                            "flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer",
+                                            selectedOrders.includes(order.id) ? "border-amber-500 bg-amber-500/5" : "border-border hover:bg-muted/50"
                                         )}
-                                        <p className="text-lg font-mono font-bold text-foreground sm:mt-2">
-                                            {ARS.format(order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
-                                        </p>
+                                        onClick={() => {
+                                            setSelectedOrders(prev =>
+                                                prev.includes(order.id) ? prev.filter(id => id !== order.id) : [...prev, order.id]
+                                            )
+                                        }}
+                                    >
+                                        <Checkbox
+                                            checked={selectedOrders.includes(order.id)}
+                                            onCheckedChange={() => { }} // Handle on click parent
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold truncate">{order.client?.name}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{order.client?.address}</p>
+                                            <p className="text-[10px] mt-1 text-amber-500 font-mono">
+                                                {ARS.format(order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
-                                {/* Items Summary */}
-                                <div className="mt-4 pt-4 border-t border-border/50 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                                    {order.order_items.map(item => (
-                                        <div key={item.id} className="flex justify-between items-center bg-muted/30 px-3 py-1.5 rounded-lg">
-                                            <span className="text-muted-foreground">{item.product?.name}</span>
-                                            <span className="font-bold flex items-center gap-2">
-                                                <span className="text-amber-500">{item.quantity}</span>
-                                                <span className="text-[10px] uppercase text-muted-foreground">{item.product?.unit}</span>
+                    {/* Create Route Tool */}
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 space-y-4">
+                        <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
+                        <Select value={selectedDriver} onValueChange={setSelectedDriver}>
+                            <SelectTrigger className="bg-background">
+                                <SelectValue placeholder="Elegir Repartidor..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {drivers.map(d => (
+                                    <SelectItem key={d.id} value={d.id}>{d.email}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            className="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+                            disabled={selectedOrders.length === 0 || !selectedDriver}
+                            onClick={handleCreateRoute}
+                        >
+                            Armar Ruta →
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Panel 2 & 3: Rutas existentes */}
+                <div className="lg:col-span-2 space-y-4">
+                    <h2 className="text-xl font-bold">Rutas de Hoy ({routes.length})</h2>
+                    {routes.length === 0 ? (
+                        <div className="py-20 text-center bg-card border border-dashed border-border rounded-3xl opacity-50">
+                            No hay rutas armadas todavía.
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {routes.map(route => (
+                                <div key={route.id} className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col">
+                                    <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
+                                        <div>
+                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chofer</p>
+                                            <p className="font-bold text-amber-500">{route.driver?.email || 'Sin asignar'}</p>
+                                        </div>
+                                        <Badge variant="outline">{route.stops.length} Paradas</Badge>
+                                    </div>
+                                    <div className="p-4 flex-1 space-y-2">
+                                        {route.stops.map((stop, i) => (
+                                            <div key={stop.id} className="flex items-center gap-2 text-sm text-foreground/80">
+                                                <span className="text-[10px] text-muted-foreground w-4 text-center">{i + 1}</span>
+                                                <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
+                                                    {stop.order.client?.name}
+                                                </span>
+                                                {stop.status === 'delivered' && <span className="text-emerald-500 ml-auto">✓</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="p-4 bg-muted/10 border-t border-border mt-auto">
+                                        <div className="flex justify-between items-center text-xs">
+                                            <span className="text-muted-foreground">Progreso</span>
+                                            <span className="font-bold">
+                                                {route.stops.filter(s => s.status === 'delivered').length} / {route.stops.length}
                                             </span>
                                         </div>
-                                    ))}
-                                </div>
-
-                                {order.notes && (
-                                    <div className="mt-3 p-3 bg-amber-500/5 border border-amber-500/10 rounded-xl text-xs">
-                                        <span className="font-bold text-amber-500 mr-2">NOTAS:</span>
-                                        {order.notes}
+                                        <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
+                                            <div
+                                                className="h-full bg-emerald-500 transition-all"
+                                                style={{ width: `${(route.stops.filter(s => s.status === 'delivered').length / route.stops.length) * 100}%` }}
+                                            />
+                                        </div>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            ))}
                         </div>
-                    ))
+                    )}
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onDone: () => void }) {
+    const isDelivered = stop.status === 'delivered'
+
+    return (
+        <div className={cn(
+            "relative bg-card border border-border rounded-3xl p-5 transition-all shadow-sm",
+            isDelivered ? "opacity-60 grayscale" : "hover:border-amber-500/50"
+        )}>
+            <div className="absolute -left-3 top-5 h-8 w-8 bg-amber-500 text-amber-950 rounded-full flex items-center justify-center font-bold shadow-lg border-4 border-background">
+                {index + 1}
+            </div>
+
+            <div className="pl-6 space-y-4">
+                <div className="flex justify-between items-start gap-4">
+                    <div>
+                        <h3 className="text-xl font-bold">{stop.order.client?.name}</h3>
+                        <p className="text-amber-500 font-medium text-sm">📍 {stop.order.client?.address}</p>
+                    </div>
+                    <p className="text-xl font-mono font-bold">
+                        {ARS.format(stop.order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
+                    </p>
+                </div>
+
+                <div className="flex gap-2">
+                    <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.order.client?.address || '')}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 bg-blue-500/10 text-blue-400 py-3 rounded-2xl text-center text-sm font-bold border border-blue-500/20 active:scale-95 transition-transform"
+                    >
+                        Abrir GPS ↗
+                    </a>
+                    {!isDelivered ? (
+                        <button
+                            onClick={onDone}
+                            className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-2xl text-center text-sm font-bold active:scale-95 transition-transform"
+                        >
+                            ✓ Entregar
+                        </button>
+                    ) : (
+                        <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-2xl text-center text-sm font-bold border border-emerald-500/20">
+                            Entregado
+                        </div>
+                    )}
+                </div>
+
+                <div className="pt-4 border-t border-border/50 grid grid-cols-1 gap-2">
+                    {stop.order.order_items.map(item => (
+                        <div key={item.id} className="flex justify-between text-xs bg-muted/40 px-3 py-2 rounded-xl">
+                            <span>{item.product?.name}</span>
+                            <span className="font-bold">{item.quantity} {item.product?.unit}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {stop.order.notes && (
+                    <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-xs flex gap-2">
+                        <span className="font-bold text-amber-500">NOTAS:</span>
+                        <span className="flex-1">{stop.order.notes}</span>
+                    </div>
                 )}
             </div>
         </div>
