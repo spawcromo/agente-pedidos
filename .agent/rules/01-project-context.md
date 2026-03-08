@@ -8,29 +8,32 @@ trigger: always_on
 
 ## Project Info
 
-- **Client**: [Avícola Baccaro]
-- **Project**: [Gestión de pedidos]
-- **Type**: [Full product]
-- **Start Date**: [2025-03-07]
+- **Client**: Avícola Baccaro
+- **Project**: Gestión de Pedidos y Logística
+- **Type**: Full product (WhatsApp Bot + Web Dashboard)
+- **Start Date**: 2026-03-07
 - **Repo**: [URL]
 - **Staging URL**: [URL]
 - **Production URL**: [URL]
 
 ## Stack
 
-- **Frontend**: [e.g. Next.js 14, React, Tailwind]
-- **Backend**: [e.g. Node/Express, FastAPI]
-- **Database**: [e.g. PostgreSQL, Supabase]
-- **Auth**: [e.g. Supabase Auth, NextAuth]
-- **Hosting**: [e.g. Vercel, Railway, AWS]
-- **Automations** _(if needed)_: [e.g. n8n self-hosted, n8n cloud]
+- **Frontend**: Next.js 14 (App Router), React, Tailwind CSS, shadcn/ui
+- **Backend/Database**: Supabase (PostgreSQL, Auth, Realtime, Edge Functions)
+- **Hosting**: Vercel (frontend), Railway (n8n)
+- **Automations**: n8n self-hosted (WhatsApp bot, notificaciones)
 
 ## External Services
 
 | Service | Purpose | Dashboard URL |
 |---------|---------|---------------|
-| [name]  | [role]  | [url]         |
+| Supabase | DB, Auth, API, Realtime | [url] |
+| n8n | WhatsApp bot y flujos de notificación | [url] |
+| Meta | WhatsApp Cloud API | [url] |
+| Google Maps | Distance Matrix + Directions para rutas | [url] |
 
 ## Notes
 
-[Project-specific constraints, preferences, or decisions]
+- Validación humana obligatoria para todos los pedidos.
+- Sin integración con ERP/stock existente en v1.
+- Catálogo de ~15-20 productos. 30-50 pedidos/día. Zona: Gran Mendoza.
