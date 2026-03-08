@@ -2,17 +2,17 @@
 
 ## Milestones
 
-### M1: Fundación — ~2 semanas
+### M1: Fundación — COMPLETO ✅
 **Goal**: Admin puede ver, crear y gestionar pedidos, clientes y productos desde el dashboard web. Base de datos funcional.
 
-- [ ] Scaffold frontend (Next.js + shadcn/ui) y backend (Supabase: tablas, RLS, auth)
-- [ ] US-09: CRUD de productos (nombre, unidad, precios retail/wholesale, activo, orden)
-- [ ] US-10: CRUD de clientes (nombre, teléfono, dirección, coordenadas, horario, tipo, notas)
-- [ ] US-06: Vista de pedidos pendientes (tabla filtrable por fecha y estado)
-- [ ] US-08: Editar productos/cantidades de un pedido antes de confirmar
-- [ ] US-05: Crear pedido manual desde el dashboard (source: "manual")
+- [x] Scaffold frontend (Next.js + shadcn/ui) y backend (Supabase: tablas, RLS, auth)
+- [x] US-09: CRUD de productos (nombre, unidad, precios retail/wholesale, activo, orden)
+- [x] US-10: CRUD de clientes (nombre, teléfono, dirección, coordenadas, horario, tipo, notas)
+- [x] US-06: Vista de pedidos pendientes (tabla filtrable por fecha y estado)
+- [x] US-08: Editar productos/cantidades de un pedido antes de confirmar
+- [x] US-05: Crear pedido manual desde el dashboard (source: "manual")
 
-### M2: WhatsApp Bot — ~2 semanas
+### M2: WhatsApp Bot — EN PROGRESO 🔄
 **Goal**: Los clientes hacen pedidos por WhatsApp y el admin los ve en el dashboard. Las confirmaciones/rechazos se notifican automáticamente.
 
 - [ ] Configurar Meta WhatsApp Cloud API + n8n
@@ -20,17 +20,17 @@
 - [ ] US-02: Opción "repetir último pedido" en el bot
 - [ ] US-03: Agregar notas al pedido desde el bot
 - [ ] US-05 (automático): Pedidos del bot llegan al dashboard con estado "pendiente"
-- [ ] US-07: Confirmación/rechazo masivo de pedidos
+- [x] US-07: Confirmación/rechazo masivo de pedidos
 - [ ] US-04: Notificación automática al cliente vía WhatsApp al confirmar/rechazar
 
 ### M3: Logística y Ruteo — ~2 semanas
 **Goal**: Admin genera la lista de reparto del día con ruta optimizada. Repartidor ve sus entregas en el celular y marca como entregadas.
 
-- [ ] US-13: Vista "Reparto del día" con pedidos confirmados para una fecha
-- [ ] US-11: Resumen de producción (totales por producto para una fecha)
+- [x] US-13: Vista "Reparto del día" con pedidos confirmados para una fecha
+- [x] US-11: Resumen de producción (totales por producto para una fecha)
 - [ ] US-14: Optimización de ruta (Google Maps Distance Matrix + Directions)
-- [ ] US-15: Vista mobile para repartidor (lista de entregas, dirección, productos, notas, link a Maps)
-- [ ] US-16: Marcar entrega como realizada desde el celular
+- [x] US-15: Vista mobile para repartidor (lista de entregas, dirección, productos, notas, link a Maps)
+- [x] US-16: Marcar entrega como realizada desde el celular
 
 ### M4: Inteligencia y Polish — ~1 semana
 **Goal**: Dashboard con estadísticas de negocio. Precios diferenciados activos en el bot. Sistema pulido para uso diario.
