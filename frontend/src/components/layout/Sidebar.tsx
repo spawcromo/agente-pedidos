@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -22,27 +23,29 @@ export function Sidebar() {
     async function handleLogout() {
         const supabase = createClient()
         const { error } = await supabase.auth.signOut()
-        if (error) {
-            toast.error("Error al cerrar sesión")
-            return
-        }
+        if (error) { toast.error("Error al cerrar sesión"); return }
         router.push("/login")
         router.refresh()
     }
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-card">
+        <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col"
+            style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}>
+
             {/* Logo */}
-            <div className="flex h-16 items-center gap-2 border-b border-border px-6">
-                <span className="text-2xl">🐔</span>
-                <div>
-                    <h1 className="text-sm font-bold leading-none">Avícola Baccaro</h1>
-                    <p className="text-xs text-muted-foreground">Gestión de Pedidos</p>
-                </div>
+            <div className="flex h-20 items-center px-5 border-b border-[#2A2825]">
+                <Image
+                    src="/logo-baccaro.png"
+                    alt="Avícola Baccaro"
+                    width={180}
+                    height={56}
+                    className="object-contain"
+                    priority
+                />
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 px-3 py-4">
+            <nav className="flex-1 space-y-0.5 px-3 py-4">
                 {NAV_ITEMS.map((item) => {
                     const isActive = pathname.startsWith(item.href)
                     return (
@@ -50,30 +53,40 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                                 isActive
-                                    ? "bg-primary text-primary-foreground"
-                                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                    ? "text-amber-400 bg-amber-500/10 shadow-[inset_2px_0_0_#FBBF24]"
+                                    : "text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220]"
                             )}
                         >
-                            <span className="text-lg">{item.icon}</span>
+                            <span className={cn(
+                                "text-base transition-transform duration-150",
+                                isActive ? "scale-110" : "group-hover:scale-105"
+                            )}>
+                                {item.icon}
+                            </span>
                             {item.label}
+                            {isActive && (
+                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400" />
+                            )}
                         </Link>
                     )
                 })}
             </nav>
 
-            {/* Footer / Logout */}
-            <div className="border-t border-border p-4 space-y-2">
+            {/* Footer */}
+            <div className="border-t border-[#2A2825] p-3 space-y-0.5">
                 <button
                     id="btn-logout"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                    className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220] transition-all duration-150"
                 >
-                    <span>🚪</span>
+                    <span className="text-base">🚪</span>
                     Cerrar sesión
                 </button>
-                <p className="text-xs text-muted-foreground px-3">v1.0 — Antigravity</p>
+                <p className="text-[10px] text-[#4B5563] px-3 pt-1">
+                    Avícola Baccaro © {new Date().getFullYear()}
+                </p>
             </div>
         </aside>
     )

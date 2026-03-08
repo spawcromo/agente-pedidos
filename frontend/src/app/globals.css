@@ -47,73 +47,93 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ============================================================
+   AVÍCOLA BACCARO — Design System
+   Dark warm theme with amber accent (#FBBF24)
+   ============================================================ */
+
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.58 0.22 27);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Baccaro dark warm palette — applied directly as light+dark unified */
+  --background: #0F0E0C;
+  --foreground: #F9F7F4;
+
+  --card: #1C1A17;
+  --card-foreground: #F9F7F4;
+
+  --popover: #252220;
+  --popover-foreground: #F9F7F4;
+
+  /* Amber — Baccaro brand primary */
+  --primary: #FBBF24;
+  --primary-foreground: #0F0E0C;
+
+  --secondary: #2A2825;
+  --secondary-foreground: #F9F7F4;
+
+  --muted: #1C1A17;
+  --muted-foreground: #9CA3AF;
+
+  --accent: #252220;
+  --accent-foreground: #F9F7F4;
+
+  --destructive: #EF4444;
+  --border: #2A2825;
+  --input: #1C1A17;
+  --ring: #FBBF24;
+
+  --radius: 0.75rem;
+
+  /* Sidebar */
+  --sidebar: #161412;
+  --sidebar-foreground: #F9F7F4;
+  --sidebar-primary: #FBBF24;
+  --sidebar-primary-foreground: #0F0E0C;
+  --sidebar-accent: rgba(251, 191, 36, 0.08);
+  --sidebar-accent-foreground: #FBBF24;
+  --sidebar-border: #2A2825;
+  --sidebar-ring: #FBBF24;
+
+  /* Chart colors — warm palette */
+  --chart-1: #FBBF24;
+  --chart-2: #F97316;
+  --chart-3: #10B981;
+  --chart-4: #60A5FA;
+  --chart-5: #A78BFA;
 }
 
+/* .dark mirrors :root — the app always uses dark mode */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.87 0.00 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.371 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.809 0.105 251.813);
-  --chart-2: oklch(0.623 0.214 259.815);
-  --chart-3: oklch(0.546 0.245 262.881);
-  --chart-4: oklch(0.488 0.243 264.376);
-  --chart-5: oklch(0.424 0.199 265.638);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #0F0E0C;
+  --foreground: #F9F7F4;
+  --card: #1C1A17;
+  --card-foreground: #F9F7F4;
+  --popover: #252220;
+  --popover-foreground: #F9F7F4;
+  --primary: #FBBF24;
+  --primary-foreground: #0F0E0C;
+  --secondary: #2A2825;
+  --secondary-foreground: #F9F7F4;
+  --muted: #1C1A17;
+  --muted-foreground: #9CA3AF;
+  --accent: #252220;
+  --accent-foreground: #F9F7F4;
+  --destructive: #EF4444;
+  --border: #2A2825;
+  --input: #1C1A17;
+  --ring: #FBBF24;
+  --sidebar: #161412;
+  --sidebar-foreground: #F9F7F4;
+  --sidebar-primary: #FBBF24;
+  --sidebar-primary-foreground: #0F0E0C;
+  --sidebar-accent: rgba(251, 191, 36, 0.08);
+  --sidebar-accent-foreground: #FBBF24;
+  --sidebar-border: #2A2825;
+  --sidebar-ring: #FBBF24;
+  --chart-1: #FBBF24;
+  --chart-2: #F97316;
+  --chart-3: #10B981;
+  --chart-4: #60A5FA;
+  --chart-5: #A78BFA;
 }
 
 @layer base {
@@ -122,8 +142,39 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* ============================================================
+   Baccaro utility classes
+   ============================================================ */
+
+/* Amber glow shadow — for active sidebar, primary CTAs */
+.shadow-amber-glow {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Card floating shadow — warm dark */
+.shadow-card {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Subtle warm scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0F0E0C;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A2825;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3A3630;
 }
