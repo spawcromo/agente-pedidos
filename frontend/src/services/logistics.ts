@@ -111,6 +111,16 @@ export async function updateStopStatus(stopId: string, status: 'pending' | 'deli
     if (error) throw new Error(`Error al actualizar parada: ${error.message}`)
 }
 
+export async function deleteRoute(routeId: string): Promise<void> {
+    const supabase = createClient()
+    const { error } = await supabase
+        .from('delivery_routes')
+        .delete()
+        .eq('id', routeId)
+
+    if (error) throw new Error(`Error al eliminar ruta: ${error.message}`)
+}
+
 export async function getDrivers(): Promise<{ id: string; email: string }[]> {
     const supabase = createClient()
     const { data, error } = await supabase

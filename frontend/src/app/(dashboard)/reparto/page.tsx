@@ -22,6 +22,7 @@ import {
     getDrivers,
     createRoute,
     updateStopStatus,
+    deleteRoute,
     type DeliveryRoute,
     type RouteStop
 } from '@/services/logistics'
@@ -55,6 +56,7 @@ function RepartoPage() {
 
     // Repartidor state
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
+    const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
 
     const loadData = useCallback(async () => {
         if (!role || !user) return
@@ -77,13 +79,16 @@ function RepartoPage() {
             } else {
                 const data = await getMyRoutes(user.id)
                 setMyRoutes(data)
+                if (data.length > 0 && !activeRouteId) {
+                    setActiveRouteId(data[0].id)
+                }
             }
         } catch (err) {
             toast.error('Error al cargar datos de logística')
         } finally {
             setLoading(false)
         }
-    }, [role, user, date])
+    }, [role, user, date, activeRouteId])
 
     useEffect(() => { loadData() }, [loadData])
 
@@ -98,6 +103,17 @@ function RepartoPage() {
             loadData()
         } catch (err) {
             toast.error('Error al crear ruta')
+        }
+    }
+
+    async function handleDeleteRoute(routeId: string) {
+        if (!confirm('¿Eliminar esta ruta? Los pedidos volverán a estar disponibles.')) return
+        try {
+            await deleteRoute(routeId)
+            toast.success('Ruta eliminada')
+            loadData()
+        } catch (err) {
+            toast.error('Error al eliminar ruta')
         }
     }
 
@@ -117,14 +133,33 @@ function RepartoPage() {
 
     // --- VIEW: REPARTIDOR ---
     if (role === 'repartidor') {
-        const activeRoute = myRoutes[0] // Por simplicidad mostramos la primera activa
+        const activeRoute = myRoutes.find(r => r.id === activeRouteId) || myRoutes[0]
 
         return (
             <div className="max-w-2xl mx-auto space-y-6">
                 <header className="text-center space-y-2">
-                    <h1 className="text-3xl font-bold">Mi Ruta de Hoy</h1>
+                    <h1 className="text-3xl font-bold">Mis Rutas</h1>
                     <p className="text-muted-foreground">{new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                 </header>
+
+                {myRoutes.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                        {myRoutes.map((r, i) => (
+                            <button
+                                key={r.id}
+                                onClick={() => setActiveRouteId(r.id)}
+                                className={cn(
+                                    "flex-none px-4 py-2 rounded-full text-sm font-bold transition-all whitespace-nowrap",
+                                    activeRoute?.id === r.id
+                                        ? "bg-amber-500 text-amber-950"
+                                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                )}
+                            >
+                                Ruta #{i + 1} ({r.stops.length} paradas)
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {!activeRoute ? (
                     <div className="py-20 text-center bg-card border border-dashed border-border rounded-3xl">
@@ -134,6 +169,11 @@ function RepartoPage() {
                     </div>
                 ) : (
                     <div className="space-y-4">
+                        <div className="flex justify-between items-center px-2">
+                            <Badge variant="outline" className="text-amber-500 border-amber-500/20">
+                                {activeRoute.stops.filter(s => s.status === 'delivered').length} / {activeRoute.stops.length} completadas
+                            </Badge>
+                        </div>
                         {activeRoute.stops.sort((a, b) => a.position - b.position).map((stop, index) => (
                             <StopCard
                                 key={stop.id}
@@ -249,16 +289,23 @@ function RepartoPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {routes.map(route => (
-                                <div key={route.id} className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col">
+                                <div key={route.id} className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col group/route relative">
+                                    <button
+                                        onClick={() => handleDeleteRoute(route.id)}
+                                        className="absolute top-4 right-4 h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-full flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
+                                        title="Eliminar ruta"
+                                    >
+                                        🗑️
+                                    </button>
                                     <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
-                                        <div>
+                                        <div className="pr-10">
                                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chofer</p>
-                                            <p className="font-bold text-amber-500">{route.driver?.email || 'Sin asignar'}</p>
+                                            <p className="font-bold text-amber-500 truncate max-w-[150px]">{route.driver?.email || 'Sin asignar'}</p>
                                         </div>
                                         <Badge variant="outline">{route.stops.length} Paradas</Badge>
                                     </div>
                                     <div className="p-4 flex-1 space-y-2">
-                                        {route.stops.map((stop, i) => (
+                                        {route.stops.sort((a, b) => a.position - b.position).map((stop, i) => (
                                             <div key={stop.id} className="flex items-center gap-2 text-sm text-foreground/80">
                                                 <span className="text-[10px] text-muted-foreground w-4 text-center">{i + 1}</span>
                                                 <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
