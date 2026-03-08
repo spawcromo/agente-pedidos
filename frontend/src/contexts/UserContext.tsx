@@ -37,14 +37,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
 
     const refreshProfile = async () => {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-        if (user) {
-            await fetchProfile(user.id)
-        } else {
+        try {
+            const { data: { user }, error: userError } = await supabase.auth.getUser()
+            if (userError) throw userError
+
+            setUser(user)
+            if (user) {
+                await fetchProfile(user.id)
+            } else {
+                setRole(null)
+            }
+        } catch (err) {
+            console.error('Error in refreshProfile:', err)
+            setUser(null)
             setRole(null)
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
     }
 
     useEffect(() => {
@@ -53,7 +62,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (session?.user) {
                 setUser(session.user)
-                await fetchProfile(session.user.id)
+                try {
+                    const { data, error } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single()
+
+                    if (!error && data) {
+                        setRole(data.role as UserRole)
+                    } else {
+                        setRole('repartidor')
+                    }
+                } catch (err) {
+                    setRole('repartidor')
+                }
             } else {
                 setUser(null)
                 setRole(null)
