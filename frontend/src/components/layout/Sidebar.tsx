@@ -54,15 +54,16 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
     return (
         <div className="flex h-full flex-col">
             {/* Logo */}
-            <div className="flex h-20 items-center px-5 border-b border-[#2A2825]">
-                <Image
-                    src="/logo-baccaro.png"
-                    alt="Avícola Baccaro"
-                    width={180}
-                    height={56}
-                    className="object-contain"
-                    priority
-                />
+            <div className="flex h-24 items-center px-6 border-b border-[#2A2825]">
+                <div className="relative w-full h-12">
+                    <Image
+                        src="/logo-baccaro.png"
+                        alt="Avícola Baccaro"
+                        fill
+                        className="object-contain object-left"
+                        priority
+                    />
+                </div>
             </div>
 
             {/* Navigation */}
