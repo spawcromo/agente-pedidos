@@ -12,7 +12,7 @@ trigger: always_on
 - **Project**: Gestión de Pedidos y Logística
 - **Type**: Full product (WhatsApp Bot + Web Dashboard)
 - **Start Date**: 2026-03-07
-- **Repo**: [URL]
+- **Repo**: https://github.com/spawcromo/agente-pedidos
 - **Staging URL**: [URL]
 - **Production URL**: [URL]
 
