@@ -10,14 +10,20 @@ import {
 import { getProductionSummary, type ProductionSummaryRow } from '@/services/production'
 import { withRole } from '@/components/hoc/withRole'
 
-const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0]
-
 function ProduccionPage() {
-    const [date, setDate] = useState(TOMORROW)
+    const [date, setDate] = useState('')
     const [rows, setRows] = useState<ProductionSummaryRow[]>([])
     const [loading, setLoading] = useState(true)
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+        setDate(tomorrow)
+    }, [])
 
     const load = useCallback(async () => {
+        if (!mounted || !date) return
         try {
             setLoading(true)
             setRows(await getProductionSummary(date))
@@ -26,14 +32,23 @@ function ProduccionPage() {
         } finally {
             setLoading(false)
         }
-    }, [date])
+    }, [date, mounted])
 
     useEffect(() => { load() }, [load])
 
     const totalItems = rows.reduce((s, r) => s + r.order_count, 0)
 
+    if (!mounted || !date) {
+        return (
+            <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
+                <div className="animate-bounce text-4xl">🍗</div>
+                <p>Cargando producción...</p>
+            </div>
+        )
+    }
+
     return (
-        <div>
+        <div suppressHydrationWarning>
             {/* Header */}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -82,7 +97,10 @@ function ProduccionPage() {
                         variant="outline"
                         size="sm"
                         className="flex-1 sm:flex-none"
-                        onClick={() => setDate(TOMORROW)}
+                        onClick={() => {
+                            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                            setDate(tomorrow)
+                        }}
                     >
                         Mañana
                     </Button>
@@ -95,7 +113,7 @@ function ProduccionPage() {
             </div>
 
             {/* Summary table */}
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="rounded-lg border border-border bg-card overflow-hidden">
                 <div className="overflow-x-auto">
                     <Table>
                         <TableHeader>

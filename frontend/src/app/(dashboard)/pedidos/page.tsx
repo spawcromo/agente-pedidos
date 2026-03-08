@@ -24,9 +24,6 @@ import {
 import type { OrderStatus } from '@/types/database'
 import { withRole } from '@/components/hoc/withRole'
 
-const TODAY = new Date().toISOString().split('T')[0]
-const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0]
-
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
 })
@@ -40,13 +37,21 @@ function orderTotal(order: OrderWithDetails): number {
 function PedidosPage() {
     const [orders, setOrders] = useState<OrderWithDetails[]>([])
     const [loading, setLoading] = useState(true)
-    const [dateFilter, setDateFilter] = useState(TOMORROW)
+    const [mounted, setMounted] = useState(false)
+    const [dateFilter, setDateFilter] = useState('')
     const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null)
 
+    useEffect(() => {
+        setMounted(true)
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+        setDateFilter(tomorrow)
+    }, [])
+
     const load = useCallback(async () => {
+        if (!mounted || !dateFilter) return
         try {
             setLoading(true)
             setSelected(new Set())
@@ -60,7 +65,7 @@ function PedidosPage() {
         } finally {
             setLoading(false)
         }
-    }, [dateFilter, statusFilter])
+    }, [dateFilter, statusFilter, mounted])
 
     useEffect(() => { load() }, [load])
 
@@ -120,13 +125,17 @@ function PedidosPage() {
         setDialogOpen(true)
     }
 
-    const confirmed = orders.filter((o) => o.status === 'confirmed').length
-    const totalRevenue = orders
-        .filter((o) => o.status === 'confirmed')
-        .reduce((sum, o) => sum + orderTotal(o), 0)
+    if (!mounted || !dateFilter) {
+        return (
+            <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
+                <div className="animate-bounce text-4xl">🍗</div>
+                <p>Cargando pedidos...</p>
+            </div>
+        )
+    }
 
     return (
-        <div>
+        <div suppressHydrationWarning>
             {/* Header */}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -172,7 +181,10 @@ function PedidosPage() {
                         variant="outline"
                         size="sm"
                         className="flex-1 sm:flex-none"
-                        onClick={() => { setDateFilter(TODAY) }}
+                        onClick={() => {
+                            const today = new Date().toISOString().split('T')[0]
+                            setDateFilter(today)
+                        }}
                     >
                         Hoy
                     </Button>
@@ -180,7 +192,10 @@ function PedidosPage() {
                         variant="outline"
                         size="sm"
                         className="flex-1 sm:flex-none"
-                        onClick={() => { setDateFilter(TOMORROW) }}
+                        onClick={() => {
+                            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                            setDateFilter(tomorrow)
+                        }}
                     >
                         Mañana
                     </Button>
