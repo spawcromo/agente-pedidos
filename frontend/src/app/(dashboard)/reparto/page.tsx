@@ -34,11 +34,13 @@ const ARS = new Intl.NumberFormat('es-AR', {
 
 export default function RepartoPage() {
     const { role, user, loading: userLoading } = useUser()
-    const [date, setDate] = useState('') // Start empty to avoid hydration mismatch
+    const [date, setDate] = useState('')
     const [loading, setLoading] = useState(true)
+    const [mounted, setMounted] = useState(false)
 
-    // Initialize date only on client
+    // Ensure we only render on client to avoid hydration mismatch
     useEffect(() => {
+        setMounted(true)
         const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
         setDate(tomorrow)
     }, [])
@@ -108,7 +110,7 @@ export default function RepartoPage() {
         }
     }
 
-    if (userLoading || loading || !date) {
+    if (!mounted || userLoading || loading || !date) {
         return <div className="py-20 text-center text-muted-foreground">Cargando logística...</div>
     }
 
