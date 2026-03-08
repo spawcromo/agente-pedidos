@@ -27,6 +27,7 @@ import {
     toggleProductActive,
 } from '@/services/products'
 import type { Product } from '@/types/database'
+import { withRole } from '@/components/hoc/withRole'
 
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -34,7 +35,7 @@ const ARS = new Intl.NumberFormat('es-AR', {
     maximumFractionDigits: 0,
 })
 
-export default function ProductosPage() {
+function ProductosPage() {
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -99,11 +100,6 @@ export default function ProductosPage() {
                 <Button onClick={openCreate} id="btn-nuevo-producto" className="w-full sm:w-auto">
                     + Nuevo Producto
                 </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {/* ... existing stats cards ... */}
             </div>
 
             {/* Table */}
@@ -209,3 +205,5 @@ export default function ProductosPage() {
         </div>
     )
 }
+
+export default withRole(ProductosPage, ['admin'])

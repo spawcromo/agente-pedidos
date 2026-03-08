@@ -25,6 +25,7 @@ import {
     type DeliveryRoute,
     type RouteStop
 } from '@/services/logistics'
+import { withRole } from '@/components/hoc/withRole'
 
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -32,7 +33,7 @@ const ARS = new Intl.NumberFormat('es-AR', {
     maximumFractionDigits: 0,
 })
 
-export default function RepartoPage() {
+function RepartoPage() {
     const { role, user, loading: userLoading } = useUser()
     const [date, setDate] = useState('')
     const [loading, setLoading] = useState(true)
@@ -112,11 +113,6 @@ export default function RepartoPage() {
 
     if (!mounted || userLoading || loading || !date) {
         return <div className="py-20 text-center text-muted-foreground">Cargando logística...</div>
-    }
-
-    if (!user) {
-        window.location.href = '/login'
-        return null
     }
 
     // --- VIEW: REPARTIDOR ---
@@ -361,3 +357,5 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
         </div>
     )
 }
+
+export default withRole(RepartoPage, ['admin', 'repartidor'])

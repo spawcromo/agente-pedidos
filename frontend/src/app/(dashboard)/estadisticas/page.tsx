@@ -1,4 +1,6 @@
-export default function EstadisticasPage() {
+import { withRole } from '@/components/hoc/withRole'
+
+function EstadisticasPage() {
     return (
         <div>
             <div className="mb-8 flex items-center justify-between">
@@ -15,3 +17,5 @@ export default function EstadisticasPage() {
         </div>
     )
 }
+
+export default withRole(EstadisticasPage, ['admin'])

@@ -8,10 +8,11 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { getProductionSummary, type ProductionSummaryRow } from '@/services/production'
+import { withRole } from '@/components/hoc/withRole'
 
 const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0]
 
-export default function ProduccionPage() {
+function ProduccionPage() {
     const [date, setDate] = useState(TOMORROW)
     const [rows, setRows] = useState<ProductionSummaryRow[]>([])
     const [loading, setLoading] = useState(true)
@@ -154,3 +155,5 @@ export default function ProduccionPage() {
         </div>
     )
 }
+
+export default withRole(ProduccionPage, ['admin'])

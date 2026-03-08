@@ -23,13 +23,14 @@ import {
 import { ClientDialog } from '@/components/features/ClientDialog'
 import { getClients, deleteClientRecord } from '@/services/clients'
 import type { Client } from '@/types/database'
+import { withRole } from '@/components/hoc/withRole'
 
 const TYPE_LABEL: Record<string, string> = {
     retail: 'Minorista',
     wholesale: 'Mayorista',
 }
 
-export default function ClientesPage() {
+function ClientesPage() {
     const [clients, setClients] = useState<Client[]>([])
     const [filtered, setFiltered] = useState<Client[]>([])
     const [search, setSearch] = useState('')
@@ -85,10 +86,6 @@ export default function ClientesPage() {
         }
     }
 
-    const retail = clients.filter((c) => c.client_type === 'retail').length
-    const wholesale = clients.filter((c) => c.client_type === 'wholesale').length
-    const withCoords = clients.filter((c) => c.lat && c.lng).length
-
     return (
         <div>
             {/* Header */}
@@ -102,11 +99,6 @@ export default function ClientesPage() {
                 <Button onClick={openCreate} id="btn-nuevo-cliente" className="w-full sm:w-auto">
                     + Nuevo Cliente
                 </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {/* ... existing stats cards ... */}
             </div>
 
             {/* Search */}
@@ -231,3 +223,5 @@ export default function ClientesPage() {
         </div>
     )
 }
+
+export default withRole(ClientesPage, ['admin'])

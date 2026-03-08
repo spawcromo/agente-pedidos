@@ -22,6 +22,7 @@ import {
     getOrders, updateOrderStatus, bulkUpdateOrderStatus, type OrderWithDetails,
 } from '@/services/orders'
 import type { OrderStatus } from '@/types/database'
+import { withRole } from '@/components/hoc/withRole'
 
 const TODAY = new Date().toISOString().split('T')[0]
 const TOMORROW = new Date(Date.now() + 86400000).toISOString().split('T')[0]
@@ -36,7 +37,7 @@ function orderTotal(order: OrderWithDetails): number {
     )
 }
 
-export default function PedidosPage() {
+function PedidosPage() {
     const [orders, setOrders] = useState<OrderWithDetails[]>([])
     const [loading, setLoading] = useState(true)
     const [dateFilter, setDateFilter] = useState(TOMORROW)
@@ -119,7 +120,6 @@ export default function PedidosPage() {
         setDialogOpen(true)
     }
 
-    const pending = orders.filter((o) => o.status === 'pending').length
     const confirmed = orders.filter((o) => o.status === 'confirmed').length
     const totalRevenue = orders
         .filter((o) => o.status === 'confirmed')
@@ -138,11 +138,6 @@ export default function PedidosPage() {
                 <Button onClick={openCreate} id="btn-nuevo-pedido" className="w-full sm:w-auto">
                     + Nuevo Pedido
                 </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {/* ... existing stats cards are already responsive grid-cols-1 ... */}
             </div>
 
             {/* Filters + Bulk actions */}
@@ -320,3 +315,5 @@ export default function PedidosPage() {
         </div>
     )
 }
+
+export default withRole(PedidosPage, ['admin'])
