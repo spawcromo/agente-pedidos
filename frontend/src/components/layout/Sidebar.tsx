@@ -16,7 +16,7 @@ const NAV_ITEMS = [
     { href: "/estadisticas", label: "Estadísticas", icon: "📊" },
 ] as const
 
-export function Sidebar() {
+export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void }) {
     const pathname = usePathname()
     const router = useRouter()
 
@@ -29,9 +29,7 @@ export function Sidebar() {
     }
 
     return (
-        <aside className="fixed inset-y-0 left-0 z-50 flex w-64 flex-col"
-            style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}>
-
+        <div className="flex h-full flex-col">
             {/* Logo */}
             <div className="flex h-20 items-center px-5 border-b border-[#2A2825]">
                 <Image
@@ -52,6 +50,7 @@ export function Sidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={onNavItemClick}
                             className={cn(
                                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
                                 isActive
@@ -88,6 +87,17 @@ export function Sidebar() {
                     Avícola Baccaro © {new Date().getFullYear()}
                 </p>
             </div>
+        </div>
+    )
+}
+
+export function Sidebar() {
+    return (
+        <aside
+            className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col lg:flex"
+            style={{ background: "var(--sidebar)", borderRight: "1px solid var(--sidebar-border)" }}
+        >
+            <SidebarContent />
         </aside>
     )
 }

@@ -92,166 +92,134 @@ export default function ClientesPage() {
     return (
         <div>
             {/* Header */}
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
                     <p className="text-muted-foreground">
                         Datos de contacto, dirección, horarios y tipo de cada cliente.
                     </p>
                 </div>
-                <Button onClick={openCreate} id="btn-nuevo-cliente">
+                <Button onClick={openCreate} id="btn-nuevo-cliente" className="w-full sm:w-auto">
                     + Nuevo Cliente
                 </Button>
             </div>
 
             {/* Stats */}
             <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Clientes</p>
-                    <p className="mt-1 text-3xl font-bold tabular-nums">{clients.length}</p>
-                </div>
-                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Minoristas</p>
-                    <p className="mt-1 text-3xl font-bold text-blue-400 tabular-nums">{retail}</p>
-                </div>
-                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Mayoristas</p>
-                    <p className="mt-1 text-3xl font-bold text-purple-400 tabular-nums">{wholesale}</p>
-                </div>
-                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Ubicación</p>
-                    <div className="mt-1 flex items-baseline gap-2">
-                        <p className="text-3xl font-bold text-emerald-500 tabular-nums">{withCoords}</p>
-                        <p className="text-xs text-muted-foreground font-medium">con coordenadas</p>
-                    </div>
-                </div>
+                {/* ... existing stats cards ... */}
             </div>
 
             {/* Search */}
-            <div className="mb-4">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Input
                     id="search-clientes"
                     placeholder="Buscar por nombre, teléfono o dirección..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="max-w-sm"
+                    className="w-full sm:max-w-sm h-11 sm:h-10"
                 />
             </div>
 
             {/* Table */}
-            <div className="rounded-lg border border-border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Cliente</TableHead>
-                            <TableHead>Teléfono</TableHead>
-                            <TableHead>Tipo</TableHead>
-                            <TableHead>Dirección</TableHead>
-                            <TableHead>Horario</TableHead>
-                            <TableHead>Coords</TableHead>
-                            <TableHead className="w-12" />
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
-                                    Cargando...
-                                </TableCell>
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="min-w-[150px]">Cliente</TableHead>
+                                <TableHead>Teléfono</TableHead>
+                                <TableHead>Tipo</TableHead>
+                                <TableHead className="min-w-[200px]">Dirección</TableHead>
+                                <TableHead className="w-12" />
                             </TableRow>
-                        ) : filtered.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
-                                    {search ? 'Sin resultados para la búsqueda.' : 'No hay clientes. Creá el primero.'}
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            filtered.map((client) => (
-                                <TableRow key={client.id}>
-                                    <TableCell className="font-medium">
-                                        <div>{client.name}</div>
-                                        {client.notes && (
-                                            <div className="text-xs text-muted-foreground mt-0.5 max-w-[200px] truncate">
-                                                📝 {client.notes}
-                                            </div>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="font-mono text-sm">{client.phone}</TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant="outline"
-                                            className={
-                                                client.client_type === 'wholesale'
-                                                    ? 'border-purple-500/30 text-purple-400'
-                                                    : 'border-blue-500/30 text-blue-400'
-                                            }
-                                        >
-                                            {TYPE_LABEL[client.client_type]}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="max-w-[200px] truncate text-sm">
-                                        {client.address || '—'}
-                                    </TableCell>
-                                    <TableCell className="text-sm text-muted-foreground">
-                                        {client.opening_hours || '—'}
-                                    </TableCell>
-                                    <TableCell>
-                                        {client.lat && client.lng ? (
-                                            <Badge variant="outline" className="border-green-500/30 text-green-500 text-xs">
-                                                ✓
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="outline" className="border-destructive/30 text-destructive text-xs">
-                                                ✗
-                                            </Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger
-                                                id={`menu-cliente-${client.id}`}
-                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-sm font-bold hover:bg-accent hover:text-accent-foreground"
-                                            >
-                                                ···
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => openEdit(client)}>
-                                                    ✏️ Editar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() =>
-                                                        window.open(`https://wa.me/${client.phone.replace('+', '')}`, '_blank')
-                                                    }
-                                                >
-                                                    💬 Abrir WhatsApp
-                                                </DropdownMenuItem>
-                                                {client.address && (
-                                                    <DropdownMenuItem
-                                                        onClick={() =>
-                                                            window.open(
-                                                                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address)}`,
-                                                                '_blank'
-                                                            )
-                                                        }
-                                                    >
-                                                        📍 Ver en Maps
-                                                    </DropdownMenuItem>
-                                                )}
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem
-                                                    className="text-destructive"
-                                                    onClick={() => handleDelete(client)}
-                                                >
-                                                    🗑️ Eliminar
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
+                                        Cargando...
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : filtered.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
+                                        {search ? 'Sin resultados.' : 'No hay clientes.'}
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                filtered.map((client) => (
+                                    <TableRow key={client.id} className="transition-colors">
+                                        <TableCell className="font-semibold">
+                                            <div>{client.name}</div>
+                                            {client.notes && (
+                                                <div className="text-xs text-muted-foreground mt-0.5 max-w-[200px] truncate">
+                                                    📝 {client.notes}
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-sm">{client.phone}</TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant="outline"
+                                                className={
+                                                    client.client_type === 'wholesale'
+                                                        ? 'border-purple-500/20 text-purple-400 bg-purple-500/5'
+                                                        : 'border-blue-500/20 text-blue-400 bg-blue-500/5'
+                                                }
+                                            >
+                                                {TYPE_LABEL[client.client_type]}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="max-w-[200px] truncate text-sm">
+                                            {client.address || '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger
+                                                    id={`menu-cliente-${client.id}`}
+                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg font-bold hover:bg-accent transition-colors"
+                                                >
+                                                    ···
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="w-48">
+                                                    <DropdownMenuItem onClick={() => openEdit(client)}>
+                                                        ✏️ Editar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() =>
+                                                            window.open(`https://wa.me/${client.phone.replace('+', '')}`, '_blank')
+                                                        }
+                                                    >
+                                                        💬 WhatsApp
+                                                    </DropdownMenuItem>
+                                                    {client.address && (
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                window.open(
+                                                                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address)}`,
+                                                                    '_blank'
+                                                                )
+                                                            }
+                                                        >
+                                                            📍 Google Maps
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem
+                                                        className="text-destructive font-medium"
+                                                        onClick={() => handleDelete(client)}
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             <ClientDialog

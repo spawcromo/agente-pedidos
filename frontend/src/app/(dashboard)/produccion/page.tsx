@@ -34,11 +34,11 @@ export default function ProduccionPage() {
     return (
         <div>
             {/* Header */}
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Resumen de Producción</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Producción</h1>
                     <p className="text-muted-foreground">
-                        Totales de productos a preparar según pedidos confirmados.
+                        Totales a preparar según pedidos confirmados.
                     </p>
                 </div>
                 <Button
@@ -51,95 +51,98 @@ export default function ProduccionPage() {
                         toast.success('Copiado al portapapeles')
                     }}
                     id="btn-copiar-resumen"
+                    className="w-full sm:w-auto"
                 >
                     📋 Copiar resumen
                 </Button>
             </div>
 
             {/* Date filter */}
-            <div className="mb-6 flex items-center gap-3">
-                <Input
-                    id="fecha-produccion"
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-44"
-                />
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDate(new Date().toISOString().split('T')[0])}
-                >
-                    Hoy
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDate(TOMORROW)}
-                >
-                    Mañana
-                </Button>
-                {!loading && (
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Input
+                        id="fecha-produccion"
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="flex-1 sm:w-44"
+                    />
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => setDate(new Date().toISOString().split('T')[0])}
+                    >
+                        Hoy
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 sm:flex-none"
+                        onClick={() => setDate(TOMORROW)}
+                    >
+                        Mañana
+                    </Button>
+                </div>
+                {!loading && rows.length > 0 && (
                     <span className="text-sm text-muted-foreground">
-                        {rows.length > 0
-                            ? `${rows.length} productos · ${totalItems} pedidos confirmados`
-                            : 'Sin pedidos confirmados para esta fecha'}
+                        {rows.length} productos · {totalItems} pedidos
                     </span>
                 )}
             </div>
 
             {/* Summary table */}
-            <div className="rounded-lg border border-border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Producto</TableHead>
-                            <TableHead className="text-center">Unidad</TableHead>
-                            <TableHead className="text-right text-lg font-bold">
-                                Total a preparar
-                            </TableHead>
-                            <TableHead className="text-right">Pedidos</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            <TableRow>
-                                <TableCell colSpan={4} className="py-12 text-center text-muted-foreground">
-                                    Cargando...
-                                </TableCell>
+            <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="min-w-[150px]">Producto</TableHead>
+                                <TableHead className="text-center">Unidad</TableHead>
+                                <TableHead className="text-right text-lg font-bold">
+                                    Total
+                                </TableHead>
+                                <TableHead className="text-right whitespace-nowrap">Cant. Pedidos</TableHead>
                             </TableRow>
-                        ) : rows.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={4} className="py-16 text-center">
-                                    <div className="text-4xl mb-3">📦</div>
-                                    <div className="text-muted-foreground">
-                                        No hay pedidos confirmados para el{' '}
-                                        <span className="font-medium text-foreground">{date}</span>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground mt-1">
-                                        Confirmá pedidos desde la sección Pedidos para verlos acá.
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            rows.map((row) => (
-                                <TableRow key={row.product_id} className="hover:bg-muted/30">
-                                    <TableCell className="font-medium text-base">{row.product_name}</TableCell>
-                                    <TableCell className="text-center text-muted-foreground">{row.unit}</TableCell>
-                                    <TableCell className="text-right">
-                                        <span className="text-2xl font-bold tabular-nums">
-                                            {row.total_quantity}
-                                        </span>{' '}
-                                        <span className="text-sm text-muted-foreground">{row.unit}</span>
-                                    </TableCell>
-                                    <TableCell className="text-right text-muted-foreground">
-                                        {row.order_count} pedido{row.order_count !== 1 ? 's' : ''}
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="py-12 text-center text-muted-foreground">
+                                        Cargando...
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : rows.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="py-16 text-center">
+                                        <div className="text-4xl mb-3">📦</div>
+                                        <div className="text-muted-foreground">
+                                            Sin pedidos para el <span className="font-medium text-foreground">{date}</span>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                rows.map((row) => (
+                                    <TableRow key={row.product_id} className="hover:bg-muted/30">
+                                        <TableCell className="font-semibold text-base">{row.product_name}</TableCell>
+                                        <TableCell className="text-center text-muted-foreground uppercase text-xs">{row.unit}</TableCell>
+                                        <TableCell className="text-right">
+                                            <span className="text-2xl font-bold tabular-nums text-amber-500">
+                                                {row.total_quantity}
+                                            </span>{' '}
+                                            <span className="text-sm text-muted-foreground">{row.unit}</span>
+                                        </TableCell>
+                                        <TableCell className="text-right text-muted-foreground">
+                                            {row.order_count}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             {/* Bottom copy hint */}
