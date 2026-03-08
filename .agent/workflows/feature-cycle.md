@@ -26,11 +26,22 @@ Before coding, write in the PR description:
 
 Follow rules in `02-code-and-file-standards.md` and `03-git-conventions.md`. Commit in small increments.
 
-## 4. Test
+## 4. UI & Design check
 
-Write/update tests. Run suite. Manually verify happy path + key edge cases.
+Before testing, verify the feature visually:
+- **Consistency**: uses design tokens (colors, spacing, typography) — no ad-hoc inline styles
+- **Components**: reuses existing shadcn/ui components — no custom reimplementations
+- **Responsive**: works on mobile (min 375px) and desktop
+- **States**: empty state, loading state, and error state are handled
+- **Dark mode**: all colors use CSS variables, not hardcoded hex
 
-## 5. PR and merge
+If the feature introduces a new visual pattern, document it in `docs/design-system.md`.
+
+## 5. Test
+
+Run `npm run build` — zero errors. Manually verify happy path + key edge cases.
+
+## 6. PR and merge
 
 Run self-review checklist from `03-git-conventions.md`, then:
 
@@ -40,6 +51,6 @@ git checkout main && git pull origin main
 git branch -d feat/<feature-name>
 ```
 
-## 6. Deploy to staging
+## 7. Deploy to staging
 
 Run `/deploy` targeting staging.

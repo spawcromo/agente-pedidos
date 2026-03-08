@@ -36,13 +36,24 @@ Use **System Architecture** skill → `docs/architecture.md`
 
 Use **Project Planning** skill → `docs/plan.md`
 
+## 6. UI Design system
+
+Before writing code, define the visual language in `docs/design-system.md`:
+- Brand colors (primary, secondary, accent, neutrals)
+- Typography (font family, scale)
+- Component decisions (which shadcn/ui components to use)
+- Any custom branding (logo, favicon)
+
+If working with an existing brand, extract colors/fonts from their materials.
+If no brand exists yet, define a sensible default and flag it for client review.
+
 ## 7. Scaffold frontend
 
 Use **Frontend Scaffold** skill. Verify: `cd frontend && npm run dev`
 
 ## 8. Scaffold backend
 
-Use **Backend Scaffold** skill. Verify: `cd backend && npm run dev`, `GET /health` OK.
+Use **Backend Scaffold** skill. Verify `GET /health` OK.
 
 ## 9. Automations (if needed)
 
