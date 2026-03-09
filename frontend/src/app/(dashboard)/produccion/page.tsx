@@ -18,7 +18,9 @@ function ProduccionPage() {
 
     useEffect(() => {
         setMounted(true)
-        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+        const d = new Date()
+        d.setDate(d.getDate() + 1)
+        const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         setDate(tomorrow)
     }, [])
 
@@ -89,7 +91,11 @@ function ProduccionPage() {
                         variant="outline"
                         size="sm"
                         className="flex-1 sm:flex-none"
-                        onClick={() => setDate(new Date().toISOString().split('T')[0])}
+                        onClick={() => {
+                            const d = new Date()
+                            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                            setDate(today)
+                        }}
                     >
                         Hoy
                     </Button>
@@ -98,7 +104,9 @@ function ProduccionPage() {
                         size="sm"
                         className="flex-1 sm:flex-none"
                         onClick={() => {
-                            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                            const d = new Date()
+                            d.setDate(d.getDate() + 1)
+                            const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
                             setDate(tomorrow)
                         }}
                     >

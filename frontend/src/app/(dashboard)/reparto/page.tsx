@@ -44,8 +44,9 @@ function RepartoPage() {
     // Ensure we only render on client to avoid hydration mismatch
     useEffect(() => {
         setMounted(true)
-        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0]
-        setDate(tomorrow)
+        const d = new Date()
+        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        setDate(today)
     }, [])
 
     // Admin state
