@@ -401,19 +401,19 @@ function PedidosPage() {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <div className="text-[10px] text-muted-foreground font-mono">
+                                            <div className="text-sm font-medium text-foreground">
                                                 {new Date(order.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
                                             </div>
-                                            <div className="text-sm font-medium">
+                                            <div className="text-[10px] text-muted-foreground font-mono">
                                                 {new Date(order.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider">
+                                            <div className="text-sm font-bold text-amber-500">
                                                 {order.delivery_date.split('-').reverse().slice(0, 2).join('/')}
                                             </div>
-                                            <div className="text-sm font-semibold text-foreground flex items-center gap-1">
-                                                <Clock className="w-3 h-3 text-muted-foreground" /> {order.delivery_time ? order.delivery_time.slice(0, 5) : '—'}
+                                            <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                                <Clock className="w-2.5 h-2.5 opacity-70" /> {order.delivery_time ? order.delivery_time.slice(0, 5) : '—'}
                                             </div>
                                         </TableCell>
                                         <TableCell>
