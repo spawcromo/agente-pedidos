@@ -19,6 +19,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [role, setRole] = useState<UserRole>(null)
     const [loading, setLoading] = useState(true)
+    const [mounted, setMounted] = useState(false)
     const supabase = createClient()
 
     const fetchProfile = async (userId: string) => {
@@ -38,17 +39,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     const refreshProfile = async () => {
         try {
-            const { data: { user }, error: userError } = await supabase.auth.getUser()
+            const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
             if (userError) throw userError
 
-            setUser(user)
-            if (user) {
-                await fetchProfile(user.id)
+            setUser(currentUser)
+            if (currentUser) {
+                await fetchProfile(currentUser.id)
             } else {
                 setRole(null)
             }
         } catch (err: any) {
-            // Don't log "Auth session missing" as an error, it's normal if not logged in
             if (err?.name !== 'AuthSessionMissingError' && err?.message !== 'Auth session missing!') {
                 console.error('Error in refreshProfile:', err)
             }
@@ -60,9 +60,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
 
     useEffect(() => {
+        setMounted(true)
         refreshProfile()
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
             if (session?.user) {
                 setUser(session.user)
                 try {
@@ -74,13 +75,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
                     if (!error && data) {
                         setRole(data.role as UserRole)
-                    } else {
+                    } else if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
                         setRole('repartidor')
                     }
                 } catch (err) {
                     setRole('repartidor')
                 }
-            } else {
+            } else if (event === 'SIGNED_OUT') {
                 setUser(null)
                 setRole(null)
             }
@@ -89,6 +90,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         return () => subscription.unsubscribe()
     }, [])
+
+    if (!mounted) {
+        return null
+    }
 
     return (
         <UserContext.Provider value={{ user, role, loading, refreshProfile }}>
