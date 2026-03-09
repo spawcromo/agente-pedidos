@@ -63,33 +63,6 @@ function DashboardPage() {
             href: '/pedidos?status=confirmed'
         },
         {
-            title: 'Clientes Minoristas',
-            value: stats.retail_clients,
-            description: 'Consumidores finales',
-            icon: Users,
-            color: 'text-blue-500',
-            bg: 'bg-blue-500/10',
-            href: '/clientes'
-        },
-        {
-            title: 'Clientes Mayoristas',
-            value: stats.wholesale_clients,
-            description: 'Distribuidoras y locales',
-            icon: Store,
-            color: 'text-purple-500',
-            bg: 'bg-purple-500/10',
-            href: '/clientes'
-        },
-        {
-            title: 'Productos Activos',
-            value: stats.active_products,
-            description: 'En catálogo actual',
-            icon: Package,
-            color: 'text-orange-500',
-            bg: 'bg-orange-500/10',
-            href: '/productos'
-        },
-        {
             title: 'Repartidores',
             value: stats.active_drivers,
             description: 'Equipo de logística',
