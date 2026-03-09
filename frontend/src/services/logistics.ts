@@ -100,15 +100,29 @@ export async function createRoute(date: string, driverId: string | null, orderId
 
 export async function updateStopStatus(stopId: string, status: 'pending' | 'delivered'): Promise<void> {
     const supabase = createClient()
-    const { error } = await supabase
+
+    // 1. Update the stop
+    const { data: stop, error } = await supabase
         .from('delivery_stops')
         .update({
             status,
             completed_at: status === 'delivered' ? new Date().toISOString() : null
         })
         .eq('id', stopId)
+        .select('order_id')
+        .single()
 
     if (error) throw new Error(`Error al actualizar parada: ${error.message}`)
+
+    // 2. If delivered, sync the order status
+    if (status === 'delivered' && stop?.order_id) {
+        const { error: orderError } = await supabase
+            .from('orders')
+            .update({ status: 'delivered' })
+            .eq('id', stop.order_id)
+
+        if (orderError) console.error('Error syncing order status:', orderError.message)
+    }
 }
 
 export async function deleteRoute(routeId: string): Promise<void> {

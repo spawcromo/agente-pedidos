@@ -8,7 +8,7 @@ export type OrderWithDetails = Order & {
 
 export async function getOrders(filters?: {
     delivery_date?: string
-    status?: OrderStatus
+    status?: OrderStatus | OrderStatus[] | 'all'
 }): Promise<OrderWithDetails[]> {
     const supabase = createClient()
     let query = supabase
@@ -23,8 +23,13 @@ export async function getOrders(filters?: {
     if (filters?.delivery_date) {
         query = query.eq('delivery_date', filters.delivery_date)
     }
-    if (filters?.status) {
-        query = query.eq('status', filters.status)
+
+    if (filters?.status && filters.status !== 'all') {
+        if (Array.isArray(filters.status)) {
+            query = query.in('status', filters.status)
+        } else {
+            query = query.eq('status', filters.status)
+        }
     }
 
     const { data, error } = await query

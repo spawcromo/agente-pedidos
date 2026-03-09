@@ -39,27 +39,25 @@ function PedidosPage() {
     const [loading, setLoading] = useState(true)
     const [mounted, setMounted] = useState(false)
     const [dateFilter, setDateFilter] = useState('')
-    const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
+    const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all' | 'active'>('active')
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null)
 
     useEffect(() => {
         setMounted(true)
-        const d = new Date()
-        d.setDate(d.getDate() + 1)
-        const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-        setDateFilter(tomorrow)
     }, [])
 
     const load = useCallback(async () => {
-        if (!mounted || !dateFilter) return
+        if (!mounted) return
         try {
             setLoading(true)
             setSelected(new Set())
             const data = await getOrders({
                 delivery_date: dateFilter || undefined,
-                status: statusFilter !== 'all' ? statusFilter : undefined,
+                status: statusFilter === 'active'
+                    ? ['pending', 'confirmed']
+                    : (statusFilter !== 'all' ? statusFilter : undefined),
             })
             setOrders(data)
         } catch (err) {
@@ -127,7 +125,7 @@ function PedidosPage() {
         setDialogOpen(true)
     }
 
-    if (!mounted || !dateFilter) {
+    if (!mounted) {
         return (
             <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
                 <div className="animate-bounce text-4xl">🍗</div>
@@ -163,17 +161,18 @@ function PedidosPage() {
                     />
                     <Select
                         value={statusFilter}
-                        onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all')}
+                        onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active')}
                     >
                         <SelectTrigger className="flex-1 sm:w-40" id="filter-estado">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todos</SelectItem>
-                            <SelectItem value="pending">Pendientes</SelectItem>
-                            <SelectItem value="confirmed">Confirmados</SelectItem>
-                            <SelectItem value="rejected">Rechazados</SelectItem>
-                            <SelectItem value="delivered">Entregados</SelectItem>
+                            <SelectItem value="active">Pendientes + Conf.</SelectItem>
+                            <SelectItem value="all">Todos los estados</SelectItem>
+                            <SelectItem value="pending">Solo Pendientes</SelectItem>
+                            <SelectItem value="confirmed">Solo Confirmados</SelectItem>
+                            <SelectItem value="delivered">Solo Entregados</SelectItem>
+                            <SelectItem value="rejected">Solo Rechazados</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -272,7 +271,9 @@ function PedidosPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-semibold text-foreground">{order.client?.name ?? '—'}</div>
-                                            <div className="text-[11px] text-muted-foreground uppercase tracking-tight">{order.delivery_date}</div>
+                                            <div className="text-[11px] text-muted-foreground uppercase tracking-tight">
+                                                {order.delivery_date.split('-').reverse().join('-')}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="space-y-0.5">
