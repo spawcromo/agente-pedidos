@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import {
@@ -25,7 +25,9 @@ import {
     Edit2,
     Calendar,
     Filter,
-    Clock
+    Clock,
+    Truck,
+    Check
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -109,23 +111,21 @@ function PedidosPage() {
         }
     }
 
-    async function handleBulkConfirm() {
+    async function handleBulkStatus(status: OrderStatus) {
         if (selected.size === 0) return
-        try {
-            await bulkUpdateOrderStatus(Array.from(selected), 'confirmed')
-            toast.success(`${selected.size} pedidos confirmados`)
-            load()
-        } catch (err) {
-            toast.error(err instanceof Error ? err.message : 'Error')
+        const statusLabels: Record<OrderStatus, string> = {
+            pending: 'puestos en pendiente',
+            confirmed: 'confirmados',
+            delivered: 'marcados como entregados',
+            rejected: 'rechazados'
         }
-    }
 
-    async function handleBulkReject() {
-        if (selected.size === 0) return
-        if (!confirm(`¿Rechazar ${selected.size} pedidos?`)) return
+        if (status === 'rejected' && !confirm(`¿Rechazar ${selected.size} pedidos?`)) return
+
         try {
-            await bulkUpdateOrderStatus(Array.from(selected), 'rejected')
-            toast.success(`${selected.size} pedidos rechazados`)
+            await bulkUpdateOrderStatus(Array.from(selected), status)
+            toast.success(`${selected.size} pedidos ${statusLabels[status]}`)
+            setSelected(new Set())
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
@@ -227,14 +227,32 @@ function PedidosPage() {
                 {selected.size > 0 && (
                     <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto sm:border-l sm:border-border sm:pl-3">
                         <span className="text-sm text-muted-foreground w-full sm:w-auto text-center">{selected.size} seleccionados</span>
-                        <div className="flex gap-2 w-full">
-                            <Button size="sm" onClick={handleBulkConfirm} id="btn-confirmar-masivo" className="flex-1 gap-2">
-                                <CheckCircle2 className="w-4 h-4" /> Confirmar
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={handleBulkReject} className="flex-1 gap-2">
-                                <XCircle className="w-4 h-4" /> Rechazar
-                            </Button>
-                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className={cn(
+                                buttonVariants({ size: 'sm' }),
+                                "w-full sm:w-auto gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none cursor-pointer"
+                            )}>
+                                <CheckCircle2 className="w-4 h-4" /> Acciones masivas
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem onClick={() => handleBulkStatus('pending')} className="gap-2">
+                                    <Clock className="w-4 h-4 text-muted-foreground" /> Mover a Pendiente
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatus('confirmed')} className="gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar seleccionados
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatus('delivered')} className="gap-2">
+                                    <Truck className="w-4 h-4 text-blue-500" /> Marcar como Entregados
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => handleBulkStatus('rejected')}
+                                    className="text-destructive font-medium gap-2 focus:text-destructive"
+                                >
+                                    <XCircle className="w-4 h-4" /> Rechazar seleccionados
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 )}
             </div>
