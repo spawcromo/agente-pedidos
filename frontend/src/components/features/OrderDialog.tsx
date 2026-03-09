@@ -205,7 +205,9 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                             onValueChange={(v) => handleProductChange(index, v as string)}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Producto..." />
+                                                <SelectValue placeholder="Producto...">
+                                                    {products.find(p => p.id === watch(`items.${index}.product_id`))?.name}
+                                                </SelectValue>
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {products.filter((p) => p.active || p.id === watch(`items.${index}.product_id`)).map((p) => (

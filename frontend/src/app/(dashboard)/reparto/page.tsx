@@ -315,7 +315,9 @@ function RepartoPage() {
                         <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
                         <Select value={selectedDriver} onValueChange={(val) => setSelectedDriver(val ?? '')}>
                             <SelectTrigger className="bg-background">
-                                <SelectValue placeholder="Elegir Repartidor..." />
+                                <SelectValue placeholder="Elegir Repartidor...">
+                                    {drivers.find(d => d.id === selectedDriver)?.email}
+                                </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                                 {drivers.map(d => (
