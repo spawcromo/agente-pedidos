@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -27,7 +27,10 @@ import {
     Filter,
     Clock,
     Truck,
-    Check
+    Check,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -56,6 +59,10 @@ function PedidosPage() {
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null)
+    const [sortConfig, setSortConfig] = useState<{ field: string, direction: 'asc' | 'desc' }>({
+        field: 'created_at',
+        direction: 'desc'
+    })
 
     useEffect(() => {
         setMounted(true)
@@ -81,6 +88,56 @@ function PedidosPage() {
     }, [dateFilter, statusFilter, mounted])
 
     useEffect(() => { load() }, [load])
+
+    const sortedOrders = useMemo(() => {
+        const items = [...orders]
+        items.sort((a, b) => {
+            let valA: any = ''
+            let valB: any = ''
+
+            switch (sortConfig.field) {
+                case 'created_at':
+                    valA = new Date(a.created_at).getTime()
+                    valB = new Date(b.created_at).getTime()
+                    break
+                case 'delivery':
+                    valA = new Date(`${a.delivery_date}T${a.delivery_time || '00:00'}`).getTime()
+                    valB = new Date(`${b.delivery_date}T${b.delivery_time || '00:00'}`).getTime()
+                    break
+                case 'client':
+                    valA = (a.client?.name || '').toLowerCase()
+                    valB = (b.client?.name || '').toLowerCase()
+                    break
+                case 'total':
+                    valA = orderTotal(a)
+                    valB = orderTotal(b)
+                    break
+                case 'status':
+                    valA = a.status
+                    valB = b.status
+                    break
+            }
+
+            if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1
+            if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1
+            return 0
+        })
+        return items
+    }, [orders, sortConfig])
+
+    function handleSort(field: string) {
+        setSortConfig((prev) => ({
+            field,
+            direction: prev.field === field && prev.direction === 'desc' ? 'asc' : 'desc'
+        }))
+    }
+
+    function SortIcon({ field }: { field: string }) {
+        if (sortConfig.field !== field) return <ArrowUpDown className="w-3 h-3 opacity-30" />
+        return sortConfig.direction === 'asc'
+            ? <ArrowUp className="w-3 h-3 text-amber-500" />
+            : <ArrowDown className="w-3 h-3 text-amber-500" />
+    }
 
     // Selection
     const allIds = orders.map((o) => o.id)
@@ -270,28 +327,65 @@ function PedidosPage() {
                                         id="select-all"
                                     />
                                 </TableHead>
-                                <TableHead className="min-w-[150px]">Cliente</TableHead>
+                                <TableHead
+                                    className="whitespace-nowrap cursor-pointer hover:text-foreground transition-colors group select-none"
+                                    onClick={() => handleSort('created_at')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Pedido <SortIcon field="created_at" />
+                                    </div>
+                                </TableHead>
+                                <TableHead
+                                    className="whitespace-nowrap cursor-pointer hover:text-foreground transition-colors group select-none"
+                                    onClick={() => handleSort('delivery')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Entrega <SortIcon field="delivery" />
+                                    </div>
+                                </TableHead>
+                                <TableHead
+                                    className="min-w-[150px] cursor-pointer hover:text-foreground transition-colors group select-none"
+                                    onClick={() => handleSort('client')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Cliente <SortIcon field="client" />
+                                    </div>
+                                </TableHead>
                                 <TableHead className="min-w-[200px]">Productos</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                                <TableHead>Estado</TableHead>
+                                <TableHead
+                                    className="text-right cursor-pointer hover:text-foreground transition-colors group select-none"
+                                    onClick={() => handleSort('total')}
+                                >
+                                    <div className="flex items-center justify-end gap-1">
+                                        Total <SortIcon field="total" />
+                                    </div>
+                                </TableHead>
+                                <TableHead
+                                    className="cursor-pointer hover:text-foreground transition-colors group select-none"
+                                    onClick={() => handleSort('status')}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Estado <SortIcon field="status" />
+                                    </div>
+                                </TableHead>
                                 <TableHead className="w-12" />
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                                    <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                                         Cargando...
                                     </TableCell>
                                 </TableRow>
-                            ) : orders.length === 0 ? (
+                            ) : sortedOrders.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                                    <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                                         No hay pedidos.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                orders.map((order) => (
+                                sortedOrders.map((order) => (
                                     <TableRow
                                         key={order.id}
                                         className={cn(
@@ -307,14 +401,25 @@ function PedidosPage() {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-semibold text-foreground">{order.client?.name ?? '—'}</div>
-                                            <div className="flex flex-col gap-0.5 mt-1">
-                                                <div className="text-[11px] font-medium text-amber-500/80 uppercase tracking-wider flex items-center gap-1">
-                                                    <Calendar className="w-3 h-3" /> Entregar: {order.delivery_date.split('-').reverse().join('-')}
-                                                </div>
-                                                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                    <Clock className="w-2.5 h-2.5" /> Pedido: {new Date(order.created_at).toLocaleDateString('es-AR')} {new Date(order.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
-                                                </div>
+                                            <div className="text-[10px] text-muted-foreground font-mono">
+                                                {new Date(order.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
+                                            </div>
+                                            <div className="text-sm font-medium">
+                                                {new Date(order.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-[10px] text-amber-500/80 font-bold uppercase tracking-wider">
+                                                {order.delivery_date.split('-').reverse().slice(0, 2).join('/')}
+                                            </div>
+                                            <div className="text-sm font-semibold text-foreground flex items-center gap-1">
+                                                <Clock className="w-3 h-3 text-muted-foreground" /> {order.delivery_time ? order.delivery_time.slice(0, 5) : '—'}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-bold text-foreground">{order.client?.name ?? '—'}</div>
+                                            <div className="text-[10px] text-muted-foreground uppercase opacity-70">
+                                                {order.source}
                                             </div>
                                         </TableCell>
                                         <TableCell>
