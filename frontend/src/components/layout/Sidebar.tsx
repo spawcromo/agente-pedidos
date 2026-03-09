@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 
 const NAV_ITEMS = [
-    { href: "/inicio", label: "Inicio", icon: <LayoutDashboard className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/inicio", label: "Inicio", icon: <LayoutDashboard className="w-4 h-4" />, roles: ['admin', 'repartidor'] },
     { href: "/pedidos", label: "Pedidos", icon: <ClipboardList className="w-4 h-4" />, roles: ['admin'] },
     { href: "/produccion", label: "Producción", icon: <Package className="w-4 h-4" />, roles: ['admin'] },
     { href: "/clientes", label: "Clientes", icon: <Users className="w-4 h-4" />, roles: ['admin'] },
