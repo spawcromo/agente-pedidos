@@ -402,7 +402,12 @@ function PedidosPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="text-sm font-medium text-foreground">
-                                                {new Date(order.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
+                                                {(() => {
+                                                    const d = new Date(order.created_at)
+                                                    const day = String(d.getDate()).padStart(2, '0')
+                                                    const month = String(d.getMonth() + 1).padStart(2, '0')
+                                                    return `${day}/${month}`
+                                                })()}
                                             </div>
                                             <div className="text-[10px] text-muted-foreground font-mono">
                                                 {new Date(order.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
@@ -410,7 +415,7 @@ function PedidosPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="text-sm font-bold text-amber-500">
-                                                {order.delivery_date.split('-').reverse().slice(0, 2).join('/')}
+                                                {order.delivery_date.split('-').slice(1, 3).reverse().join('/')}
                                             </div>
                                             <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
                                                 <Clock className="w-2.5 h-2.5 opacity-70" /> {order.delivery_time ? order.delivery_time.slice(0, 5) : '—'}
