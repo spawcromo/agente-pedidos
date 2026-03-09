@@ -81,6 +81,7 @@ export async function bulkUpdateOrderStatus(
 export interface CreateOrderPayload {
     client_id: string
     delivery_date: string
+    delivery_time: string | null
     notes: string | null
     source: 'manual' | 'whatsapp'
     items: { product_id: string; quantity: number; unit_price: number }[]
@@ -94,6 +95,7 @@ export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
         .insert({
             client_id: payload.client_id,
             delivery_date: payload.delivery_date,
+            delivery_time: payload.delivery_time,
             notes: payload.notes,
             source: payload.source,
             status: 'pending',
@@ -135,8 +137,14 @@ export async function updateOrderItems(
     }
 }
 
-export async function updateOrderNotes(id: string, notes: string | null): Promise<void> {
+export async function updateOrderMetadata(
+    id: string,
+    payload: { delivery_date?: string; delivery_time?: string | null; notes?: string | null }
+): Promise<void> {
     const supabase = createClient()
-    const { error } = await supabase.from('orders').update({ notes }).eq('id', id)
-    if (error) throw new Error(`Error al actualizar notas: ${error.message}`)
+    const { error } = await supabase
+        .from('orders')
+        .update(payload)
+        .eq('id', id)
+    if (error) throw new Error(`Error al actualizar metadatos: ${error.message}`)
 }

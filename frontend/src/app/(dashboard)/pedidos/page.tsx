@@ -308,8 +308,13 @@ function PedidosPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="font-semibold text-foreground">{order.client?.name ?? '—'}</div>
-                                            <div className="text-[11px] text-muted-foreground uppercase tracking-tight">
-                                                {order.delivery_date.split('-').reverse().join('-')}
+                                            <div className="flex flex-col gap-0.5 mt-1">
+                                                <div className="text-[11px] font-medium text-amber-500/80 uppercase tracking-wider flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" /> Entregar: {order.delivery_date.split('-').reverse().join('-')}
+                                                </div>
+                                                <div className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                    <Clock className="w-2.5 h-2.5" /> Pedido: {new Date(order.created_at).toLocaleDateString('es-AR')} {new Date(order.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>

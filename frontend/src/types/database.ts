@@ -38,6 +38,7 @@ export interface Order {
   source: OrderSource
   created_at: string
   updated_at: string
+  delivery_time: string | null
   // Joined
   client?: Client
   order_items?: OrderItem[]

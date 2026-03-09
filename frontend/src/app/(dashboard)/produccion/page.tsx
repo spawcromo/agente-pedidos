@@ -18,11 +18,11 @@ function ProduccionPage() {
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
-        setMounted(true)
         const d = new Date()
         d.setDate(d.getDate() + 1)
         const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
         setDate(tomorrow)
+        setMounted(true)
     }, [])
 
     const load = useCallback(async () => {

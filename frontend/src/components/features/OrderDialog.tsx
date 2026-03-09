@@ -16,7 +16,7 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
-import { updateOrderItems, updateOrderNotes, type OrderWithDetails } from '@/services/orders'
+import { updateOrderItems, updateOrderMetadata, type OrderWithDetails } from '@/services/orders'
 import { getProducts } from '@/services/products'
 import { getClients } from '@/services/clients'
 import { createOrder } from '@/services/orders'
@@ -26,6 +26,7 @@ type ItemRow = { product_id: string; quantity: string; unit_price: string }
 type FormData = {
     client_id: string
     delivery_date: string
+    delivery_time: string
     notes: string
     items: ItemRow[]
 }
@@ -47,6 +48,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
             defaultValues: {
                 client_id: '',
                 delivery_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                delivery_time: '09:00',
                 notes: '',
                 items: [{ product_id: '', quantity: '1', unit_price: '0' }],
             },
@@ -65,6 +67,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
             reset({
                 client_id: order.client_id,
                 delivery_date: order.delivery_date,
+                delivery_time: order.delivery_time || '09:00',
                 notes: order.notes ?? '',
                 items: order.order_items?.map((oi) => ({
                     product_id: oi.product_id,
@@ -76,6 +79,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
             reset({
                 client_id: '',
                 delivery_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                delivery_time: '09:00',
                 notes: '',
                 items: [{ product_id: '', quantity: '1', unit_price: '0' }],
             })
@@ -108,14 +112,19 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                 return
             }
 
-            if (isEditing) {
+            if (isEditing && order) {
                 await updateOrderItems(order.id, items)
-                await updateOrderNotes(order.id, data.notes.trim() || null)
+                await updateOrderMetadata(order.id, {
+                    delivery_date: data.delivery_date,
+                    delivery_time: data.delivery_time || null,
+                    notes: data.notes.trim() || null,
+                })
                 toast.success('Pedido actualizado')
             } else {
                 await createOrder({
                     client_id: data.client_id,
                     delivery_date: data.delivery_date,
+                    delivery_time: data.delivery_time || null,
                     notes: data.notes.trim() || null,
                     source: 'manual',
                     items,
@@ -139,7 +148,14 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                 <DialogHeader>
                     <div className="flex items-center gap-3">
                         <DialogTitle>{title}</DialogTitle>
-                        {isEditing && <OrderStatusBadge status={order.status} />}
+                        {isEditing && (
+                            <div className="flex flex-col gap-1 items-start">
+                                <OrderStatusBadge status={order.status} />
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
+                                    ID: {order.id.split('-')[0]}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </DialogHeader>
 
@@ -167,6 +183,14 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                 id="delivery_date"
                                 type="date"
                                 {...register('delivery_date', { required: true })}
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="delivery_time">Hora de entrega</Label>
+                            <Input
+                                id="delivery_time"
+                                type="time"
+                                {...register('delivery_time')}
                             />
                         </div>
                     </div>
