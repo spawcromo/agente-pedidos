@@ -314,12 +314,10 @@ function RepartoPage() {
                     <div className="bg-amber-500/10 border border-amber-500/20 rounded-sm p-4 space-y-4">
                         <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
                         <Select value={selectedDriver} onValueChange={(val) => setSelectedDriver(val ?? '')}>
-                            <SelectTrigger className="bg-background">
-                                <SelectValue placeholder="Elegir Repartidor...">
-                                    {drivers.find(d => d.id === selectedDriver)?.email}
-                                </SelectValue>
+                            <SelectTrigger className="bg-background w-full">
+                                <SelectValue placeholder="Elegir Repartidor..." />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="min-w-[240px]">
                                 {drivers.map(d => (
                                     <SelectItem key={d.id} value={d.id}>{d.email}</SelectItem>
                                 ))}
@@ -348,20 +346,22 @@ function RepartoPage() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {routes.map(route => (
-                                <div key={route.id} className="bg-card border border-border rounded-sm overflow-hidden flex flex-col group/route relative">
-                                    <button
-                                        onClick={() => handleDeleteRoute(route.id)}
-                                        className="absolute top-4 right-4 h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
-                                        title="Eliminar ruta"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                <div key={route.id} className="bg-card border border-border rounded-sm overflow-hidden flex flex-col group/route">
                                     <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
-                                        <div className="pr-10">
+                                        <div className="flex-1 min-w-0 pr-2">
                                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chofer</p>
-                                            <p className="font-bold text-amber-500 truncate max-w-[150px]">{route.driver?.email || 'Sin asignar'}</p>
+                                            <p className="font-bold text-amber-500 truncate">{route.driver?.email || 'Sin asignar'}</p>
                                         </div>
-                                        <Badge variant="outline">{route.stops.length} Paradas</Badge>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
+                                            <button
+                                                onClick={() => handleDeleteRoute(route.id)}
+                                                className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
+                                                title="Eliminar ruta"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="p-4 flex-1 space-y-2">
                                         {route.stops.sort((a, b) => a.position - b.position).map((stop, i) => (
