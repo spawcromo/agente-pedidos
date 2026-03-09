@@ -27,18 +27,24 @@ export default function LoginPage() {
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center bg-[#0F0E0C] px-4"
+        <main className="min-h-screen flex items-center justify-center px-4 relative"
             style={{
-                backgroundImage: "radial-gradient(ellipse 60% 50% at 50% 100%, rgba(251,191,36,0.06) 0%, transparent 70%)"
+                backgroundColor: "#F58220",
+                backgroundImage: `
+                    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.1) 0%, transparent 50%),
+                    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-opacity='0.07'%3E%3Cpath d='M40 20 L40 45 M40 40 L25 55 M40 40 L55 55 M40 40 L40 60'/%3E%3C/g%3E%3C/svg%3E")
+                `,
+                backgroundSize: '100% 100%, 100% 100%, 80px 80px'
             }}>
 
-            <div className="w-full max-w-sm">
+            <div className="w-full max-w-sm relative z-10">
                 {/* Card */}
                 <div
-                    className="rounded-lg border border-[#2A2825] p-8 space-y-8"
+                    className="rounded-3xl border border-white/10 p-10 space-y-8 backdrop-blur-xl"
                     style={{
-                        background: "#1C1A17",
-                        boxShadow: "0 8px 40px rgba(0,0,0,0.5), 0 0 80px rgba(251,191,36,0.04)"
+                        background: "rgba(15, 14, 12, 0.95)",
+                        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5), 0 0 50px rgba(0,0,0,0.2)"
                     }}
                 >
                     {/* Logo */}
