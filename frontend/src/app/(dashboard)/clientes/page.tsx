@@ -153,14 +153,24 @@ function ClientesPage() {
                                 filtered.map((client) => (
                                     <TableRow key={client.id} className="transition-colors">
                                         <TableCell className="font-semibold">
-                                            <div>{client.name}</div>
+                                            <div className="text-amber-500 font-bold">{client.name}</div>
                                             {client.notes && (
                                                 <div className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] truncate flex items-center gap-1">
                                                     <FileText className="w-3 h-3" /> {client.notes}
                                                 </div>
                                             )}
                                         </TableCell>
-                                        <TableCell className="font-mono text-sm">{client.phone}</TableCell>
+                                        <TableCell className="font-mono text-sm">
+                                            <a
+                                                href={`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="hover:text-amber-500 hover:underline transition-colors flex items-center gap-1"
+                                                title="Hablar por WhatsApp"
+                                            >
+                                                <MessageCircle className="w-3 h-3" /> {client.phone}
+                                            </a>
+                                        </TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant="outline"
@@ -174,7 +184,18 @@ function ClientesPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="max-w-[200px] truncate text-sm">
-                                            {client.address || '—'}
+                                            {client.address ? (
+                                                <a
+                                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address)}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="hover:text-amber-500 hover:underline transition-colors flex items-center gap-1"
+                                                    title="Ver en Google Maps"
+                                                >
+                                                    <MapPin className="w-3 h-3 flex-shrink-0" />
+                                                    <span className="truncate">{client.address}</span>
+                                                </a>
+                                            ) : '—'}
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
