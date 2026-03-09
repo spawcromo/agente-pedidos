@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
+import { Package, Copy } from "lucide-react"
 import { getProductionSummary, type ProductionSummaryRow } from '@/services/production'
 import { withRole } from '@/components/hoc/withRole'
 
@@ -43,7 +44,9 @@ function ProduccionPage() {
     if (!mounted || !date) {
         return (
             <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
-                <div className="animate-bounce text-4xl">🍗</div>
+                <div className="animate-spin text-amber-500">
+                    <Package className="w-10 h-10" />
+                </div>
                 <p>Cargando producción...</p>
             </div>
         )
@@ -69,9 +72,9 @@ function ProduccionPage() {
                         toast.success('Copiado al portapapeles')
                     }}
                     id="btn-copiar-resumen"
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto gap-2"
                 >
-                    📋 Copiar resumen
+                    <Copy className="w-4 h-4" /> Copiar resumen
                 </Button>
             </div>
 
@@ -143,9 +146,11 @@ function ProduccionPage() {
                                 </TableRow>
                             ) : rows.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="py-16 text-center">
-                                        <div className="text-4xl mb-3">📦</div>
-                                        <div className="text-muted-foreground">
+                                    <TableCell colSpan={4} className="py-16 text-center text-muted-foreground">
+                                        <div className="flex justify-center mb-3">
+                                            <Package className="w-10 h-10 opacity-20" />
+                                        </div>
+                                        <div>
                                             Sin pedidos para el <span className="font-medium text-foreground">{date}</span>
                                         </div>
                                     </TableCell>

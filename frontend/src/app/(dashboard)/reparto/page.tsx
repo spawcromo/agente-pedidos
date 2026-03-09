@@ -14,6 +14,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import {
+    Truck,
+    MapPin,
+    ExternalLink,
+    Trash2,
+    Check,
+    RefreshCw,
+    Clock,
+    Package,
+    LayoutDashboard,
+    Search,
+    User,
+    ChevronRight,
+    CircleDashed,
+    CheckCircle2
+} from "lucide-react"
 import { getOrders, type OrderWithDetails } from '@/services/orders'
 import { useUser } from '@/contexts/UserContext'
 import { createClient } from '@/lib/supabase/client'
@@ -199,7 +215,9 @@ function RepartoPage() {
 
                 {!activeRoute ? (
                     <div className="py-20 text-center bg-card border border-dashed border-border rounded-lg">
-                        <p className="text-5xl mb-4">🏠</p>
+                        <div className="flex justify-center mb-4">
+                            <RefreshCw className="w-12 h-12 text-muted-foreground/30" />
+                        </div>
                         <p className="text-lg font-medium">No tenés rutas asignadas por ahora.</p>
                         <p className="text-sm text-muted-foreground">Descansá o avisale al admin.</p>
                     </div>
@@ -257,7 +275,7 @@ function RepartoPage() {
                     <div className="bg-card border border-border rounded-sm p-4 min-h-[400px]">
                         {unassignedOrders.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-                                <p className="text-3xl mb-2">🎉</p>
+                                <CheckCircle2 className="w-10 h-10 mb-2 text-emerald-500" />
                                 <p className="text-sm">Todo asignado o sin pedidos confirmados.</p>
                             </div>
                         ) : (
@@ -320,6 +338,9 @@ function RepartoPage() {
                     <h2 className="text-xl font-bold">Rutas de Hoy ({routes.length})</h2>
                     {routes.length === 0 ? (
                         <div className="py-20 text-center bg-card border border-dashed border-border rounded-lg opacity-50">
+                            <div className="flex justify-center mb-4">
+                                <Truck className="w-12 h-12" />
+                            </div>
                             No hay rutas armadas todavía.
                         </div>
                     ) : (
@@ -328,10 +349,10 @@ function RepartoPage() {
                                 <div key={route.id} className="bg-card border border-border rounded-sm overflow-hidden flex flex-col group/route relative">
                                     <button
                                         onClick={() => handleDeleteRoute(route.id)}
-                                        className="absolute top-4 right-4 h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-full flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
+                                        className="absolute top-4 right-4 h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
                                         title="Eliminar ruta"
                                     >
-                                        🗑️
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                     <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
                                         <div className="pr-10">
@@ -347,7 +368,7 @@ function RepartoPage() {
                                                 <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
                                                     {stop.order.client?.name}
                                                 </span>
-                                                {stop.status === 'delivered' && <span className="text-emerald-500 ml-auto">✓</span>}
+                                                {stop.status === 'delivered' && <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />}
                                             </div>
                                         ))}
                                     </div>
@@ -383,7 +404,7 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
             "relative bg-card border border-border rounded-lg p-5 transition-all shadow-sm",
             isDelivered ? "opacity-60 grayscale" : "hover:border-amber-500/50"
         )}>
-            <div className="absolute -left-3 top-5 h-8 w-8 bg-amber-500 text-amber-950 rounded-full flex items-center justify-center font-bold shadow-lg border-4 border-background">
+            <div className="absolute -left-3 top-5 h-8 w-8 bg-amber-500 text-amber-950 rounded-lg flex items-center justify-center font-bold shadow-lg border-4 border-background">
                 {index + 1}
             </div>
 
@@ -391,7 +412,9 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
                 <div className="flex justify-between items-start gap-4">
                     <div>
                         <h3 className="text-xl font-bold">{stop.order.client?.name}</h3>
-                        <p className="text-amber-500 font-medium text-sm">📍 {stop.order.client?.address}</p>
+                        <p className="text-amber-400 font-medium text-sm flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4" /> {stop.order.client?.address}
+                        </p>
                     </div>
                     <p className="text-xl font-mono font-bold">
                         {ARS.format(stop.order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
@@ -403,20 +426,20 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.order.client?.address || '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center text-sm font-bold border border-blue-500/20 active:scale-95 transition-transform"
+                        className="flex-1 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center text-sm font-bold border border-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
                     >
-                        Abrir GPS ↗
+                        <ExternalLink className="w-4 h-4" /> Abrir GPS
                     </a>
                     {!isDelivered ? (
                         <button
                             onClick={onDone}
-                            className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform"
+                            className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2"
                         >
-                            ✓ Entregar
+                            <Check className="w-4 h-4" /> Entregar
                         </button>
                     ) : (
-                        <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-lg text-center text-sm font-bold border border-emerald-500/20">
-                            Entregado
+                        <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-lg text-center text-sm font-bold border border-emerald-500/20 flex items-center justify-center gap-2">
+                            <CheckCircle2 className="w-4 h-4" /> Entregado
                         </div>
                     )}
                     ...

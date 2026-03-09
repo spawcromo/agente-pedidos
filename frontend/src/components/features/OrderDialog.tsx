@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Plus, X } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -181,8 +182,9 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                 variant="outline"
                                 size="sm"
                                 onClick={() => append({ product_id: '', quantity: '1', unit_price: '0' })}
+                                className="gap-2"
                             >
-                                + Agregar producto
+                                <Plus className="w-4 h-4" /> Agregar producto
                             </Button>
                         </div>
 
@@ -236,9 +238,9 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                         <button
                                             type="button"
                                             onClick={() => remove(index)}
-                                            className="text-muted-foreground hover:text-destructive transition-colors text-lg leading-none"
+                                            className="text-muted-foreground hover:text-destructive transition-colors"
                                         >
-                                            ×
+                                            <X className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>

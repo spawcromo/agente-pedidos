@@ -9,13 +9,24 @@ import { createClient } from "@/lib/supabase/client"
 import { useUser } from "@/contexts/UserContext"
 import { toast } from "sonner"
 
+import {
+    ClipboardList,
+    Package,
+    Users,
+    Shield,
+    Truck,
+    BarChart3,
+    LogOut,
+    Utensils
+} from "lucide-react"
+
 const NAV_ITEMS = [
-    { href: "/pedidos", label: "Pedidos", icon: "📋", roles: ['admin'] },
-    { href: "/produccion", label: "Producción", icon: "📦", roles: ['admin'] },
-    { href: "/clientes", label: "Clientes", icon: "👥", roles: ['admin'] },
-    { href: "/productos", label: "Productos", icon: "🍗", roles: ['admin'] },
-    { href: "/reparto", label: "Reparto", icon: "🚚", roles: ['admin', 'repartidor'] },
-    { href: "/estadisticas", label: "Estadísticas", icon: "📊", roles: ['admin'] },
+    { href: "/pedidos", label: "Pedidos", icon: <ClipboardList className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/produccion", label: "Producción", icon: <Package className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/clientes", label: "Clientes", icon: <Users className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/productos", label: "Productos", icon: <Utensils className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/reparto", label: "Reparto", icon: <Truck className="w-4 h-4" />, roles: ['admin', 'repartidor'] },
+    { href: "/estadisticas", label: "Estadísticas", icon: <BarChart3 className="w-4 h-4" />, roles: ['admin'] },
 ] as const
 
 export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void }) {
@@ -98,8 +109,12 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
             <div className="border-t border-[#2A2825] p-3 space-y-0.5">
                 {user && (
                     <div className="px-3 py-2 mb-2">
-                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                            {role === 'admin' ? '🛡️ Administrador' : '🚚 Repartidor'}
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest flex items-center gap-1.5">
+                            {role === 'admin' ? (
+                                <><Shield className="w-3 h-3" /> Administrador</>
+                            ) : (
+                                <><Truck className="w-3 h-3" /> Repartidor</>
+                            )}
                         </p>
                         <p className="text-xs text-foreground font-medium truncate">{user.email}</p>
                     </div>
@@ -109,7 +124,7 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220] transition-all duration-200 border border-transparent"
                 >
-                    <span className="text-base">🚪</span>
+                    <LogOut className="w-4 h-4" />
                     Cerrar sesión
                 </button>
                 <p className="text-[10px] text-[#4B5563] px-3 pt-1">

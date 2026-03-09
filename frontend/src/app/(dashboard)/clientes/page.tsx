@@ -14,6 +14,17 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import {
+    Users,
+    Plus,
+    Search,
+    Edit2,
+    MessageCircle,
+    MapPin,
+    Trash2,
+    MoreHorizontal,
+    FileText
+} from "lucide-react"
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -96,8 +107,8 @@ function ClientesPage() {
                         Datos de contacto, dirección, horarios y tipo de cada cliente.
                     </p>
                 </div>
-                <Button onClick={openCreate} id="btn-nuevo-cliente" className="w-full sm:w-auto">
-                    + Nuevo Cliente
+                <Button onClick={openCreate} id="btn-nuevo-cliente" className="w-full sm:w-auto gap-2">
+                    <Plus className="w-4 h-4" /> Nuevo Cliente
                 </Button>
             </div>
 
@@ -144,8 +155,8 @@ function ClientesPage() {
                                         <TableCell className="font-semibold">
                                             <div>{client.name}</div>
                                             {client.notes && (
-                                                <div className="text-xs text-muted-foreground mt-0.5 max-w-[200px] truncate">
-                                                    📝 {client.notes}
+                                                <div className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] truncate flex items-center gap-1">
+                                                    <FileText className="w-3 h-3" /> {client.notes}
                                                 </div>
                                             )}
                                         </TableCell>
@@ -169,23 +180,25 @@ function ClientesPage() {
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger
                                                     id={`menu-cliente-${client.id}`}
-                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg font-bold hover:bg-accent transition-colors"
+                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground"
                                                 >
-                                                    ···
+                                                    <MoreHorizontal className="w-5 h-5" />
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuItem onClick={() => openEdit(client)}>
-                                                        ✏️ Editar
+                                                    <DropdownMenuItem onClick={() => openEdit(client)} className="gap-2">
+                                                        <Edit2 className="w-4 h-4" /> Editar
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
+                                                        className="gap-2"
                                                         onClick={() =>
                                                             window.open(`https://wa.me/${client.phone.replace('+', '')}`, '_blank')
                                                         }
                                                     >
-                                                        💬 WhatsApp
+                                                        <MessageCircle className="w-4 h-4" /> WhatsApp
                                                     </DropdownMenuItem>
                                                     {client.address && (
                                                         <DropdownMenuItem
+                                                            className="gap-2"
                                                             onClick={() =>
                                                                 window.open(
                                                                     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.address)}`,
@@ -193,15 +206,15 @@ function ClientesPage() {
                                                                 )
                                                             }
                                                         >
-                                                            📍 Google Maps
+                                                            <MapPin className="w-4 h-4" /> Google Maps
                                                         </DropdownMenuItem>
                                                     )}
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
-                                                        className="text-destructive font-medium"
+                                                        className="text-destructive font-medium gap-2"
                                                         onClick={() => handleDelete(client)}
                                                     >
-                                                        🗑️ Eliminar
+                                                        <Trash2 className="w-4 h-4" /> Eliminar
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

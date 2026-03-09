@@ -16,6 +16,17 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+    ClipboardList,
+    Search,
+    CheckCircle2,
+    XCircle,
+    MoreHorizontal,
+    Edit2,
+    Calendar,
+    Filter,
+    Clock
+} from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
 import {
@@ -85,7 +96,13 @@ function PedidosPage() {
     async function handleStatus(id: string, status: OrderStatus) {
         try {
             await updateOrderStatus(id, status)
-            toast.success(status === 'confirmed' ? '✅ Pedido confirmado' : '❌ Pedido rechazado')
+            const labels: Record<string, string> = {
+                confirmed: 'confirmado',
+                rejected: 'rechazado',
+                pending: 'vuelto a pendiente',
+                delivered: 'marcado como entregado'
+            }
+            toast.success(`Pedido ${labels[status] || status}`)
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
@@ -96,7 +113,7 @@ function PedidosPage() {
         if (selected.size === 0) return
         try {
             await bulkUpdateOrderStatus(Array.from(selected), 'confirmed')
-            toast.success(`✅ ${selected.size} pedidos confirmados`)
+            toast.success(`${selected.size} pedidos confirmados`)
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
@@ -108,7 +125,7 @@ function PedidosPage() {
         if (!confirm(`¿Rechazar ${selected.size} pedidos?`)) return
         try {
             await bulkUpdateOrderStatus(Array.from(selected), 'rejected')
-            toast.success(`Pedidos rechazados`)
+            toast.success(`${selected.size} pedidos rechazados`)
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
@@ -128,7 +145,9 @@ function PedidosPage() {
     if (!mounted) {
         return (
             <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
-                <div className="animate-bounce text-4xl">🍗</div>
+                <div className="animate-spin text-amber-500">
+                    <ClipboardList className="w-10 h-10" />
+                </div>
                 <p>Cargando pedidos...</p>
             </div>
         )
@@ -209,11 +228,11 @@ function PedidosPage() {
                     <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto sm:border-l sm:border-border sm:pl-3">
                         <span className="text-sm text-muted-foreground w-full sm:w-auto text-center">{selected.size} seleccionados</span>
                         <div className="flex gap-2 w-full">
-                            <Button size="sm" onClick={handleBulkConfirm} id="btn-confirmar-masivo" className="flex-1">
-                                ✅ Confirmar
+                            <Button size="sm" onClick={handleBulkConfirm} id="btn-confirmar-masivo" className="flex-1 gap-2">
+                                <CheckCircle2 className="w-4 h-4" /> Confirmar
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={handleBulkReject} className="flex-1">
-                                ❌ Rechazar
+                            <Button size="sm" variant="destructive" onClick={handleBulkReject} className="flex-1 gap-2">
+                                <XCircle className="w-4 h-4" /> Rechazar
                             </Button>
                         </div>
                     </div>
@@ -294,27 +313,29 @@ function PedidosPage() {
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger
                                                     id={`menu-pedido-${order.id}`}
-                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg font-bold hover:bg-accent transition-colors"
+                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground"
                                                 >
-                                                    ···
+                                                    <MoreHorizontal className="w-5 h-5" />
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuItem onClick={() => openEdit(order)}>
-                                                        ✏️ Ver / Editar
+                                                    <DropdownMenuItem onClick={() => openEdit(order)} className="gap-2">
+                                                        <Edit2 className="w-4 h-4" /> Ver / Editar
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    {order.status === 'pending' && (
-                                                        <>
-                                                            <DropdownMenuItem onClick={() => handleStatus(order.id, 'confirmed')}>
-                                                                ✅ Confirmar
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem
-                                                                className="text-destructive font-medium"
-                                                                onClick={() => handleStatus(order.id, 'rejected')}
-                                                            >
-                                                                ❌ Rechazar
-                                                            </DropdownMenuItem>
-                                                        </>
+                                                    {order.status !== 'confirmed' && (
+                                                        <DropdownMenuItem onClick={() => handleStatus(order.id, 'confirmed')} className="gap-2">
+                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {order.status !== 'rejected' && (
+                                                        <DropdownMenuItem onClick={() => handleStatus(order.id, 'rejected')} className="gap-2 text-destructive">
+                                                            <XCircle className="w-4 h-4" /> Rechazar
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {order.status !== 'pending' && (
+                                                        <DropdownMenuItem onClick={() => handleStatus(order.id, 'pending')} className="gap-2">
+                                                            <Clock className="w-4 h-4 text-amber-500" /> Volver a Pendiente
+                                                        </DropdownMenuItem>
                                                     )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

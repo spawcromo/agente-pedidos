@@ -20,6 +20,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+    Plus,
+    Edit2,
+    Power,
+    Trash2,
+    MoreHorizontal,
+    Eye,
+    EyeOff
+} from "lucide-react"
 import { ProductDialog } from '@/components/features/ProductDialog'
 import {
     getProducts,
@@ -97,8 +106,8 @@ function ProductosPage() {
                         Catálogo de productos y precios.
                     </p>
                 </div>
-                <Button onClick={openCreate} id="btn-nuevo-producto" className="w-full sm:w-auto">
-                    + Nuevo Producto
+                <Button onClick={openCreate} id="btn-nuevo-producto" className="w-full sm:w-auto gap-2">
+                    <Plus className="w-4 h-4" /> Nuevo Producto
                 </Button>
             </div>
 
@@ -166,23 +175,27 @@ function ProductosPage() {
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger
                                                     id={`menu-producto-${product.id}`}
-                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-lg font-bold hover:bg-accent transition-colors"
+                                                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg hover:bg-accent transition-colors text-muted-foreground"
                                                 >
-                                                    ···
+                                                    <MoreHorizontal className="w-5 h-5" />
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuItem onClick={() => openEdit(product)}>
-                                                        ✏️ Editar
+                                                    <DropdownMenuItem onClick={() => openEdit(product)} className="gap-2">
+                                                        <Edit2 className="w-4 h-4" /> Editar
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleToggleActive(product)}>
-                                                        {product.active ? '🔕 Desactivar' : '✅ Activar'}
+                                                    <DropdownMenuItem onClick={() => handleToggleActive(product)} className="gap-2">
+                                                        {product.active ? (
+                                                            <><EyeOff className="w-4 h-4" /> Desactivar</>
+                                                        ) : (
+                                                            <><Eye className="w-4 h-4" /> Activar</>
+                                                        )}
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem
-                                                        className="text-destructive font-medium"
+                                                        className="text-destructive font-medium gap-2"
                                                         onClick={() => handleDelete(product)}
                                                     >
-                                                        🗑️ Eliminar
+                                                        <Trash2 className="w-4 h-4" /> Eliminar
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
