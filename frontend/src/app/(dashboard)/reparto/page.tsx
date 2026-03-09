@@ -198,7 +198,7 @@ function RepartoPage() {
                 )}
 
                 {!activeRoute ? (
-                    <div className="py-20 text-center bg-card border border-dashed border-border rounded-3xl">
+                    <div className="py-20 text-center bg-card border border-dashed border-border rounded-lg">
                         <p className="text-5xl mb-4">🏠</p>
                         <p className="text-lg font-medium">No tenés rutas asignadas por ahora.</p>
                         <p className="text-sm text-muted-foreground">Descansá o avisale al admin.</p>
@@ -254,7 +254,7 @@ function RepartoPage() {
                         )}
                     </div>
 
-                    <div className="bg-card border border-border rounded-lg p-4 min-h-[400px]">
+                    <div className="bg-card border border-border rounded-sm p-4 min-h-[400px]">
                         {unassignedOrders.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
                                 <p className="text-3xl mb-2">🎉</p>
@@ -266,7 +266,7 @@ function RepartoPage() {
                                     <div
                                         key={order.id}
                                         className={cn(
-                                            "flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer",
+                                            "flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer",
                                             selectedOrders.includes(order.id) ? "border-amber-500 bg-amber-500/5" : "border-border hover:bg-muted/50"
                                         )}
                                         onClick={() => {
@@ -293,7 +293,7 @@ function RepartoPage() {
                     </div>
 
                     {/* Create Route Tool */}
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 space-y-4">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-sm p-4 space-y-4">
                         <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
                         <Select value={selectedDriver} onValueChange={(val) => setSelectedDriver(val ?? '')}>
                             <SelectTrigger className="bg-background">
@@ -319,13 +319,13 @@ function RepartoPage() {
                 <div className="lg:col-span-2 space-y-4">
                     <h2 className="text-xl font-bold">Rutas de Hoy ({routes.length})</h2>
                     {routes.length === 0 ? (
-                        <div className="py-20 text-center bg-card border border-dashed border-border rounded-3xl opacity-50">
+                        <div className="py-20 text-center bg-card border border-dashed border-border rounded-lg opacity-50">
                             No hay rutas armadas todavía.
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {routes.map(route => (
-                                <div key={route.id} className="bg-card border border-border rounded-lg overflow-hidden flex flex-col group/route relative">
+                                <div key={route.id} className="bg-card border border-border rounded-sm overflow-hidden flex flex-col group/route relative">
                                     <button
                                         onClick={() => handleDeleteRoute(route.id)}
                                         className="absolute top-4 right-4 h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-full flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
@@ -380,7 +380,7 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
 
     return (
         <div className={cn(
-            "relative bg-card border border-border rounded-3xl p-5 transition-all shadow-sm",
+            "relative bg-card border border-border rounded-lg p-5 transition-all shadow-sm",
             isDelivered ? "opacity-60 grayscale" : "hover:border-amber-500/50"
         )}>
             <div className="absolute -left-3 top-5 h-8 w-8 bg-amber-500 text-amber-950 rounded-full flex items-center justify-center font-bold shadow-lg border-4 border-background">
@@ -403,27 +403,28 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.order.client?.address || '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-blue-500/10 text-blue-400 py-3 rounded-2xl text-center text-sm font-bold border border-blue-500/20 active:scale-95 transition-transform"
+                        className="flex-1 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center text-sm font-bold border border-blue-500/20 active:scale-95 transition-transform"
                     >
                         Abrir GPS ↗
                     </a>
                     {!isDelivered ? (
                         <button
                             onClick={onDone}
-                            className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-2xl text-center text-sm font-bold active:scale-95 transition-transform"
+                            className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform"
                         >
                             ✓ Entregar
                         </button>
                     ) : (
-                        <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-2xl text-center text-sm font-bold border border-emerald-500/20">
+                        <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-lg text-center text-sm font-bold border border-emerald-500/20">
                             Entregado
                         </div>
                     )}
+                    ...
                 </div>
 
                 <div className="pt-4 border-t border-border/50 grid grid-cols-1 gap-2">
                     {stop.order.order_items.map(item => (
-                        <div key={item.id} className="flex justify-between text-xs bg-muted/40 px-3 py-2 rounded-xl">
+                        <div key={item.id} className="flex justify-between text-xs bg-muted/40 px-3 py-2 rounded-lg">
                             <span>{item.product?.name}</span>
                             <span className="font-bold">{item.quantity} {item.product?.unit}</span>
                         </div>
@@ -431,7 +432,7 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
                 </div>
 
                 {stop.order.notes && (
-                    <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-xs flex gap-2">
+                    <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-lg text-xs flex gap-2">
                         <span className="font-bold text-amber-500">NOTAS:</span>
                         <span className="flex-1">{stop.order.notes}</span>
                     </div>

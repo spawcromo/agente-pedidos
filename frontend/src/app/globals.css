@@ -38,12 +38,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.8);
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-xl: calc(var(--radius) * 1.2);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 2.0);
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
@@ -81,7 +81,7 @@
   --input: #1C1A17;
   --ring: #FBBF24;
 
-  --radius: 1rem;
+  --radius: 0.1875rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   /* Sidebar */
@@ -156,9 +156,9 @@
    Baccaro utility classes
    ============================================================ */
 
-/* Amber glow shadow — for active sidebar, primary CTAs */
+/* Modern peripheral flare / shadow */
 .shadow-amber-glow {
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15), 0 4px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.4), 0 0 15px rgba(251, 191, 36, 0.2);
 }
 
 /* Card floating shadow — warm dark */

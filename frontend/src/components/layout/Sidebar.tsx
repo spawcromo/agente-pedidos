@@ -41,10 +41,10 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
     if (!mounted || loading) {
         return (
             <div className="flex h-full flex-col p-5 space-y-4 pt-10">
-                <div className="h-10 w-full bg-muted/10 animate-pulse rounded-full" />
+                <div className="h-10 w-full bg-muted/10 animate-pulse rounded-lg" />
                 <div className="flex-1 space-y-3 mt-8">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-11 w-full bg-muted/5 animate-pulse rounded-xl" />
+                        <div key={i} className="h-10 w-full bg-muted/5 animate-pulse rounded-lg" />
                     ))}
                 </div>
             </div>
@@ -54,8 +54,8 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
     return (
         <div className="flex h-full flex-col">
             {/* Logo */}
-            <div className="flex h-24 items-center px-8 border-b border-[#2A2825]">
-                <div className="relative w-full h-10">
+            <div className="flex h-20 items-center px-8 border-b border-[#2A2825]">
+                <div className="relative w-full h-8">
                     <Image
                         src="/logo-baccaro.png"
                         alt="Avícola Baccaro"
@@ -76,22 +76,19 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
                             href={item.href}
                             onClick={onNavItemClick}
                             className={cn(
-                                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-150",
+                                "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200",
                                 isActive
-                                    ? "text-amber-400 bg-amber-500/10 shadow-[inset_2px_0_0_#FBBF24]"
-                                    : "text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220]"
+                                    ? "text-amber-400 bg-amber-500/10 border border-amber-500/20 shadow-amber-glow"
+                                    : "text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220] border border-transparent"
                             )}
                         >
                             <span className={cn(
-                                "text-base transition-transform duration-150",
-                                isActive ? "scale-110" : "group-hover:scale-105"
+                                "text-lg transition-transform duration-200",
+                                isActive ? "scale-110" : "group-hover:scale-110 grayscale group-hover:grayscale-0"
                             )}>
                                 {item.icon}
                             </span>
                             {item.label}
-                            {isActive && (
-                                <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400" />
-                            )}
                         </Link>
                     )
                 })}
@@ -110,7 +107,7 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
                 <button
                     id="btn-logout"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220] transition-all duration-150"
+                    className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[#9CA3AF] hover:text-[#F9F7F4] hover:bg-[#252220] transition-all duration-200 border border-transparent"
                 >
                     <span className="text-base">🚪</span>
                     Cerrar sesión
