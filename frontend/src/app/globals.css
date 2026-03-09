@@ -85,13 +85,13 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
   /* Sidebar */
-  --sidebar: #2a1a10;
+  --sidebar: #161412;
   --sidebar-foreground: #F9F7F4;
   --sidebar-primary: #FBBF24;
   --sidebar-primary-foreground: #0F0E0C;
   --sidebar-accent: rgba(251, 191, 36, 0.08);
   --sidebar-accent-foreground: #FBBF24;
-  --sidebar-border: #3d2a1d;
+  --sidebar-border: #2A2825;
   --sidebar-ring: #FBBF24;
 
   /* Chart colors — warm palette */
@@ -122,13 +122,13 @@
   --border: #383530;
   --input: #1C1A17;
   --ring: #FBBF24;
-  --sidebar: #2a1a10;
+  --sidebar: #161412;
   --sidebar-foreground: #F9F7F4;
   --sidebar-primary: #FBBF24;
   --sidebar-primary-foreground: #0F0E0C;
   --sidebar-accent: rgba(251, 191, 36, 0.08);
   --sidebar-accent-foreground: #FBBF24;
-  --sidebar-border: #3d2a1d;
+  --sidebar-border: #2A2825;
   --sidebar-ring: #FBBF24;
   --chart-1: #FBBF24;
   --chart-2: #F97316;
