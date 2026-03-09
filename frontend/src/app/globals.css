@@ -184,3 +184,8 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #3A3630;
 }
+/* Fix for native date picker icon in dark mode */
+::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}

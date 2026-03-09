@@ -208,7 +208,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                                 <SelectValue placeholder="Producto..." />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {products.filter((p) => p.active).map((p) => (
+                                                {products.filter((p) => p.active || p.id === watch(`items.${index}.product_id`)).map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>
                                                         {p.name} ({p.unit})
                                                     </SelectItem>
