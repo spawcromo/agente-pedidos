@@ -35,7 +35,7 @@ export default function LoginPage() {
             <div className="w-full max-w-sm">
                 {/* Card */}
                 <div
-                    className="rounded-2xl border border-[#2A2825] p-8 space-y-8"
+                    className="rounded-lg border border-[#2A2825] p-8 space-y-8"
                     style={{
                         background: "#1C1A17",
                         boxShadow: "0 8px 40px rgba(0,0,0,0.5), 0 0 80px rgba(251,191,36,0.04)"
@@ -44,7 +44,7 @@ export default function LoginPage() {
                     {/* Logo */}
                     <div className="flex flex-col items-center gap-3">
                         <Image
-                            src="/logo-baccaro.png"
+                            src="/logo-baccaro.svg"
                             alt="Avícola Baccaro"
                             width={160}
                             height={60}
