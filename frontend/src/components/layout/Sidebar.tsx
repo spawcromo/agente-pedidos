@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 
 const NAV_ITEMS = [
-    { href: "/", label: "Inicio", icon: <LayoutDashboard className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/inicio", label: "Inicio", icon: <LayoutDashboard className="w-4 h-4" />, roles: ['admin'] },
     { href: "/pedidos", label: "Pedidos", icon: <ClipboardList className="w-4 h-4" />, roles: ['admin'] },
     { href: "/produccion", label: "Producción", icon: <Package className="w-4 h-4" />, roles: ['admin'] },
     { href: "/clientes", label: "Clientes", icon: <Users className="w-4 h-4" />, roles: ['admin'] },
@@ -68,7 +68,7 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
         <div className="flex h-full flex-col">
             {/* Logo */}
             <div className="flex h-20 items-center px-4 border-b border-[#2A2825]">
-                <Link href="/" className="relative h-10 w-48 transition-opacity hover:opacity-80">
+                <Link href="/inicio" className="relative h-10 w-48 transition-opacity hover:opacity-80">
                     <Image
                         src="/logo-baccaro.svg"
                         alt="Avícola Baccaro"
@@ -82,8 +82,8 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
             {/* Navigation */}
             <nav className="flex-1 space-y-0.5 px-3 py-4">
                 {filteredNavItems.map((item) => {
-                    const isActive = item.href === "/"
-                        ? pathname === "/"
+                    const isActive = item.href === "/inicio"
+                        ? pathname === "/inicio"
                         : pathname.startsWith(item.href)
                     return (
                         <Link

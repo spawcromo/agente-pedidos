@@ -19,7 +19,7 @@ export default function LoginPage() {
             const supabase = createClient()
             const { error } = await supabase.auth.signInWithPassword({ email, password })
             if (error) { toast.error(error.message); return }
-            router.push("/pedidos")
+            router.push("/inicio")
             router.refresh()
         } finally {
             setLoading(false)

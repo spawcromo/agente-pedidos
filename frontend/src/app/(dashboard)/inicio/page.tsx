@@ -16,12 +16,13 @@ import { Button } from '@/components/ui/button'
 import { getDashboardStats, type DashboardStats } from '@/services/stats'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import { withRole } from '@/components/hoc/withRole'
 
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
 })
 
-export default function DashboardPage() {
+function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [loading, setLoading] = useState(true)
 
@@ -192,3 +193,5 @@ export default function DashboardPage() {
         </div>
     )
 }
+
+export default withRole(DashboardPage, ['admin', 'repartidor'])
