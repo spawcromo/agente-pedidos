@@ -67,8 +67,8 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
     return (
         <div className="flex h-full flex-col">
             {/* Logo */}
-            <div className="flex h-20 items-center px-4 border-b border-[#2A2825]">
-                <Link href="/inicio" className="relative h-10 w-48 transition-opacity hover:opacity-80">
+            <div className="flex h-24 items-center px-6 border-b border-[#2A2825]">
+                <Link href="/inicio" className="relative h-12 w-full transition-opacity hover:opacity-80">
                     <Image
                         src="/logo-baccaro.svg"
                         alt="Avícola Baccaro"
