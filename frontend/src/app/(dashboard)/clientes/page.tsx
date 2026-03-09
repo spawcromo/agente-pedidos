@@ -129,7 +129,7 @@ function ClientesPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="min-w-[150px]">Cliente</TableHead>
+                                <TableHead className="min-w-[150px] pl-6">Cliente</TableHead>
                                 <TableHead>Teléfono</TableHead>
                                 <TableHead>Tipo</TableHead>
                                 <TableHead className="min-w-[200px]">Dirección</TableHead>
@@ -152,7 +152,7 @@ function ClientesPage() {
                             ) : (
                                 filtered.map((client) => (
                                     <TableRow key={client.id} className="transition-colors">
-                                        <TableCell className="font-semibold">
+                                        <TableCell className="font-semibold pl-6">
                                             <div className="text-amber-500 font-bold">{client.name}</div>
                                             {client.notes && (
                                                 <div className="text-[10px] text-muted-foreground mt-0.5 max-w-[200px] truncate flex items-center gap-1">

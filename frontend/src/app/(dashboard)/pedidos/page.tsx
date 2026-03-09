@@ -328,7 +328,7 @@ function PedidosPage() {
                                     />
                                 </TableHead>
                                 <TableHead
-                                    className="whitespace-nowrap cursor-pointer hover:text-foreground transition-colors group select-none"
+                                    className="whitespace-nowrap cursor-pointer hover:text-foreground transition-colors group select-none pl-6"
                                     onClick={() => handleSort('created_at')}
                                 >
                                     <div className="flex items-center gap-1">
@@ -393,7 +393,7 @@ function PedidosPage() {
                                             selected.has(order.id) ? 'bg-amber-500/5' : ''
                                         )}
                                     >
-                                        <TableCell>
+                                        <TableCell className="pl-6">
                                             <Checkbox
                                                 checked={selected.has(order.id)}
                                                 onCheckedChange={() => toggleOne(order.id)}

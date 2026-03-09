@@ -129,7 +129,7 @@ function ProduccionPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="min-w-[150px]">Producto</TableHead>
+                                <TableHead className="min-w-[150px] pl-6">Producto</TableHead>
                                 <TableHead className="text-center">Unidad</TableHead>
                                 <TableHead className="text-right text-lg font-bold">
                                     Total
@@ -158,7 +158,7 @@ function ProduccionPage() {
                             ) : (
                                 rows.map((row) => (
                                     <TableRow key={row.product_id} className="hover:bg-muted/30">
-                                        <TableCell className="font-semibold text-base">{row.product_name}</TableCell>
+                                        <TableCell className="font-semibold text-base pl-6">{row.product_name}</TableCell>
                                         <TableCell className="text-center text-muted-foreground uppercase text-xs">{row.unit}</TableCell>
                                         <TableCell className="text-right">
                                             <span className="text-2xl font-bold tabular-nums text-amber-500">
