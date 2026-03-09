@@ -246,7 +246,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                         <Input
                                             type="number"
                                             min="0"
-                                            step="0.5"
+                                            step="0.1"
                                             className="text-center"
                                             {...register(`items.${index}.quantity`)}
                                         />
