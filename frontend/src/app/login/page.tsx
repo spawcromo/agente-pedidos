@@ -29,25 +29,19 @@ export default function LoginPage() {
     return (
         <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
             style={{
-                backgroundColor: "#F58220",
+                backgroundColor: "#1c1917", // Muy oscuro de base
                 backgroundImage: `
-                    radial-gradient(circle at 0% 0%, #fbbf24 0%, transparent 50%),
-                    radial-gradient(circle at 100% 0%, #f59e0b 0%, transparent 50%),
-                    radial-gradient(circle at 100% 100%, #d97706 0%, transparent 50%),
-                    radial-gradient(circle at 0% 100%, #ea580c 0%, transparent 50%),
-                    linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%)
+                    radial-gradient(circle at 50% 50%, #7c2d12 0%, #1c1917 100%)
                 `,
             }}>
-            {/* Soft Grain Overlay for Modern Texture */}
-            <div className="absolute inset-0 opacity-[0.15] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}></div>
 
             <div className="w-full max-w-sm relative z-10">
                 {/* Card */}
                 <div
-                    className="rounded-[2.5rem] border border-white/20 p-10 space-y-8 backdrop-blur-2xl"
+                    className="rounded-[2.5rem] border border-white/5 p-10 space-y-8 backdrop-blur-3xl"
                     style={{
-                        background: "rgba(15, 14, 12, 0.85)",
-                        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5), inset 0 0 24px rgba(255,255,255,0.05)"
+                        background: "rgba(24, 24, 27, 0.8)",
+                        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)"
                     }}
                 >
                     {/* Logo */}
