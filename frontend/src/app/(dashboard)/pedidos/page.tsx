@@ -30,10 +30,16 @@ import {
     Check,
     ArrowUpDown,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    AlertCircle
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 import {
     getOrders, updateOrderStatus, bulkUpdateOrderStatus, type OrderWithDetails,
 } from '@/services/orders'
@@ -414,8 +420,26 @@ function PedidosPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="text-sm font-bold text-amber-500">
-                                                {order.delivery_date.split('-').slice(1, 3).reverse().join('/')}
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-sm font-bold text-amber-500">
+                                                    {order.delivery_date.split('-').slice(1, 3).reverse().join('/')}
+                                                </div>
+                                                {(() => {
+                                                    const today = new Date().toISOString().split('T')[0]
+                                                    if (order.delivery_date === today) {
+                                                        return (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <AlertCircle className="w-4 h-4 text-amber-500 animate-pulse cursor-help" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p>¿Hoy se puede entregar?</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )
+                                                    }
+                                                    return null
+                                                })()}
                                             </div>
                                             <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
                                                 <Clock className="w-2.5 h-2.5 opacity-70" /> {order.delivery_time ? order.delivery_time.slice(0, 5) : '—'}

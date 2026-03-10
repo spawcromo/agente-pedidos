@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { UserProvider } from "@/contexts/UserContext"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${inter.variable} dark`}>
       <body className="font-sans antialiased bg-background text-foreground min-h-screen">
-        <UserProvider>
-          {children}
-        </UserProvider>
+        <TooltipProvider>
+          <UserProvider>
+            {children}
+          </UserProvider>
+        </TooltipProvider>
         <Toaster theme="dark" position="bottom-right" richColors toastOptions={{
           style: { background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--foreground)' }
         }} />
