@@ -53,3 +53,7 @@ automations/       → n8n workflow documentation (if applicable)
 - DB queries live in models/repositories, not in services.
 - One component per file. Co-locate tests: `Button.tsx` → `Button.test.tsx`.
 - Don't install UI libraries (Chakra, MUI) unless the project explicitly requires them.
+
+## Database & Supabase Rules
+
+- **PostgreSQL Views:** When modifying an existing view, ALWAYS use `DROP VIEW IF EXISTS view_name;` before `CREATE OR REPLACE VIEW view_name AS ...` to prevent 'cannot change name of view column' errors when adding or reordering columns. PostgreSQL does not allow changing the return type or column names of an existing view without entirely dropping it first.
