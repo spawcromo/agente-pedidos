@@ -505,7 +505,7 @@ function PedidosPage() {
                                             {ARS.format(orderTotal(order))}
                                         </TableCell>
                                         <TableCell>
-                                            <OrderStatusBadge status={order.status} />
+                                            <OrderStatusBadge status={order.status} isAssigned={(order.delivery_stops?.length ?? 0) > 0} />
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>

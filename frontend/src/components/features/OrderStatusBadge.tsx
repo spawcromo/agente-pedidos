@@ -15,13 +15,21 @@ const STATUS_CONFIG = {
         label: "Entregado",
         className: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
     },
+    assigned: {
+        label: "Asignado a Ruta",
+        className: "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20",
+    }
 } as const
 
 type OrderStatus = keyof typeof STATUS_CONFIG
 
-export function OrderStatusBadge({ status }: { status: OrderStatus }) {
-    const config = STATUS_CONFIG[status] ?? {
-        label: status,
+export function OrderStatusBadge({ status, isAssigned }: { status: OrderStatus | string, isAssigned?: boolean }) {
+    let finalStatus = status as OrderStatus;
+    if (status === 'confirmed' && isAssigned) {
+        finalStatus = 'assigned';
+    }
+    const config = STATUS_CONFIG[finalStatus] ?? {
+        label: finalStatus,
         className: "bg-[#252220] text-[#9CA3AF] border border-[#2A2825]",
     }
 

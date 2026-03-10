@@ -4,6 +4,7 @@ import type { Order, OrderStatus, OrderItem } from '@/types/database'
 export type OrderWithDetails = Order & {
     client: { id: string; name: string; phone: string; client_type: string }
     order_items: (OrderItem & { product: { name: string; unit: string } })[]
+    delivery_stops?: { id: string; status: string }[]
 }
 
 export async function getOrders(filters?: {
@@ -16,7 +17,8 @@ export async function getOrders(filters?: {
         .select(`
       *,
       client:clients(id, name, phone, client_type),
-      order_items(*, product:products(name, unit))
+      order_items(*, product:products(name, unit)),
+      delivery_stops(id, status)
     `)
         .order('created_at', { ascending: false })
 
@@ -44,7 +46,8 @@ export async function getOrderById(id: string): Promise<OrderWithDetails> {
         .select(`
       *,
       client:clients(id, name, phone, client_type),
-      order_items(*, product:products(name, unit))
+      order_items(*, product:products(name, unit)),
+      delivery_stops(id, status)
     `)
         .eq('id', id)
         .single()
