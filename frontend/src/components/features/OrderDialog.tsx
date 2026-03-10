@@ -149,9 +149,9 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                     <div className="flex items-center gap-3">
                         <DialogTitle>{title}</DialogTitle>
                         {isEditing && (
-                            <div className="flex flex-col gap-1 items-start">
+                            <div className="flex items-center gap-2">
                                 <OrderStatusBadge status={order.status} />
-                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
+                                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono border-l border-border pl-2 h-3 flex items-center">
                                     ID: {order.id.split('-')[0]}
                                 </span>
                             </div>
