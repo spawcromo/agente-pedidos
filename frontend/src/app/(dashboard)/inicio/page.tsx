@@ -284,15 +284,16 @@ function DashboardPage() {
             </div>
 
             {/* OPERACIÓN DE HOY */}
-            <div>
+            <div className="bg-card/30 border border-border/30 rounded-xl p-6">
                 <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-4">Operación de Hoy</h2>
                 <div className="grid gap-4 md:grid-cols-4">
-                    <Card className="bg-amber-950/20 border-amber-900/50">
-                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium text-amber-500/80">Rutas de hoy</CardTitle>
-                            <div className="bg-amber-950/50 text-amber-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_total}</div>
+                    <Card className="bg-[#2D2110] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-amber-50">Rutas de hoy</CardTitle>
+                            <div className="bg-amber-900/50 text-amber-500 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_total}</div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
                                 <div className="text-4xl font-black text-amber-50">{stats.rutas_hoy_total}</div>
                                 <span className="text-sm font-medium text-amber-500/60">armadas</span>
@@ -300,12 +301,13 @@ function DashboardPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-emerald-950/20 border-emerald-900/50">
-                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium text-emerald-500/80">En progreso</CardTitle>
-                            <div className="bg-emerald-950/50 text-emerald-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_progreso}</div>
+                    <Card className="bg-[#1A261A] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-emerald-50">En progreso</CardTitle>
+                            <div className="bg-emerald-900/50 text-emerald-500 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_progreso}</div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
                                 <div className="text-4xl font-black text-emerald-50">{stats.rutas_hoy_progreso}</div>
                                 <span className="text-sm font-medium text-emerald-500/60">activas</span>
@@ -313,12 +315,13 @@ function DashboardPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-blue-950/20 border-blue-900/50">
-                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium text-blue-500/80">Completadas</CardTitle>
-                            <div className="bg-blue-950/50 text-blue-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_completadas}</div>
+                    <Card className="bg-[#151D2A] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-blue-50">Completadas</CardTitle>
+                            <div className="bg-blue-900/50 text-blue-500 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_completadas}</div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
                                 <div className="text-4xl font-black text-blue-50">{stats.rutas_hoy_completadas}</div>
                                 <span className="text-sm font-medium text-blue-500/60">finalizadas</span>
@@ -326,12 +329,13 @@ function DashboardPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-red-950/20 border-red-900/50">
-                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-medium text-red-500/80">Entregas pendientes</CardTitle>
-                            <div className="bg-red-950/50 text-red-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.entregas_pendientes_hoy}</div>
+                    <Card className="bg-[#311717] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-red-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-red-50">Entregas pendientes</CardTitle>
+                            <div className="bg-red-900/50 text-red-500 text-xs px-2 py-0.5 rounded font-bold">{stats.entregas_pendientes_hoy}</div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
                                 <div className="text-4xl font-black text-red-50">{stats.entregas_pendientes_hoy}</div>
                                 <span className="text-sm font-medium text-red-500/60">pendientes</span>
