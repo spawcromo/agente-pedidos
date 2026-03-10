@@ -35,31 +35,39 @@ function DashboardPage() {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        let isMounted = true
         async function load() {
+            if (!role) return
+            console.log(`📊 Dashboard: Fetching stats for ${role}...`)
             setLoading(true)
             try {
                 if (role === 'admin') {
                     const data = await getDashboardStats()
-                    setStats(data)
+                    if (isMounted) setStats(data)
                 } else if (role === 'repartidor' && user) {
                     const routes = await getMyRoutes(user.id)
-                    setMyRoutes(routes)
+                    if (isMounted) setMyRoutes(routes)
                 }
             } catch (err: any) {
+                console.error('📊 Dashboard error:', err)
                 toast.error(err.message)
             } finally {
-                setLoading(false)
+                if (isMounted) setLoading(false)
             }
         }
         load()
+        return () => { isMounted = false }
     }, [role, user])
 
-    if (loading) {
+    if (loading && !stats && myRoutes.length === 0) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-muted-foreground animate-pulse font-medium text-lg flex items-center gap-3">
-                    <div className="w-6 h-6 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                    Cargando dashboard...
+            <div className="space-y-8 animate-pulse p-4">
+                <div className="h-10 w-48 bg-muted rounded-md mb-2" />
+                <div className="h-6 w-64 bg-muted rounded-md" />
+                <div className="grid gap-6 md:grid-cols-3 mt-8">
+                    <div className="h-32 bg-muted rounded-xl" />
+                    <div className="h-32 bg-muted rounded-xl" />
+                    <div className="h-32 bg-muted rounded-xl" />
                 </div>
             </div>
         )

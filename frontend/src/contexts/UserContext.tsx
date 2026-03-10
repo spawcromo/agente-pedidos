@@ -25,8 +25,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
     const lastChecked = useRef<number>(0)
     const initStarted = useRef<boolean>(false)
+    const fetchingProfile = useRef<string | null>(null)
 
-    const fetchProfile = async (userId: string) => {
+    const fetchRole = async (userId: string) => {
+        if (fetchingProfile.current === userId) return
+        fetchingProfile.current = userId
+        console.log(`👤 Fetching profile for ${userId}...`)
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -35,84 +39,70 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 .single()
 
             if (!error && data) {
+                console.log(`👤 Profile found: ${data.role}`)
                 setRole(data.role as UserRole)
             } else {
-                if (error) console.error('Error in fetchProfile query:', error)
-                setRole('repartidor') // Default fallback
+                console.warn('👤 Profile not found, using fallback: repartidor')
+                setRole('repartidor')
             }
         } catch (err) {
-            console.error('Fatal error in fetchProfile:', err)
+            console.error('👤 Error fetching profile:', err)
             setRole('repartidor')
+        } finally {
+            fetchingProfile.current = null
         }
     }
 
-    const refreshProfile = async (isInitial: boolean = false) => {
-        const start = Date.now()
-        console.log(`🔍 [${start}] Refreshing session (isInitial: ${isInitial})...`)
-        try {
-            const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-
-            if (sessionError) {
-                console.warn(`⚠️ [${start}] Auth getSession error:`, sessionError.message)
-                setUser(null)
-                setRole(null)
-            } else {
-                const currentUser = session?.user || null
-                setUser(currentUser)
-
-                if (currentUser) {
-                    // Si ya tenemos sesión, liberamos el loading lo antes posible
-                    // con un rol por defecto para que no se vea pantalla negra
-                    if (!role) setRole('repartidor')
-                    if (isInitial) setLoading(false)
-
-                    // Luego buscamos el perfil real en segundo plano
-                    await fetchProfile(currentUser.id)
-                } else {
-                    setRole(null)
-                }
-            }
-        } catch (err: any) {
-            console.error(`❌ [${start}] Fatal error in refreshProfile:`, err)
+    const refreshProfile = async () => {
+        console.log('🔍 Manual session refresh...')
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+            setUser(session.user)
+            await fetchRole(session.user.id)
+        } else {
             setUser(null)
             setRole(null)
-        } finally {
-            console.log(`✅ [${start}] Session refresh finished in ${Date.now() - start}ms`)
-            setLoading(false)
         }
     }
-
-    // Re-verificar sesión en cada navegación (máximo cada 30 seg para no saturar)
-    useEffect(() => {
-        if (pathname === '/login' || !mounted) return
-        const now = Date.now()
-        // Evitamos doble llamado inicial
-        if (now - lastChecked.current > 30000 && initStarted.current) {
-            lastChecked.current = now
-            refreshProfile()
-        }
-    }, [pathname, mounted])
 
     useEffect(() => {
         setMounted(true)
 
-        // Inicialización única
-        if (!initStarted.current) {
-            initStarted.current = true
-            lastChecked.current = Date.now()
+        // Verificamos si estamos en /login
+        const isLogin = window.location.pathname === '/login'
 
-            // Timeout de seguridad por si Supabase tarda demasiado (5 seg)
-            const timeout = setTimeout(() => {
-                console.warn('🚨 Auth initialization EMERGENCY TIMEOUT')
+        // 1. ESCUCHA DE EVENTOS (Single Source of Truth)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+            console.log(`📦 Event: ${event}, Session: ${!!session}`)
+
+            const currentUser = session?.user || null
+            setUser(currentUser)
+
+            if (currentUser) {
+                // Si hay usuario pero no rol, ponemos fallback inmediato para no trabar el render
+                setRole(prev => prev || 'repartidor')
+
+                // Buscamos el rol real
+                await fetchRole(currentUser.id)
+            } else {
+                setRole(null)
+            }
+
+            // En el evento inicial o tras un login, quitamos el loading
+            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
                 setLoading(false)
-                // Si llegamos aquí y hay usuario pero no rol, asignamos fallback
-                if (user && !role) setRole('repartidor')
-            }, 5000)
+            }
+        })
 
-            refreshProfile(true).then(() => clearTimeout(timeout))
-        }
+        // 2. TIMEOUT DE EMERGENCIA
+        const emergencyTimeout = setTimeout(() => {
+            if (loading) {
+                console.warn('🚨 Auth emergency timeout triggered')
+                setLoading(false)
+            }
+        }, 6000)
 
-        // Re-verificar sesión cuando la pestaña recupera el foco
+        // 3. REFRESH EN FOCO / NAVEGACION
         const handleFocus = () => {
             const now = Date.now()
             if (now - lastChecked.current > 60000) {
@@ -122,49 +112,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
         window.addEventListener('focus', handleFocus)
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-            console.log('📦 Supabase Auth Event:', event, !!session)
-
-            try {
-                if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
-                    if (session?.user) {
-                        setUser(session.user)
-                        // Aseguramos que el loading se vaya rápido
-                        if (!role) setRole('repartidor')
-                        setLoading(false)
-
-                        // Buscamos perfil real
-                        await fetchProfile(session.user.id)
-                    } else if (event !== 'INITIAL_SESSION') {
-                        setUser(null)
-                        setRole(null)
-                        setLoading(false)
-                    }
-                } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-                    setUser(null)
-                    setRole(null)
-                    setLoading(false)
-                }
-            } catch (err) {
-                console.error('Error in onAuthStateChange handler:', err)
-                setLoading(false)
-            }
-        })
-
         return () => {
             subscription.unsubscribe()
             window.removeEventListener('focus', handleFocus)
+            clearTimeout(emergencyTimeout)
         }
-    }, [])
+    }, [supabase, loading]) // Re-run if loading stays true too long? No, [supabase] is fine.
 
-    if (!mounted) {
-        return null
-    }
+    // Monitor de navegación (opcional si onAuthStateChange es confiable)
+    useEffect(() => {
+        if (pathname !== '/login' && mounted && !initStarted.current) {
+            initStarted.current = true
+            // Esto solo corre una vez al montar la app
+        }
+    }, [pathname, mounted])
+
+    if (!mounted) return null
 
     return (
-        <UserContext.Provider value={{ user, role, loading, refreshProfile: () => refreshProfile() }}>
+        <UserContext.Provider value={{ user, role, loading, refreshProfile }}>
             {children}
-            {/* Debug Sutil en la esquina inferior izquierda: [U/X][A/R/N][L/F] */}
+            {/* Debug Monitor */}
             <div className="fixed bottom-1 left-1 z-[9999] opacity-[0.2] hover:opacity-100 transition-opacity bg-black text-[8px] px-1 rounded-sm text-white font-mono pointer-events-none">
                 {user ? 'U' : 'X'}{role === 'admin' ? 'A' : role === 'repartidor' ? 'R' : 'N'}{loading ? 'L' : 'F'}
             </div>
