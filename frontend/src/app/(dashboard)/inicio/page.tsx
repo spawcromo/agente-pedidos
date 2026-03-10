@@ -29,7 +29,7 @@ const ARS = new Intl.NumberFormat('es-AR', {
 })
 
 function DashboardPage() {
-    const { role, user, fullName } = useUser()
+    const { role, user, fullName, avatarUrl } = useUser()
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
     const [loading, setLoading] = useState(true)
@@ -273,11 +273,29 @@ function DashboardPage() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <div>
-                <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 👋</h1>
-                <p className="text-muted-foreground text-lg mt-2">
-                    Aquí tienes un resumen general de Avícola Baccaro para hoy.
-                </p>
+            <div className="flex items-center gap-4">
+                {/* Avatar */}
+                {avatarUrl ? (
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-500 shadow-lg shadow-amber-500/20">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={avatarUrl}
+                            alt={fullName || "User Avatar"}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                ) : (
+                    <div className="w-16 h-16 rounded-full bg-amber-500/10 border-2 border-amber-500/50 flex items-center justify-center text-amber-500 font-black text-2xl uppercase shadow-lg shadow-amber-500/10">
+                        {fullName ? fullName.substring(0, 2) : 'A'}
+                    </div>
+                )}
+
+                <div>
+                    <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 👋</h1>
+                    <p className="text-muted-foreground text-lg mt-1">
+                        Aquí tienes un resumen general de Avícola Baccaro para hoy.
+                    </p>
+                </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

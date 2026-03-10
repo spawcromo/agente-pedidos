@@ -11,6 +11,7 @@ interface UserContextType {
     user: User | null
     role: UserRole
     fullName: string | null
+    avatarUrl: string | null
     loading: boolean
     refreshProfile: () => Promise<void>
 }
@@ -42,11 +43,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         user: User | null
         role: UserRole
         fullName: string | null
+        avatarUrl: string | null
         loading: boolean
     }>({
         user: null,
         role: getCachedRole(), // Empezamos con el cache si existe
         fullName: null,
+        avatarUrl: null,
         loading: true
     })
     const [mounted, setMounted] = useState(false)
@@ -61,20 +64,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         try {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('role, full_name')
+                .select('role, full_name, avatar_url')
                 .eq('id', userId)
                 .single()
 
             const dbRole = (!error && data) ? (data.role as UserRole) : 'repartidor'
             const fullName = data?.full_name || null
+            const avatarUrl = data?.avatar_url || null
             console.log(`👤 Profile result: role=${dbRole}, name=${fullName}`)
 
             setCachedRole(dbRole)
-            setState(s => ({ ...s, role: dbRole, fullName, loading: false }))
+            setState(s => ({ ...s, role: dbRole, fullName, avatarUrl, loading: false }))
             return dbRole
         } catch (err) {
             console.error('👤 Fatal fetchProfile error:', err)
-            setState(s => ({ ...s, role: 'repartidor', fullName: null, loading: false }))
+            setState(s => ({ ...s, role: 'repartidor', fullName: null, avatarUrl: null, loading: false }))
             return 'repartidor'
         }
     }
@@ -85,7 +89,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             await fetchAndSetRole(session.user.id)
         } else {
             setCachedRole(null)
-            setState({ user: null, role: null, fullName: null, loading: false })
+            setState({ user: null, role: null, fullName: null, avatarUrl: null, loading: false })
         }
     }
 
@@ -104,12 +108,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                         user: session.user,
                         role: cached || s.role,
                         fullName: s.fullName,
+                        avatarUrl: s.avatarUrl,
                         loading: false // Si hay user, ya podemos intentar mostrar algo
                     }))
                     await fetchAndSetRole(session.user.id)
                 } else {
                     console.log('🚀 Init: No session found')
-                    setState({ user: null, role: null, fullName: null, loading: false })
+                    setState({ user: null, role: null, fullName: null, avatarUrl: null, loading: false })
                     setCachedRole(null)
                 }
             } catch (err) {
@@ -138,7 +143,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                     }
                 }
             } else if (event === 'SIGNED_OUT') {
-                setState({ user: null, role: null, fullName: null, loading: false })
+                setState({ user: null, role: null, fullName: null, avatarUrl: null, loading: false })
                 setCachedRole(null)
             }
         })
