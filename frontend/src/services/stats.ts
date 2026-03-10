@@ -7,6 +7,7 @@ export interface DashboardStats {
     wholesale_clients: number
     active_products: number
     active_drivers: number
+    drivers_with_routes_today: number
     revenue_today: number
 }
 

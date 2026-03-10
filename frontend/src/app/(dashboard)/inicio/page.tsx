@@ -245,8 +245,8 @@ function DashboardPage() {
         },
         {
             title: 'Repartidores',
-            value: stats.active_drivers,
-            description: 'Equipo de logística',
+            value: `${stats.drivers_with_routes_today} / ${stats.active_drivers}`,
+            description: 'Con ruta asignada hoy',
             icon: Truck,
             color: 'text-cyan-500',
             bg: 'bg-cyan-500/10',
