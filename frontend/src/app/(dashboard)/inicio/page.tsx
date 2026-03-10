@@ -370,26 +370,30 @@ function DashboardPage() {
             </div>
 
             {/* RUTAS Y REPARTIDORES DETAILS */}
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2">
                 <Card className="bg-card/30 border-border/30 flex flex-col">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-sm font-bold">Rutas de hoy</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground">
-                        <div className="flex justify-between items-center">
-                            <span>Total armadas: {stats.rutas_hoy_total}</span>
+                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground p-0 px-6">
+                        <div className="flex justify-between items-center py-2 border-b border-border/20">
+                            <span>Total armadas:</span>
                             <span className="font-mono text-foreground">{stats.rutas_hoy_total}</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span>En progreso: {stats.rutas_hoy_progreso}</span>
-                            <Truck className="w-4 h-4 text-emerald-500/70" />
+                        <div className="flex justify-between items-center py-2 border-b border-border/20">
+                            <span>En progreso:</span>
+                            <span className="font-mono text-emerald-500">{stats.rutas_hoy_progreso}</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span>Completadas: {stats.rutas_hoy_completadas}</span>
-                            <Lock className="w-4 h-4 text-amber-500/70" />
+                        <div className="flex justify-between items-center py-2 border-b border-border/20">
+                            <span>Completadas:</span>
+                            <span className="font-mono text-amber-500">{stats.rutas_hoy_completadas}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                            <span>Pendientes de iniciar:</span>
+                            <span className="font-mono text-muted-foreground">{stats.rutas_hoy_total - (stats.rutas_hoy_progreso + stats.rutas_hoy_completadas)}</span>
                         </div>
                     </CardContent>
-                    <div className="p-4 pt-0 mt-auto">
+                    <div className="p-4 pt-4 mt-auto">
                         <Link href="/reparto">
                             <Button variant="outline" className="w-full bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400">Ver rutas</Button>
                         </Link>
@@ -400,73 +404,27 @@ function DashboardPage() {
                     <CardHeader className="pb-4">
                         <CardTitle className="text-sm font-bold">Repartidores hoy</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground">
-                        <div className="flex justify-between items-center">
-                            <span>Totales: {stats.repartidores_totales}</span>
-                            <Eye className="w-4 h-4 text-emerald-500/70" />
+                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground p-0 px-6">
+                        <div className="flex justify-between items-center py-2 border-b border-border/20">
+                            <span>Totales:</span>
+                            <span className="font-mono text-foreground">{stats.repartidores_totales}</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span>En ruta: {stats.repartidores_en_ruta}</span>
-                            <PenTool className="w-4 h-4 text-emerald-500/70" />
+                        <div className="flex justify-between items-center py-2 border-b border-border/20">
+                            <span>En ruta:</span>
+                            <span className="font-mono text-emerald-500">{stats.repartidores_en_ruta}</span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span>Pendientes: {stats.repartidores_pendientes_salir}</span>
-                            <Check className="w-4 h-4 text-emerald-500/70" />
+                        <div className="flex justify-between items-center py-2 border-b border-border/20">
+                            <span>Disponibles:</span>
+                            <span className="font-mono text-blue-500">{stats.repartidores_disponibles}</span>
                         </div>
-                    </CardContent>
-                    <div className="p-4 pt-0 mt-auto">
-                        <Link href="/reparto">
-                            <Button variant="outline" className="w-full bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-400">Ver rutas</Button>
-                        </Link>
-                    </div>
-                </Card>
-
-                <Card className="bg-card/30 border-border/30 flex flex-col">
-                    <CardHeader className="pb-4">
-                        <CardTitle className="text-sm font-bold">Repartidores hoy</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground">
-                        <div className="flex justify-between items-center">
-                            <span>Totales: {stats.repartidores_totales}</span>
-                            <span className="font-mono text-foreground">{stats.repartidores_en_ruta}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span>Disponibles: {stats.repartidores_disponibles}</span>
-                            <Package className="w-4 h-4 text-red-400/70" />
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span>Pendientes de salir: {stats.repartidores_pendientes_salir}</span>
-                            <Truck className="w-4 h-4 text-red-500/70" />
-                        </div>
-                    </CardContent>
-                    <div className="p-4 pt-0 mt-auto">
-                        <Link href="/reparto">
-                            <Button variant="outline" className="w-full bg-amber-500 border-amber-500 text-amber-950 hover:bg-amber-400 font-bold">Ver repartidores</Button>
-                        </Link>
-                    </div>
-                </Card>
-
-                <Card className="bg-card/30 border-border/30 flex flex-col">
-                    <CardHeader className="pb-4">
-                        <CardTitle className="text-sm font-bold">Reparticiones hoy</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground p-0">
-                        {/* Dummy list to match mockup structure */}
-                        <div className="px-6 py-2 border-b border-border/20 flex justify-between items-center">
-                            <span>Reinicia: 4</span>
-                            <ArrowRight className="w-3 h-3 opacity-50" />
-                        </div>
-                        <div className="px-6 py-2 border-b border-border/20 flex justify-between items-center">
-                            <span>Sin info</span>
-                            <ArrowRight className="w-3 h-3 opacity-50" />
-                        </div>
-                        <div className="px-6 py-2 flex justify-between items-center">
-                            <span>Carga drops <Check className="w-3 h-3 inline ml-1 opacity-50" /></span>
+                        <div className="flex justify-between items-center py-2">
+                            <span>Pendientes de salir:</span>
+                            <span className="font-mono text-red-500">{stats.repartidores_pendientes_salir}</span>
                         </div>
                     </CardContent>
                     <div className="p-4 pt-4 mt-auto">
-                        <Link href="/produccion">
-                            <Button variant="outline" className="w-full bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400">Ver producción</Button>
+                        <Link href="/reparto">
+                            <Button variant="outline" className="w-full bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-400">Ver repartidores</Button>
                         </Link>
                     </div>
                 </Card>
