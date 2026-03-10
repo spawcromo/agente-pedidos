@@ -400,6 +400,13 @@ function DashboardPage() {
                             </div>
                             <span className="font-bold text-amber-500">{stats.rutas_hoy_completadas}</span>
                         </div>
+                        <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                            <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-amber-500/60" />
+                                <span className="text-muted-foreground">Pendientes de iniciar:</span>
+                            </div>
+                            <span className="font-bold text-amber-500">{stats.rutas_hoy_pendientes_iniciar}</span>
+                        </div>
                         <div className="pt-4">
                             <Link href="/reparto">
                                 <Button className="w-full bg-[#1A140F] hover:bg-[#2A1F16] border border-[#2A1F16] text-amber-500/90 font-medium h-9 text-xs transition-colors">Ver rutas</Button>
@@ -433,6 +440,13 @@ function DashboardPage() {
                                 <span className="text-muted-foreground">Disponibles:</span>
                             </div>
                             <span className="font-bold text-blue-400">{stats.repartidores_disponibles}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                            <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-emerald-500/60" />
+                                <span className="text-muted-foreground">Pendientes de salir:</span>
+                            </div>
+                            <span className="font-bold text-emerald-400">{stats.repartidores_pendientes_salir}</span>
                         </div>
                         <div className="pt-4">
                             <Link href="/reparto">

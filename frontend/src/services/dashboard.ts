@@ -6,6 +6,7 @@ export interface EnhancedDashboardStats {
     rutas_hoy_total: number
     rutas_hoy_progreso: number
     rutas_hoy_completadas: number
+    rutas_hoy_pendientes_iniciar: number
     entregas_pendientes_hoy: number
 
     // 2. REPARTIDORES HOY
@@ -62,6 +63,20 @@ export async function getEnhancedDashboardStats(): Promise<{
         console.error('Error fetching production orders:', ordersError)
     }
 
+    // 3. Get pending routes that haven't started (draft status)
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate() - 1).padStart(2, '0')}` // Adjusting back to today
+    const currentToday = new Date().toISOString().split('T')[0]
+
+    const { count: pendingRoutesCount, error: pendingRoutesError } = await supabase
+        .from('delivery_routes')
+        .select('*', { count: 'exact', head: true })
+        .eq('delivery_date', currentToday)
+        .eq('status', 'draft')
+
+    if (pendingRoutesError) {
+        console.error('Error fetching pending routes:', pendingRoutesError)
+    }
+
     const production: ProductionEstimate = {}
 
     // Aggregate items
@@ -79,8 +94,13 @@ export async function getEnhancedDashboardStats(): Promise<{
         })
     }
 
+    const finalStats = statsData ? {
+        ...statsData,
+        rutas_hoy_pendientes_iniciar: pendingRoutesCount || 0
+    } : null
+
     return {
-        stats: statsData as EnhancedDashboardStats | null,
+        stats: finalStats as EnhancedDashboardStats | null,
         production
     }
 }

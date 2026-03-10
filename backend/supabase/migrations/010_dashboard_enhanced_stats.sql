@@ -16,6 +16,8 @@ SELECT
     (EXISTS (SELECT 1 FROM delivery_stops ds WHERE ds.route_id = dr.id) AND NOT EXISTS (SELECT 1 FROM delivery_stops ds WHERE ds.route_id = dr.id AND ds.status = 'pending'))
   )) AS rutas_hoy_completadas,
   
+  (SELECT COUNT(*) FROM delivery_routes WHERE delivery_date = CURRENT_DATE AND status = 'draft') AS rutas_hoy_pendientes_iniciar,
+  
   (SELECT COUNT(*) FROM delivery_stops ds JOIN delivery_routes dr ON dr.id = ds.route_id 
    WHERE dr.delivery_date = CURRENT_DATE AND ds.status = 'pending') AS entregas_pendientes_hoy,
 
