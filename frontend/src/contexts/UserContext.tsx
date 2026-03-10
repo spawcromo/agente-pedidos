@@ -16,6 +16,26 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
+// --- Helpers para cachear el rol en localStorage ---
+const ROLE_CACHE_KEY = 'baccaro_cached_role'
+
+function getCachedRole(): UserRole {
+    try {
+        const cached = localStorage.getItem(ROLE_CACHE_KEY)
+        if (cached === 'admin' || cached === 'repartidor') return cached
+        return null
+    } catch {
+        return null
+    }
+}
+
+function setCachedRole(role: UserRole) {
+    try {
+        if (role) localStorage.setItem(ROLE_CACHE_KEY, role)
+        else localStorage.removeItem(ROLE_CACHE_KEY)
+    } catch { /* localStorage no disponible */ }
+}
+
 export function UserProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [role, setRole] = useState<UserRole>(null)
@@ -24,12 +44,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const supabase = createClient()
     const pathname = usePathname()
     const lastChecked = useRef<number>(0)
-    const initStarted = useRef<boolean>(false)
-    const fetchingProfile = useRef<string | null>(null)
+    const initDone = useRef<boolean>(false)
 
-    const fetchRole = async (userId: string) => {
-        if (fetchingProfile.current === userId) return
-        fetchingProfile.current = userId
+    // Busca el rol en la DB y lo cachea
+    const fetchAndSetRole = async (userId: string): Promise<UserRole> => {
         console.log(`👤 Fetching profile for ${userId}...`)
         try {
             const { data, error } = await supabase
@@ -39,17 +57,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 .single()
 
             if (!error && data) {
-                console.log(`👤 Profile found: ${data.role}`)
-                setRole(data.role as UserRole)
+                const dbRole = data.role as UserRole
+                console.log(`👤 Profile found: ${dbRole}`)
+                setRole(dbRole)
+                setCachedRole(dbRole)
+                return dbRole
             } else {
-                console.warn('👤 Profile not found, using fallback: repartidor')
+                console.warn('👤 Profile query error, using fallback')
                 setRole('repartidor')
+                setCachedRole('repartidor')
+                return 'repartidor'
             }
         } catch (err) {
-            console.error('👤 Error fetching profile:', err)
+            console.error('👤 Fatal fetchProfile error:', err)
             setRole('repartidor')
-        } finally {
-            fetchingProfile.current = null
+            setCachedRole('repartidor')
+            return 'repartidor'
         }
     }
 
@@ -58,51 +81,103 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
             setUser(session.user)
-            await fetchRole(session.user.id)
+            await fetchAndSetRole(session.user.id)
         } else {
             setUser(null)
             setRole(null)
+            setCachedRole(null)
         }
     }
 
     useEffect(() => {
         setMounted(true)
 
-        // Verificamos si estamos en /login
-        const isLogin = window.location.pathname === '/login'
+        // ═══════════════════════════════════════════
+        // PASO 1: Hidratación instantánea desde cache
+        // ═══════════════════════════════════════════
+        const initSession = async () => {
+            console.log('🚀 Init: Checking session...')
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                console.log('🚀 Init: Session found:', !!session)
 
-        // 1. ESCUCHA DE EVENTOS (Single Source of Truth)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-            console.log(`📦 Event: ${event}, Session: ${!!session}`)
+                if (session?.user) {
+                    setUser(session.user)
 
-            const currentUser = session?.user || null
-            setUser(currentUser)
+                    // 1. USAR ROL CACHEADO para desbloquear la UI inmediatamente
+                    const cached = getCachedRole()
+                    if (cached) {
+                        console.log(`🚀 Init: Using CACHED role: ${cached}`)
+                        setRole(cached)
+                        setLoading(false) // ← UI se desbloquea AHORA
+                    }
 
-            if (currentUser) {
-                // Si hay usuario pero no rol, ponemos fallback inmediato para no trabar el render
-                setRole(prev => prev || 'repartidor')
+                    // 2. Verificar rol real en la DB (actualiza si cambió)
+                    const realRole = await fetchAndSetRole(session.user.id)
 
-                // Buscamos el rol real
-                await fetchRole(currentUser.id)
-            } else {
-                setRole(null)
+                    // Si no había cache, ahora es la primera vez que liberamos
+                    if (!cached) {
+                        console.log('🚀 Init: First load, role from DB:', realRole)
+                        setLoading(false)
+                    } else if (cached !== realRole) {
+                        console.log(`🚀 Init: Role CHANGED from cache (${cached}) to DB (${realRole})`)
+                    }
+                } else {
+                    console.log('🚀 Init: No session, clearing state')
+                    setUser(null)
+                    setRole(null)
+                    setCachedRole(null)
+                    setLoading(false)
+                }
+            } catch (err) {
+                console.error('🚀 Init: Error:', err)
+                setLoading(false)
             }
+            initDone.current = true
+        }
 
-            // En el evento inicial o tras un login, quitamos el loading
-            if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+        initSession()
+
+        // ═══════════════════════════════════════════
+        // PASO 2: Escuchar cambios posteriores
+        // ═══════════════════════════════════════════
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+            console.log(`📦 Auth Event: ${event}, Session: ${!!session}`)
+
+            // Ignoramos INITIAL_SESSION porque ya lo manejamos arriba
+            if (event === 'INITIAL_SESSION') return
+
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+                if (session?.user) {
+                    setUser(session.user)
+                    // Solo buscamos el perfil si la inicialización ya terminó
+                    // para no duplicar llamadas
+                    if (initDone.current) {
+                        await fetchAndSetRole(session.user.id)
+                    }
+                    setLoading(false)
+                }
+            } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+                setUser(null)
+                setRole(null)
+                setCachedRole(null)
                 setLoading(false)
             }
         })
 
-        // 2. TIMEOUT DE EMERGENCIA
+        // ═══════════════════════════════════════════
+        // PASO 3: Timeout de emergencia (último recurso)
+        // ═══════════════════════════════════════════
         const emergencyTimeout = setTimeout(() => {
             if (loading) {
-                console.warn('🚨 Auth emergency timeout triggered')
+                console.warn('🚨 Emergency timeout: forcing loading=false')
                 setLoading(false)
             }
-        }, 6000)
+        }, 8000)
 
-        // 3. REFRESH EN FOCO / NAVEGACION
+        // ═══════════════════════════════════════════
+        // PASO 4: Re-check en foco de ventana
+        // ═══════════════════════════════════════════
         const handleFocus = () => {
             const now = Date.now()
             if (now - lastChecked.current > 60000) {
@@ -117,13 +192,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             window.removeEventListener('focus', handleFocus)
             clearTimeout(emergencyTimeout)
         }
-    }, [supabase, loading]) // Re-run if loading stays true too long? No, [supabase] is fine.
+    }, [])
 
-    // Monitor de navegación (opcional si onAuthStateChange es confiable)
+    // Re-verificar sesión en cada navegación
     useEffect(() => {
-        if (pathname !== '/login' && mounted && !initStarted.current) {
-            initStarted.current = true
-            // Esto solo corre una vez al montar la app
+        if (pathname === '/login' || !mounted || !initDone.current) return
+        const now = Date.now()
+        if (now - lastChecked.current > 30000) {
+            lastChecked.current = now
+            refreshProfile()
         }
     }, [pathname, mounted])
 
@@ -132,8 +209,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return (
         <UserContext.Provider value={{ user, role, loading, refreshProfile }}>
             {children}
-            {/* Debug Monitor */}
-            <div className="fixed bottom-1 left-1 z-[9999] opacity-[0.2] hover:opacity-100 transition-opacity bg-black text-[8px] px-1 rounded-sm text-white font-mono pointer-events-none">
+            {/* Debug: [U/X][A/R/N][L/F] */}
+            <div className="fixed bottom-1 left-1 z-[9999] opacity-[0.15] hover:opacity-100 transition-opacity bg-black text-[8px] px-1 rounded-sm text-white font-mono pointer-events-none">
                 {user ? 'U' : 'X'}{role === 'admin' ? 'A' : role === 'repartidor' ? 'R' : 'N'}{loading ? 'L' : 'F'}
             </div>
         </UserContext.Provider>
