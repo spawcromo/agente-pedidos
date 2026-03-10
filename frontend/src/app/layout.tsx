@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${inter.variable} dark`}>
       <body className="font-sans antialiased bg-background text-foreground min-h-screen">
-        <TooltipProvider>
+        <TooltipProvider delayDuration={200}>
           <UserProvider>
             {children}
           </UserProvider>
