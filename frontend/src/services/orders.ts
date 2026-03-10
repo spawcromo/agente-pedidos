@@ -58,12 +58,19 @@ export async function getOrderById(id: string): Promise<OrderWithDetails> {
 
 export async function updateOrderStatus(
     id: string,
-    status: OrderStatus
+    status: OrderStatus,
+    cancel_reason?: string
 ): Promise<void> {
     const supabase = createClient()
+    const updateData: any = { status }
+
+    if (status === 'cancelled') {
+        updateData.cancel_reason = cancel_reason || null
+    }
+
     const { error } = await supabase
         .from('orders')
-        .update({ status })
+        .update(updateData)
         .eq('id', id)
     if (error) throw new Error(`Error al actualizar pedido: ${error.message}`)
 }

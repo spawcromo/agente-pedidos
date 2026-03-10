@@ -1,7 +1,7 @@
 // Types matching Supabase schema from docs/architecture.md
 
 export type ClientType = 'retail' | 'wholesale'
-export type OrderStatus = 'pending' | 'confirmed' | 'rejected' | 'delivered'
+export type OrderStatus = 'pending' | 'confirmed' | 'rejected' | 'delivered' | 'cancelled'
 export type OrderSource = 'whatsapp' | 'manual'
 export type RouteStatus = 'draft' | 'active' | 'completed'
 export type StopStatus = 'pending' | 'delivered'
@@ -35,6 +35,7 @@ export interface Order {
   delivery_date: string
   status: OrderStatus
   notes: string | null
+  cancel_reason: string | null
   source: OrderSource
   created_at: string
   updated_at: string

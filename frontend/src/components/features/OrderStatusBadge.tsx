@@ -18,6 +18,10 @@ const STATUS_CONFIG = {
     assigned: {
         label: "Asignado a Ruta",
         className: "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20",
+    },
+    cancelled: {
+        label: "Cancelado",
+        className: "bg-neutral-500/10 text-neutral-400 border border-neutral-500/20",
     }
 } as const
 

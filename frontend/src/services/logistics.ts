@@ -144,6 +144,27 @@ export async function updateStopStatus(stopId: string, status: 'pending' | 'deli
     }
 }
 
+export async function removeStopAndCancelOrder(stopId: string, orderId: string, reason: string): Promise<void> {
+    const supabase = createClient()
+
+    // 1. Update order
+    const updateData: any = { status: 'cancelled', cancel_reason: reason }
+    const { error: orderError } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', orderId)
+
+    if (orderError) throw new Error(`Error al cancelar pedido: ${orderError.message}`)
+
+    // 2. Delete stop
+    const { error: stopError } = await supabase
+        .from('delivery_stops')
+        .delete()
+        .eq('id', stopId)
+
+    if (stopError) throw new Error(`Error al remover parada: ${stopError.message}`)
+}
+
 export async function deleteRoute(routeId: string): Promise<void> {
     const supabase = createClient()
     const { error } = await supabase

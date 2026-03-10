@@ -77,6 +77,11 @@ function PedidosPage() {
     const [bulkDateOpen, setBulkDateOpen] = useState(false)
     const [bulkNewDate, setBulkNewDate] = useState('')
 
+    // Cancel state
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+    const [orderToCancel, setOrderToCancel] = useState<string | null>(null)
+    const [cancelReason, setCancelReason] = useState('')
+
     useEffect(() => {
         setMounted(true)
     }, [])
@@ -174,6 +179,12 @@ function PedidosPage() {
 
     // Actions
     async function handleStatus(id: string, status: OrderStatus) {
+        if (status === 'cancelled') {
+            setOrderToCancel(id)
+            setCancelReason('')
+            setCancelDialogOpen(true)
+            return
+        }
         try {
             await updateOrderStatus(id, status)
             const labels: Record<string, string> = {
@@ -189,13 +200,31 @@ function PedidosPage() {
         }
     }
 
+    async function handleCancelSubmit() {
+        if (!orderToCancel || !cancelReason.trim()) {
+            toast.error('Debes indicar un motivo de cancelación')
+            return
+        }
+        try {
+            await updateOrderStatus(orderToCancel, 'cancelled', cancelReason)
+            toast.success('Pedido cancelado')
+            setCancelDialogOpen(false)
+            setCancelReason('')
+            setOrderToCancel(null)
+            load()
+        } catch (err: any) {
+            toast.error(err.message)
+        }
+    }
+
     async function handleBulkStatus(status: OrderStatus) {
         if (selected.size === 0) return
         const statusLabels: Record<OrderStatus, string> = {
             pending: 'puestos en pendiente',
             confirmed: 'confirmados',
             delivered: 'marcados como entregados',
-            rejected: 'rechazados'
+            rejected: 'rechazados',
+            cancelled: 'cancelados'
         }
 
         if (status === 'rejected' && !confirm(`¿Rechazar ${selected.size} pedidos?`)) return
@@ -282,6 +311,7 @@ function PedidosPage() {
                                     'confirmed': 'Solo Confirmados',
                                     'delivered': 'Solo Entregados',
                                     'rejected': 'Solo Rechazados',
+                                    'cancelled': 'Solo Cancelados',
                                 }[statusFilter]}
                             </SelectValue>
                         </SelectTrigger>
@@ -292,6 +322,7 @@ function PedidosPage() {
                             <SelectItem value="confirmed">Solo Confirmados</SelectItem>
                             <SelectItem value="delivered">Solo Entregados</SelectItem>
                             <SelectItem value="rejected">Solo Rechazados</SelectItem>
+                            <SelectItem value="cancelled">Solo Cancelados</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -520,21 +551,42 @@ function PedidosPage() {
                                                         <Edit2 className="w-4 h-4" /> Ver / Editar
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
-                                                    {order.status !== 'confirmed' && (
-                                                        <DropdownMenuItem onClick={() => handleStatus(order.id, 'confirmed')} className="gap-2">
-                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {order.status !== 'rejected' && (
-                                                        <DropdownMenuItem onClick={() => handleStatus(order.id, 'rejected')} className="gap-2 text-destructive">
-                                                            <XCircle className="w-4 h-4" /> Rechazar
-                                                        </DropdownMenuItem>
-                                                    )}
-                                                    {order.status !== 'pending' && (
-                                                        <DropdownMenuItem onClick={() => handleStatus(order.id, 'pending')} className="gap-2">
-                                                            <Clock className="w-4 h-4 text-amber-500" /> Volver a Pendiente
-                                                        </DropdownMenuItem>
-                                                    )}
+                                                    {(() => {
+                                                        const isAssigned = (order.delivery_stops?.length ?? 0) > 0;
+                                                        return (
+                                                            <>
+                                                                {!isAssigned && order.status !== 'confirmed' && order.status !== 'cancelled' && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'confirmed')} className="gap-2">
+                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {!isAssigned && order.status !== 'rejected' && order.status !== 'cancelled' && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'rejected')} className="gap-2 text-destructive">
+                                                                        <XCircle className="w-4 h-4" /> Rechazar
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {!isAssigned && order.status !== 'pending' && order.status !== 'cancelled' && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'pending')} className="gap-2">
+                                                                        <Clock className="w-4 h-4 text-amber-500" /> Volver a Pendiente
+                                                                    </DropdownMenuItem>
+                                                                )}
+
+                                                                {/* Cancel is allowed anytime except if already cancelled. If assigned, this is the ONLY way to revert. */}
+                                                                {order.status !== 'cancelled' && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'cancelled')} className="gap-2 text-destructive mt-1 border-t border-border pt-2">
+                                                                        <XCircle className="w-4 h-4" /> Cancelar Pedido
+                                                                    </DropdownMenuItem>
+                                                                )}
+
+                                                                {/* Provide a way out if cancelled to put it back to pending */}
+                                                                {order.status === 'cancelled' && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'pending')} className="gap-2">
+                                                                        <Clock className="w-4 h-4 text-amber-500" /> Revertir a Pendiente
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                            </>
+                                                        )
+                                                    })()}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -582,8 +634,30 @@ function PedidosPage() {
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setBulkDateOpen(false)}>Cancelar</Button>
+                        <Button variant="outline" onClick={() => setBulkDateOpen(false)}>Atrás</Button>
                         <Button onClick={handleBulkDate} disabled={!bulkNewDate}>Guardar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-destructive">Cancelar Pedido</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Al cancelar un pedido se removerá de cualquier ruta en la que esté asignado. Debes indicar un motivo de cancelación:
+                        </p>
+                        <Input
+                            placeholder="Ej: El cliente no lo quería..."
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>Atrás</Button>
+                        <Button onClick={handleCancelSubmit} variant="destructive" disabled={!cancelReason.trim()}>Confirmar Cancelación</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

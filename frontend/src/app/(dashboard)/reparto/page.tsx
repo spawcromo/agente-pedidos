@@ -15,6 +15,9 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
+import {
     Truck,
     MapPin,
     ExternalLink,
@@ -28,7 +31,9 @@ import {
     User,
     ChevronRight,
     CircleDashed,
-    CheckCircle2
+    CheckCircle2,
+    X,
+    XCircle
 } from "lucide-react"
 import { getOrders, type OrderWithDetails } from '@/services/orders'
 import { useUser } from '@/contexts/UserContext'
@@ -40,6 +45,7 @@ import {
     createRoute,
     updateStopStatus,
     deleteRoute,
+    removeStopAndCancelOrder,
     type DeliveryRoute,
     type RouteStop
 } from '@/services/logistics'
@@ -76,6 +82,11 @@ function RepartoPage() {
     // Repartidor state
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
     const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
+
+    // Cancel state
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+    const [cancelData, setCancelData] = useState<{ stopId: string, orderId: string } | null>(null)
+    const [cancelReason, setCancelReason] = useState('')
 
     const loadData = useCallback(async () => {
         if (!role || !user || !date) {
@@ -173,6 +184,23 @@ function RepartoPage() {
         }
     }
 
+    async function handleCancelSubmit() {
+        if (!cancelData || !cancelReason.trim()) {
+            toast.error('Debes indicar un motivo')
+            return
+        }
+        try {
+            await removeStopAndCancelOrder(cancelData.stopId, cancelData.orderId, cancelReason)
+            toast.success('Pedido cancelado y removido de la ruta')
+            setCancelDialogOpen(false)
+            setCancelReason('')
+            setCancelData(null)
+            loadData()
+        } catch (err: any) {
+            toast.error(err.message)
+        }
+    }
+
     if (!mounted || userLoading || loading || !date) {
         return (
             <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4">
@@ -237,10 +265,38 @@ function RepartoPage() {
                                 stop={stop}
                                 index={index}
                                 onDone={() => handleMarkStopDelivered(stop.id)}
+                                onCancel={() => {
+                                    setCancelData({ stopId: stop.id, orderId: stop.order_id })
+                                    setCancelReason('')
+                                    setCancelDialogOpen(true)
+                                }}
                             />
                         ))}
                     </div>
                 )}
+
+                {/* Cancel Dialog */}
+                <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="text-destructive">Cancelar Pedido de la Ruta</DialogTitle>
+                        </DialogHeader>
+                        <div className="py-4 space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                Se eliminará este pedido de la hoja de ruta y pasará a estado Cancelado. Debes indicar un motivo:
+                            </p>
+                            <Input
+                                placeholder="Ej: No me atendió nadie / Local cerrado..."
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>Atrás</Button>
+                            <Button onClick={handleCancelSubmit} variant="destructive" disabled={!cancelReason.trim()}>Confirmar Cancelación</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         )
     }
@@ -379,7 +435,21 @@ function RepartoPage() {
                                                 <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
                                                     {stop.order.client?.name}
                                                 </span>
-                                                {stop.status === 'delivered' && <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />}
+                                                {stop.status === 'delivered' ? (
+                                                    <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />
+                                                ) : (
+                                                    <button
+                                                        onClick={() => {
+                                                            setCancelData({ stopId: stop.id, orderId: stop.order_id })
+                                                            setCancelReason('')
+                                                            setCancelDialogOpen(true)
+                                                        }}
+                                                        className="ml-auto text-muted-foreground hover:text-destructive opacity-0 group-hover/route:opacity-100 transition-opacity"
+                                                        title="Cancelar pedido de la ruta"
+                                                    >
+                                                        <XCircle className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -403,11 +473,33 @@ function RepartoPage() {
                     )}
                 </div>
             </div>
+
+            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-destructive">Cancelar Pedido de la Ruta</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Se eliminará este pedido de la hoja de ruta y pasará a estado Cancelado. Debes indicar un motivo:
+                        </p>
+                        <Input
+                            placeholder="Ej: No me atendió nadie / Cancelado antes de salir..."
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>Atrás</Button>
+                        <Button onClick={handleCancelSubmit} variant="destructive" disabled={!cancelReason.trim()}>Confirmar Cancelación</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
 
-function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onDone: () => void }) {
+function StopCard({ stop, index, onDone, onCancel }: { stop: RouteStop, index: number, onDone: () => void, onCancel: () => void }) {
     const isDelivered = stop.status === 'delivered'
 
     return (
@@ -442,12 +534,21 @@ function StopCard({ stop, index, onDone }: { stop: RouteStop, index: number, onD
                         <ExternalLink className="w-4 h-4" /> Abrir GPS
                     </a>
                     {!isDelivered ? (
-                        <button
-                            onClick={onDone}
-                            className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2"
-                        >
-                            <Check className="w-4 h-4" /> Entregar
-                        </button>
+                        <>
+                            <button
+                                onClick={onCancel}
+                                className="w-12 bg-red-500/10 text-destructive py-3 rounded-lg text-center flex items-center justify-center border border-destructive/20 active:scale-95 transition-transform"
+                                title="Cancelar Pedido"
+                            >
+                                <XCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={onDone}
+                                className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 border border-amber-500/20 shadow-lg shadow-amber-500/10"
+                            >
+                                <Check className="w-4 h-4" /> Entregar
+                            </button>
+                        </>
                     ) : (
                         <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-lg text-center text-sm font-bold border border-emerald-500/20 flex items-center justify-center gap-2">
                             <CheckCircle2 className="w-4 h-4" /> Entregado
