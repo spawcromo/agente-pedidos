@@ -67,9 +67,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
     // Re-verificar sesión en cada navegación (máximo cada 30 seg para no saturar)
     useEffect(() => {
-        if (pathname === '/login') return
+        if (pathname === '/login' || !mounted) return
         const now = Date.now()
-        if (now - lastChecked.current > 30000 && mounted) {
+        if (now - lastChecked.current > 30000) {
             lastChecked.current = now
             refreshProfile()
         }
@@ -84,6 +84,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
             // Timeout de seguridad por si Supabase tarda demasiado (5 seg)
             const timeout = setTimeout(() => {
+                console.warn('⚠️ Auth initialization timeout reached')
                 setLoading(false)
             }, 5000)
 
@@ -102,16 +103,19 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
             console.log('📦 Auth Event:', event)
-
-            if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
-                if (session?.user) {
-                    setUser(session.user)
-                    await fetchProfile(session.user.id)
+            try {
+                if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
+                    if (session?.user) {
+                        setUser(session.user)
+                        await fetchProfile(session.user.id)
+                    }
+                } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+                    setUser(null)
+                    setRole(null)
                 }
-                setLoading(false)
-            } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-                setUser(null)
-                setRole(null)
+            } catch (err) {
+                console.error('Error in onAuthStateChange:', err)
+            } finally {
                 setLoading(false)
             }
         })
