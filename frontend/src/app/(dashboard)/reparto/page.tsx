@@ -78,8 +78,8 @@ function RepartoPage() {
     const [activeRouteId, setActiveRouteId] = useState<string | null>(null)
 
     const loadData = useCallback(async () => {
-        if (!role || !user) {
-            setLoading(false)
+        if (!role || !user || !date) {
+            // Keep loading true until date and role are available
             return
         }
         setLoading(true)
