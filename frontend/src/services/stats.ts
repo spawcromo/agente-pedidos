@@ -8,6 +8,7 @@ export interface DashboardStats {
     active_products: number
     active_drivers: number
     drivers_with_routes_today: number
+    completed_routes_today: number
     revenue_today: number
 }
 

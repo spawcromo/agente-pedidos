@@ -29,7 +29,7 @@ const ARS = new Intl.NumberFormat('es-AR', {
 })
 
 function DashboardPage() {
-    const { role, user } = useUser()
+    const { role, user, fullName } = useUser()
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
     const [loading, setLoading] = useState(true)
@@ -82,7 +82,7 @@ function DashboardPage() {
         return (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-4xl font-bold tracking-tight">¡Hola! 🚛</h1>
+                    <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 🚛</h1>
                     <p className="text-muted-foreground text-lg">
                         Aquí tienes un resumen de tus rutas asignadas para hoy.
                     </p>
@@ -253,19 +253,30 @@ function DashboardPage() {
             border: 'border-t-cyan-500',
             hover: 'hover:border-cyan-500/50',
             href: '/reparto'
+        },
+        {
+            title: 'Rutas Completadas',
+            value: `${stats.completed_routes_today} / ${stats.drivers_with_routes_today}`,
+            description: 'De las rutas de hoy',
+            icon: CircleDashed,
+            color: 'text-purple-500',
+            bg: 'bg-purple-500/10',
+            border: 'border-t-purple-500',
+            hover: 'hover:border-purple-500/50',
+            href: '/reparto'
         }
     ]
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
             <div>
-                <h1 className="text-4xl font-bold tracking-tight">¡Hola! 👋</h1>
+                <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 👋</h1>
                 <p className="text-muted-foreground text-lg mt-2">
                     Aquí tienes un resumen general de Avícola Baccaro para hoy.
                 </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {cards.map((card, i) => (
                     <Link key={i} href={card.href}>
                         <Card className={cn(
