@@ -12,7 +12,10 @@ SELECT
   (SELECT COUNT(*) FROM products WHERE active = true) AS active_products,
   (SELECT COUNT(*) FROM profiles WHERE role = 'repartidor') AS active_drivers,
   (SELECT COUNT(DISTINCT driver_id) FROM delivery_routes WHERE delivery_date = CURRENT_DATE) AS drivers_with_routes_today,
-  (SELECT COUNT(*) FROM delivery_routes WHERE delivery_date = CURRENT_DATE AND status = 'completed') AS completed_routes_today,
+  (SELECT COUNT(*) FROM delivery_routes dr WHERE delivery_date = CURRENT_DATE AND (
+    dr.status = 'completed' OR 
+    (EXISTS (SELECT 1 FROM delivery_stops ds WHERE ds.route_id = dr.id) AND NOT EXISTS (SELECT 1 FROM delivery_stops ds WHERE ds.route_id = dr.id AND ds.status = 'pending'))
+  )) AS completed_routes_today,
   (SELECT COALESCE(SUM(oi.quantity * oi.unit_price), 0) 
    FROM order_items oi 
    JOIN orders o ON o.id = oi.order_id 
