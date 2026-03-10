@@ -77,6 +77,18 @@ export async function bulkUpdateOrderStatus(
     if (error) throw new Error(`Error al actualizar pedidos: ${error.message}`)
 }
 
+export async function bulkUpdateOrderDate(
+    ids: string[],
+    delivery_date: string
+): Promise<void> {
+    const supabase = createClient()
+    const { error } = await supabase
+        .from('orders')
+        .update({ delivery_date })
+        .in('id', ids)
+    if (error) throw new Error(`Error al actualizar fechas: ${error.message}`)
+}
+
 // Create order with items
 export interface CreateOrderPayload {
     client_id: string

@@ -17,6 +17,9 @@ import {
     DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog'
+import {
     ClipboardList,
     Search,
     CheckCircle2,
@@ -41,7 +44,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
-    getOrders, updateOrderStatus, bulkUpdateOrderStatus, type OrderWithDetails,
+    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, type OrderWithDetails,
 } from '@/services/orders'
 import type { OrderStatus } from '@/types/database'
 import { withRole } from '@/components/hoc/withRole'
@@ -69,6 +72,10 @@ function PedidosPage() {
         field: 'created_at',
         direction: 'desc'
     })
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
+    const [bulkDateOpen, setBulkDateOpen] = useState(false)
+    const [bulkNewDate, setBulkNewDate] = useState('')
 
     useEffect(() => {
         setMounted(true)
@@ -79,6 +86,7 @@ function PedidosPage() {
         try {
             setLoading(true)
             setSelected(new Set())
+            setCurrentPage(1)
             const data = await getOrders({
                 delivery_date: dateFilter || undefined,
                 status: statusFilter === 'active'
@@ -130,6 +138,13 @@ function PedidosPage() {
         })
         return items
     }, [orders, sortConfig])
+
+    const paginatedOrders = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage
+        return sortedOrders.slice(startIndex, startIndex + itemsPerPage)
+    }, [sortedOrders, currentPage])
+
+    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage)
 
     function handleSort(field: string) {
         setSortConfig((prev) => ({
@@ -192,6 +207,19 @@ function PedidosPage() {
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
+        }
+    }
+
+    async function handleBulkDate() {
+        if (selected.size === 0 || !bulkNewDate) return
+        try {
+            await bulkUpdateOrderDate(Array.from(selected), bulkNewDate)
+            toast.success(`Fechas de ${selected.size} pedidos actualizadas`)
+            setBulkDateOpen(false)
+            setSelected(new Set())
+            load()
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al cambiar fecha')
         }
     }
 
@@ -298,6 +326,9 @@ function PedidosPage() {
                                 <CheckCircle2 className="w-4 h-4" /> Acciones masivas
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuItem onClick={() => setBulkDateOpen(true)} className="gap-2">
+                                    <Calendar className="w-4 h-4 text-blue-500" /> Cambiar Fecha
+                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatus('pending')} className="gap-2">
                                     <Clock className="w-4 h-4 text-muted-foreground" /> Mover a Pendiente
                                 </DropdownMenuItem>
@@ -384,14 +415,14 @@ function PedidosPage() {
                                         Cargando...
                                     </TableCell>
                                 </TableRow>
-                            ) : sortedOrders.length === 0 ? (
+                            ) : paginatedOrders.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={8} className="py-12 text-center text-muted-foreground">
                                         No hay pedidos.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                sortedOrders.map((order) => (
+                                paginatedOrders.map((order) => (
                                     <TableRow
                                         key={order.id}
                                         className={cn(
@@ -504,6 +535,21 @@ function PedidosPage() {
                         </TableBody>
                     </Table>
                 </div>
+                {totalPages > 1 && (
+                    <div className="p-4 border-t border-border flex items-center justify-between">
+                        <div className="text-sm text-muted-foreground">
+                            Mostrando {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, sortedOrders.length)} de {sortedOrders.length}
+                        </div>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                                Anterior
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                                Siguiente
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <OrderDialog
@@ -512,6 +558,26 @@ function PedidosPage() {
                 onClose={() => setDialogOpen(false)}
                 onSaved={load}
             />
+
+            <Dialog open={bulkDateOpen} onOpenChange={setBulkDateOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Mover pedidos de fecha</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <label className="text-sm font-medium mb-2 block">Nueva fecha de entrega para los {selected.size} pedidos:</label>
+                        <Input
+                            type="date"
+                            value={bulkNewDate}
+                            onChange={(e) => setBulkNewDate(e.target.value)}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setBulkDateOpen(false)}>Cancelar</Button>
+                        <Button onClick={handleBulkDate} disabled={!bulkNewDate}>Guardar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
