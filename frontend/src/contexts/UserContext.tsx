@@ -37,9 +37,15 @@ function setCachedRole(role: UserRole) {
 }
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null)
-    const [role, setRole] = useState<UserRole>(null)
-    const [loading, setLoading] = useState(true)
+    const [state, setState] = useState<{
+        user: User | null
+        role: UserRole
+        loading: boolean
+    }>({
+        user: null,
+        role: getCachedRole(), // Empezamos con el cache si existe
+        loading: true
+    })
     const [mounted, setMounted] = useState(false)
     const supabase = createClient()
     const pathname = usePathname()
@@ -56,45 +62,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 .eq('id', userId)
                 .single()
 
-            if (!error && data) {
-                const dbRole = data.role as UserRole
-                console.log(`👤 Profile found: ${dbRole}`)
-                setRole(dbRole)
-                setCachedRole(dbRole)
-                return dbRole
-            } else {
-                console.warn('👤 Profile query error, using fallback')
-                setRole('repartidor')
-                setCachedRole('repartidor')
-                return 'repartidor'
-            }
+            const dbRole = (!error && data) ? (data.role as UserRole) : 'repartidor'
+            console.log(`👤 Profile result: ${dbRole}`)
+
+            setCachedRole(dbRole)
+            setState(s => ({ ...s, role: dbRole, loading: false }))
+            return dbRole
         } catch (err) {
             console.error('👤 Fatal fetchProfile error:', err)
-            setRole('repartidor')
-            setCachedRole('repartidor')
+            setState(s => ({ ...s, role: 'repartidor', loading: false }))
             return 'repartidor'
         }
     }
 
     const refreshProfile = async () => {
-        console.log('🔍 Manual session refresh...')
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
-            setUser(session.user)
             await fetchAndSetRole(session.user.id)
         } else {
-            setUser(null)
-            setRole(null)
             setCachedRole(null)
+            setState({ user: null, role: null, loading: false })
         }
     }
 
     useEffect(() => {
         setMounted(true)
 
-        // ═══════════════════════════════════════════
-        // PASO 1: Hidratación instantánea desde cache
-        // ═══════════════════════════════════════════
         const initSession = async () => {
             console.log('🚀 Init: Checking session...')
             try {
@@ -102,36 +95,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 console.log('🚀 Init: Session found:', !!session)
 
                 if (session?.user) {
-                    setUser(session.user)
-
-                    // 1. USAR ROL CACHEADO para desbloquear la UI inmediatamente
                     const cached = getCachedRole()
-                    if (cached) {
-                        console.log(`🚀 Init: Using CACHED role: ${cached}`)
-                        setRole(cached)
-                        setLoading(false) // ← UI se desbloquea AHORA
-                    }
-
-                    // 2. Verificar rol real en la DB (actualiza si cambió)
-                    const realRole = await fetchAndSetRole(session.user.id)
-
-                    // Si no había cache, ahora es la primera vez que liberamos
-                    if (!cached) {
-                        console.log('🚀 Init: First load, role from DB:', realRole)
-                        setLoading(false)
-                    } else if (cached !== realRole) {
-                        console.log(`🚀 Init: Role CHANGED from cache (${cached}) to DB (${realRole})`)
-                    }
+                    setState(s => ({
+                        user: session.user,
+                        role: cached || s.role,
+                        loading: false // Si hay user, ya podemos intentar mostrar algo
+                    }))
+                    await fetchAndSetRole(session.user.id)
                 } else {
-                    console.log('🚀 Init: No session, clearing state')
-                    setUser(null)
-                    setRole(null)
+                    console.log('🚀 Init: No session found')
+                    setState({ user: null, role: null, loading: false })
                     setCachedRole(null)
-                    setLoading(false)
                 }
             } catch (err) {
                 console.error('🚀 Init: Error:', err)
-                setLoading(false)
+                setState(s => ({ ...s, loading: false }))
             }
             initDone.current = true
         }
@@ -144,49 +122,45 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
             console.log(`📦 Auth Event: ${event}, Session: ${!!session}`)
 
-            // Ignoramos INITIAL_SESSION porque ya lo manejamos arriba
-            if (event === 'INITIAL_SESSION') return
-
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 if (session?.user) {
-                    setUser(session.user)
-                    // Solo buscamos el perfil si la inicialización ya terminó
-                    // para no duplicar llamadas
+                    setState(s => ({ ...s, user: session.user }))
                     if (initDone.current) {
                         await fetchAndSetRole(session.user.id)
                     }
-                    setLoading(false)
                 }
-            } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
-                setUser(null)
-                setRole(null)
+            } else if (event === 'SIGNED_OUT') {
+                setState({ user: null, role: null, loading: false })
                 setCachedRole(null)
-                setLoading(false)
             }
         })
 
         // ═══════════════════════════════════════════
-        // PASO 3: Timeout de emergencia (último recurso)
+        // PASO 3: Timeout de emergencia 
         // ═══════════════════════════════════════════
         const emergencyTimeout = setTimeout(() => {
-            if (loading) {
-                console.warn('🚨 Emergency timeout: forcing loading=false')
-                setLoading(false)
-            }
-        }, 8000)
+            setState(s => {
+                if (s.loading) {
+                    console.warn('🚨 Emergency timeout fired')
+                    return { ...s, loading: false }
+                }
+                return s
+            })
+        }, 6000)
 
         // ═══════════════════════════════════════════
         // PASO 4: Re-check suave en foco de ventana
         // ═══════════════════════════════════════════
         const handleFocus = async () => {
             const now = Date.now()
-            // Solo re-verificamos si pasaron más de 5 minutos
-            if (now - lastChecked.current > 300000) {
+            if (now - lastChecked.current > 600000) { // 10 min
                 lastChecked.current = now
-                console.log('🔍 Window focus: background refresh...')
+                console.log('🔍 Window focus: background check')
                 const { data: { session } } = await supabase.auth.getSession()
                 if (session?.user) {
-                    setUser(session.user)
+                    setState(s => ({ ...s, user: session.user }))
+                } else {
+                    setState({ user: null, role: null, loading: false })
                 }
             }
         }
@@ -212,11 +186,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (!mounted) return null
 
     return (
-        <UserContext.Provider value={{ user, role, loading, refreshProfile }}>
+        <UserContext.Provider value={{ ...state, refreshProfile }}>
             {children}
             {/* Debug: [U/X][A/R/N][L/F] */}
             <div className="fixed bottom-1 left-1 z-[9999] opacity-[0.15] hover:opacity-100 transition-opacity bg-black text-[8px] px-1 rounded-sm text-white font-mono pointer-events-none">
-                {user ? 'U' : 'X'}{role === 'admin' ? 'A' : role === 'repartidor' ? 'R' : 'N'}{loading ? 'L' : 'F'}
+                {state.user ? 'U' : 'X'}{state.role === 'admin' ? 'A' : state.role === 'repartidor' ? 'R' : 'N'}{state.loading ? 'L' : 'F'}
             </div>
         </UserContext.Provider>
     )
