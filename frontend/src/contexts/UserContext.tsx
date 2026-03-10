@@ -27,17 +27,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const initStarted = useRef<boolean>(false)
 
     const fetchProfile = async (userId: string) => {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', userId)
-            .single()
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single()
 
-        if (!error && data) {
-            setRole(data.role as UserRole)
-        } else {
-            console.error('Error fetching profile:', error)
-            setRole('repartidor') // Default fallback
+            if (!error && data) {
+                setRole(data.role as UserRole)
+            } else {
+                if (error) console.error('Error in fetchProfile query:', error)
+                setRole('repartidor') // Default fallback
+            }
+        } catch (err) {
+            console.error('Fatal error in fetchProfile:', err)
+            setRole('repartidor')
         }
     }
 
