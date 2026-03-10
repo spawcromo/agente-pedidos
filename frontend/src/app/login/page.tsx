@@ -11,6 +11,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
 
     async function handleLogin(e: React.FormEvent) {
         e.preventDefault()
@@ -18,24 +19,36 @@ export default function LoginPage() {
         try {
             const supabase = createClient()
             const { error } = await supabase.auth.signInWithPassword({ email, password })
-            if (error) { toast.error(error.message); return }
-            router.push("/inicio")
-            router.refresh()
-        } finally {
+            if (error) {
+                toast.error(error.message)
+                setLoading(false)
+                return
+            }
+
+            setIsSuccess(true) // Dispara la animación de salida
+
+            // Espera a que termine la animación css antes de navegar
+            setTimeout(() => {
+                router.push("/inicio")
+                router.refresh()
+            }, 700)
+
+        } catch (err) {
             setLoading(false)
         }
     }
 
     return (
-        <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden"
-            style={{
+        <main className={`min-h-screen flex items-center justify-center px-4 relative overflow-hidden transition-all duration-1000 ${isSuccess ? 'bg-black' : ''}`}
+            style={!isSuccess ? {
                 backgroundColor: "#1c1917", // Muy oscuro de base
                 backgroundImage: `
                     radial-gradient(circle at 50% 50%, #7c2d12 0%, #1c1917 100%)
                 `,
-            }}>
+            } : {}}>
 
-            <div className="w-full max-w-sm relative z-10">
+            <div className={`w-full max-w-sm relative z-10 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${isSuccess ? 'opacity-0 scale-110 blur-xl translate-y-8' : 'opacity-100 scale-100 blur-0 translate-y-0'
+                }`}>
                 {/* Card */}
                 <div
                     className="rounded-[2.5rem] border border-white/5 p-10 space-y-8 backdrop-blur-3xl"
