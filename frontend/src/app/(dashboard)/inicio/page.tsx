@@ -220,6 +220,8 @@ function DashboardPage() {
             icon: ClipboardList,
             color: 'text-amber-500',
             bg: 'bg-amber-500/10',
+            border: 'border-t-amber-500',
+            hover: 'hover:border-amber-500/50',
             href: '/pedidos?status=pending'
         },
         {
@@ -229,6 +231,8 @@ function DashboardPage() {
             icon: CheckCircle2,
             color: 'text-green-500',
             bg: 'bg-green-500/10',
+            border: 'border-t-green-500',
+            hover: 'hover:border-green-500/50',
             href: '/pedidos?status=confirmed'
         },
         {
@@ -238,6 +242,8 @@ function DashboardPage() {
             icon: Truck,
             color: 'text-cyan-500',
             bg: 'bg-cyan-500/10',
+            border: 'border-t-cyan-500',
+            hover: 'hover:border-cyan-500/50',
             href: '/reparto'
         }
     ]
@@ -254,27 +260,31 @@ function DashboardPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {cards.map((card, i) => (
                     <Link key={i} href={card.href}>
-                        <Card className="relative overflow-hidden group hover:border-amber-500/50 transition-all duration-300 cursor-pointer bg-card/50 backdrop-blur-sm border-border/50">
+                        <Card className={cn(
+                            "relative overflow-hidden group transition-all duration-500 cursor-pointer bg-card/40 backdrop-blur-md border-border/50 border-t-4",
+                            card.border,
+                            card.hover
+                        )}>
                             <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
                                     {card.title}
                                 </CardTitle>
-                                <div className={`${card.bg} ${card.color} p-2.5 rounded-xl transition-transform group-hover:scale-110 duration-300`}>
-                                    <card.icon className="w-5 h-5" />
+                                <div className={`${card.bg} ${card.color} p-2 rounded-lg transition-transform group-hover:scale-110 duration-300`}>
+                                    <card.icon className="w-4 h-4" />
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-3xl font-bold tracking-tight">
+                                <div className="text-4xl font-black tracking-tight">
                                     {card.value}
                                 </div>
-                                <CardDescription className="mt-1 flex items-center gap-1.5">
+                                <CardDescription className="mt-1 flex items-center gap-1.5 font-medium transition-colors group-hover:text-foreground">
                                     {card.description}
                                     <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300" />
                                 </CardDescription>
                             </CardContent>
 
                             {/* Subtle background decoration */}
-                            <div className={`absolute -right-4 -bottom-4 w-24 h-24 ${card.bg} rounded-full blur-3xl opacity-20 group-hover:opacity-40 transition-opacity`} />
+                            <div className={`absolute -right-4 -bottom-4 w-24 h-24 ${card.bg} rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition-opacity`} />
                         </Card>
                     </Link>
                 ))}
