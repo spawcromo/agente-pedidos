@@ -47,25 +47,30 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
 
     const refreshProfile = async (isInitial: boolean = false) => {
-        console.log(`🔍 Refreshing session (isInitial: ${isInitial})...`)
+        const start = Date.now()
+        console.log(`🔍 [${start}] Refreshing session (isInitial: ${isInitial})...`)
         try {
             const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
-            if (userError) throw userError
 
-            setUser(currentUser)
-            if (currentUser) {
-                await fetchProfile(currentUser.id)
-            } else {
+            if (userError) {
+                console.warn(`⚠️ [${start}] Auth getUser error:`, userError.message)
+                setUser(null)
                 setRole(null)
+            } else {
+                setUser(currentUser)
+                if (currentUser) {
+                    await fetchProfile(currentUser.id)
+                } else {
+                    setRole(null)
+                }
             }
         } catch (err: any) {
-            if (err?.name !== 'AuthSessionMissingError' && err?.message !== 'Auth session missing!') {
-                console.error('Error in refreshProfile:', err)
-            }
+            console.error(`❌ [${start}] Fatal error in refreshProfile:`, err)
             setUser(null)
             setRole(null)
         } finally {
-            console.log('✅ Session refreshed')
+            console.log(`✅ [${start}] Session refresh finished in ${Date.now() - start}ms`)
+            // En la inicialización, siempre quitamos el loading
             if (isInitial) setLoading(false)
         }
     }
@@ -87,11 +92,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         if (!initStarted.current) {
             initStarted.current = true
 
-            // Timeout de seguridad por si Supabase tarda demasiado (5 seg)
+            // Timeout de seguridad por si Supabase tarda demasiado (7 seg)
             const timeout = setTimeout(() => {
-                console.warn('⚠️ Auth initialization timeout reached')
+                console.warn('🚨 Auth initialization EMERGENCY TIMEOUT')
                 setLoading(false)
-            }, 5000)
+            }, 7000)
 
             refreshProfile(true).then(() => clearTimeout(timeout))
         }
@@ -107,21 +112,41 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         window.addEventListener('focus', handleFocus)
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-            console.log('📦 Auth Event:', event)
+            console.log('📦 Supabase Auth Event:', event, !!session)
+
             try {
                 if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
                     if (session?.user) {
                         setUser(session.user)
-                        await fetchProfile(session.user.id)
+                        // No esperamos a fetchProfile aquí directamente si ya estamos cargando (refreshProfile lo hará)
+                        const { data, error } = await supabase
+                            .from('profiles')
+                            .select('role')
+                            .eq('id', session.user.id)
+                            .single()
+
+                        if (!error && data) {
+                            setRole(data.role as UserRole)
+                        } else if (!role) {
+                            setRole('repartidor')
+                        }
+                    } else if (event !== 'INITIAL_SESSION') {
+                        setUser(null)
+                        setRole(null)
                     }
                 } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
                     setUser(null)
                     setRole(null)
+                    setLoading(false)
                 }
             } catch (err) {
-                console.error('Error in onAuthStateChange:', err)
+                console.error('Error in onAuthStateChange handler:', err)
             } finally {
-                setLoading(false)
+                // we don't setLoading(false) here to avoid race conditions with refreshProfile(true)
+                // only if NOT initial load
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
+                    setLoading(false)
+                }
             }
         })
 
@@ -138,6 +163,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return (
         <UserContext.Provider value={{ user, role, loading, refreshProfile: () => refreshProfile() }}>
             {children}
+            {/* Debug Sutil en la esquina inferior izquierda: [U/X][A/R/N][L/F] */}
+            <div className="fixed bottom-1 left-1 z-[9999] opacity-[0.2] hover:opacity-100 transition-opacity bg-black text-[8px] px-1 rounded-sm text-white font-mono pointer-events-none">
+                {user ? 'U' : 'X'}{role === 'admin' ? 'A' : role === 'repartidor' ? 'R' : 'N'}{loading ? 'L' : 'F'}
+            </div>
         </UserContext.Provider>
     )
 }
