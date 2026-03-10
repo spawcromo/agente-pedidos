@@ -384,28 +384,28 @@ function DashboardPage() {
                                 <ListTodo className="w-4 h-4 text-amber-500/60" />
                                 <span className="text-muted-foreground">Total armadas:</span>
                             </div>
-                            <span className="font-bold text-amber-50">{stats.rutas_hoy_total}</span>
+                            <span className="font-bold text-white">{stats.rutas_hoy_total}</span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
                             <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-emerald-500/60" />
+                                <Truck className="w-4 h-4 text-amber-500/60" />
                                 <span className="text-muted-foreground">En progreso:</span>
                             </div>
-                            <span className="font-bold text-emerald-400">{stats.rutas_hoy_progreso}</span>
+                            <span className="font-bold text-white">{stats.rutas_hoy_progreso}</span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
                             <div className="flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-amber-500/60" />
                                 <span className="text-muted-foreground">Completadas:</span>
                             </div>
-                            <span className="font-bold text-amber-500">{stats.rutas_hoy_completadas}</span>
+                            <span className="font-bold text-white">{stats.rutas_hoy_completadas}</span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
                             <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-amber-500/60" />
                                 <span className="text-muted-foreground">Pendientes de iniciar:</span>
                             </div>
-                            <span className="font-bold text-amber-500">{stats.rutas_hoy_pendientes_iniciar}</span>
+                            <span className="font-bold text-white">{stats.rutas_hoy_pendientes_iniciar}</span>
                         </div>
                         <div className="pt-4">
                             <Link href="/reparto">
@@ -425,28 +425,28 @@ function DashboardPage() {
                                 <Users className="w-4 h-4 text-emerald-500/60" />
                                 <span className="text-muted-foreground">Totales:</span>
                             </div>
-                            <span className="font-bold text-emerald-50">{stats.repartidores_totales}</span>
+                            <span className="font-bold text-white">{stats.repartidores_totales}</span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
                             <div className="flex items-center gap-2">
                                 <Truck className="w-4 h-4 text-emerald-500/60" />
                                 <span className="text-muted-foreground">En ruta:</span>
                             </div>
-                            <span className="font-bold text-emerald-400">{stats.repartidores_en_ruta}</span>
+                            <span className="font-bold text-white">{stats.repartidores_en_ruta}</span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
                             <div className="flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-500/60" />
                                 <span className="text-muted-foreground">Disponibles:</span>
                             </div>
-                            <span className="font-bold text-blue-400">{stats.repartidores_disponibles}</span>
+                            <span className="font-bold text-white">{stats.repartidores_disponibles}</span>
                         </div>
                         <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
                             <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4 text-emerald-500/60" />
                                 <span className="text-muted-foreground">Pendientes de salir:</span>
                             </div>
-                            <span className="font-bold text-emerald-400">{stats.repartidores_pendientes_salir}</span>
+                            <span className="font-bold text-white">{stats.repartidores_pendientes_salir}</span>
                         </div>
                         <div className="pt-4">
                             <Link href="/reparto">
