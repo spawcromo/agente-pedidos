@@ -77,7 +77,11 @@ function DashboardPage() {
     if (role === 'repartidor') {
         const totalStops = myRoutes.reduce((acc, r) => acc + r.stops.length, 0)
         const completedStops = myRoutes.reduce((acc, r) => acc + r.stops.filter(s => s.status === 'delivered').length, 0)
-        const pendingRoutes = myRoutes.filter(r => r.status !== 'completed').length
+        const pendingRoutes = myRoutes.filter(r => {
+            if (r.status === 'completed') return false
+            const allDelivered = r.stops.length > 0 && r.stops.every(s => s.status === 'delivered')
+            return !allDelivered
+        }).length
 
         return (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
