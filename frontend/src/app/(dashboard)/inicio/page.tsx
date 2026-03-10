@@ -82,43 +82,43 @@ function DashboardPage() {
 
                 {/* Repartidor Stats Grid */}
                 <div className="grid gap-6 md:grid-cols-3">
-                    <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-amber-500/30 transition-colors">
+                    <Card className="bg-card/40 backdrop-blur-md border-border/50 border-t-4 border-t-amber-500 hover:border-amber-500/50 transition-all duration-300">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
                                 <Truck className="w-4 h-4 text-amber-500" /> Rutas Activas
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">{pendingRoutes}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Pendientes de completar</p>
+                            <div className="text-4xl font-black">{pendingRoutes}</div>
+                            <p className="text-xs text-muted-foreground mt-1 font-medium">Pendientes de completar</p>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-green-500/30 transition-colors">
+                    <Card className="bg-card/40 backdrop-blur-md border-border/50 border-t-4 border-t-green-500 hover:border-green-500/50 transition-all duration-300">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-green-500" /> Entregas Realizadas
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold">{completedStops} / {totalStops}</div>
-                            <p className="text-xs text-muted-foreground mt-1">Paradas completadas hoy</p>
+                            <div className="text-4xl font-black">{completedStops} / {totalStops}</div>
+                            <p className="text-xs text-muted-foreground mt-1 font-medium">Paradas completadas hoy</p>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-card/50 backdrop-blur-sm border-border/50 hover:border-blue-500/30 transition-colors">
+                    <Card className="bg-card/40 backdrop-blur-md border-border/50 border-t-4 border-t-blue-500 hover:border-blue-500/50 transition-all duration-300">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-blue-500" /> Próxima Parada
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-xl font-bold truncate">
+                            <div className="text-xl font-black truncate text-blue-400">
                                 {myRoutes.find(r => r.stops.some(s => s.status === 'pending'))
                                     ?.stops.find(s => s.status === 'pending')
                                     ?.order.client?.name || '¡Todo entregado!'}
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">Punto de entrega más cercano</p>
+                            <p className="text-xs text-muted-foreground mt-1 font-medium">Punto de entrega más cercano</p>
                         </CardContent>
                     </Card>
                 </div>
