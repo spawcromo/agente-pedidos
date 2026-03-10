@@ -24,7 +24,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getEnhancedDashboardStats, type EnhancedDashboardStats, type ProductionEstimate } from '@/services/dashboard'
+import { getEnhancedDashboardStats, type EnhancedDashboardStats, type ProductionEstimate, type PlanificacionStats } from '@/services/dashboard'
 import { getMyRoutes, type DeliveryRoute } from '@/services/logistics'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -40,6 +40,7 @@ function DashboardPage() {
     const { role, user, fullName, avatarUrl } = useUser()
     const [stats, setStats] = useState<EnhancedDashboardStats | null>(null)
     const [production, setProduction] = useState<ProductionEstimate>({})
+    const [planificacion, setPlanificacion] = useState<PlanificacionStats>({ rutas_armadas: 0, pedidos_sin_ruta: 0, repartidores_asignados: 0, repartidores_libres: 0 })
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
     const [loading, setLoading] = useState(true)
     const [imgError, setImgError] = useState(false)
@@ -52,10 +53,11 @@ function DashboardPage() {
             setLoading(true)
             try {
                 if (role === 'admin') {
-                    const { stats: s, production: p } = await getEnhancedDashboardStats()
+                    const { stats: s, production: p, planificacion: pl } = await getEnhancedDashboardStats()
                     if (isMounted) {
                         setStats(s)
                         setProduction(p)
+                        setPlanificacion(pl)
                     }
                 } else if (role === 'repartidor' && user) {
                     const routes = await getMyRoutes(user.id)
@@ -492,6 +494,77 @@ function DashboardPage() {
                         <div className="text-3xl font-black text-red-500">{stats.pedidos_manana_rechazados}</div>
                     </Card>
                 </div>
+            </div>
+
+            {/* PLANIFICACION Y PRODUCCION MAÑANA */}
+            <div className="grid gap-4 md:grid-cols-2 mt-8">
+                <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl">
+                    <CardHeader className="pt-4 px-5 pb-2">
+                        <CardTitle className="text-sm font-bold text-amber-50">Planificación de mañana</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-0 text-sm px-5 pb-4 pt-0">
+                        <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                            <div className="flex items-center gap-2">
+                                <ListTodo className="w-4 h-4 text-amber-500/60" />
+                                <span className="text-muted-foreground">Rutas armadas:</span>
+                            </div>
+                            <span className="font-bold text-white">{planificacion.rutas_armadas}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                            <div className="flex items-center gap-2">
+                                <Package className="w-4 h-4 text-amber-500/60" />
+                                <span className="text-muted-foreground">Pedidos sin ruta:</span>
+                            </div>
+                            <span className="font-bold text-white">{planificacion.pedidos_sin_ruta}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                            <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4 text-amber-500/60" />
+                                <span className="text-muted-foreground">Repartidores asignados:</span>
+                            </div>
+                            <span className="font-bold text-white">{planificacion.repartidores_asignados}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                            <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4 text-amber-500/60" />
+                                <span className="text-muted-foreground">Repartidores libres:</span>
+                            </div>
+                            <span className="font-bold text-white">{planificacion.repartidores_libres}</span>
+                        </div>
+                        <div className="pt-4 mt-auto">
+                            <Link href="/reparto">
+                                <Button className="w-full bg-[#1A140F] hover:bg-[#2A1F16] border border-[#2A1F16] text-amber-500/90 font-medium h-9 text-xs transition-colors">Planificar</Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl">
+                    <CardHeader className="pt-4 px-5 pb-2">
+                        <CardTitle className="text-sm font-bold text-emerald-50">Producción estimada</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-0 text-sm px-5 pb-4 pt-0">
+                        {Object.entries(production).map(([name, prod], idx) => (
+                            <div key={idx} className="flex justify-between items-center py-2.5 border-b border-[#2A1F16]">
+                                <div className="flex items-center gap-2">
+                                    <Package className="w-4 h-4 text-emerald-500/60" />
+                                    <span className="text-muted-foreground">{name}:</span>
+                                </div>
+                                <span className="font-bold text-white">{prod.quantity} {prod.unit}</span>
+                            </div>
+                        ))}
+                        {Object.entries(production).length === 0 && (
+                            <div className="py-8 text-center text-muted-foreground text-xs">
+                                No hay producción confirmada o pendiente.
+                            </div>
+                        )}
+                        <div className="pt-4 mt-auto">
+                            <Link href="/produccion">
+                                <Button className="w-full bg-[#141A14] hover:bg-[#1A261A] border border-[#1A261A] text-emerald-500/90 font-medium h-9 text-xs transition-colors">Ver producción</Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )

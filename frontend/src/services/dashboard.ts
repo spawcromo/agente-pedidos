@@ -24,9 +24,17 @@ export interface EnhancedDashboardStats {
 
 export type ProductionEstimate = Record<string, { quantity: number; unit: string }>
 
+export interface PlanificacionStats {
+    rutas_armadas: number
+    pedidos_sin_ruta: number
+    repartidores_asignados: number
+    repartidores_libres: number
+}
+
 export async function getEnhancedDashboardStats(): Promise<{
     stats: EnhancedDashboardStats | null;
     production: ProductionEstimate;
+    planificacion: PlanificacionStats;
 }> {
     const supabase = createClient()
 
@@ -99,8 +107,50 @@ export async function getEnhancedDashboardStats(): Promise<{
         rutas_hoy_pendientes_iniciar: pendingRoutesCount || 0
     } : null
 
+    // 4. Planificacion de mañana
+    const { data: tomorrowRoutes } = await supabase
+        .from('delivery_routes')
+        .select('id, driver_id')
+        .eq('delivery_date', tomorrow)
+
+    const rutas_armadas = tomorrowRoutes?.length || 0
+
+    // Drivers assigned
+    const assignedDriversSet = new Set(tomorrowRoutes?.map((r: any) => r.driver_id).filter(Boolean))
+    const repartidores_asignados = assignedDriversSet.size
+
+    // Total Drivers to calculate free drivers
+    const { count: totalDrivers } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'repartidor')
+
+    const repartidores_libres = (totalDrivers || 0) - repartidores_asignados
+
+    // To get 'pedidos sin ruta', we know total pending/confirmed orders for tomorrow (finalStats.pedidos_manana_confirmados + finalStats.pedidos_manana_pendientes)
+    // We just subtract the ones already in stops for those routes... OR we fetch stops directly.
+    let pedidosEnRuta = 0
+    if (rutas_armadas > 0 && tomorrowRoutes) {
+        const routeIds = tomorrowRoutes.map((r: any) => r.id)
+        const { count: countEnRuta } = await supabase
+            .from('delivery_stops')
+            .select('*', { count: 'exact', head: true })
+            .in('route_id', routeIds)
+        pedidosEnRuta = countEnRuta || 0
+    }
+
+    const pedidos_sin_ruta = Math.max(0, (ordersData?.length || 0) - pedidosEnRuta)
+
+    const planificacion: PlanificacionStats = {
+        rutas_armadas,
+        pedidos_sin_ruta,
+        repartidores_asignados,
+        repartidores_libres
+    }
+
     return {
         stats: finalStats as EnhancedDashboardStats | null,
-        production
+        production,
+        planificacion
     }
 }
