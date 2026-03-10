@@ -50,15 +50,23 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const start = Date.now()
         console.log(`🔍 [${start}] Refreshing session (isInitial: ${isInitial})...`)
         try {
-            const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-            if (userError) {
-                console.warn(`⚠️ [${start}] Auth getUser error:`, userError.message)
+            if (sessionError) {
+                console.warn(`⚠️ [${start}] Auth getSession error:`, sessionError.message)
                 setUser(null)
                 setRole(null)
             } else {
+                const currentUser = session?.user || null
                 setUser(currentUser)
+
                 if (currentUser) {
+                    // Si ya tenemos sesión, liberamos el loading lo antes posible
+                    // con un rol por defecto para que no se vea pantalla negra
+                    if (!role) setRole('repartidor')
+                    if (isInitial) setLoading(false)
+
+                    // Luego buscamos el perfil real en segundo plano
                     await fetchProfile(currentUser.id)
                 } else {
                     setRole(null)
@@ -70,8 +78,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             setRole(null)
         } finally {
             console.log(`✅ [${start}] Session refresh finished in ${Date.now() - start}ms`)
-            // En la inicialización, siempre quitamos el loading
-            if (isInitial) setLoading(false)
+            setLoading(false)
         }
     }
 
@@ -79,7 +86,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (pathname === '/login' || !mounted) return
         const now = Date.now()
-        if (now - lastChecked.current > 30000) {
+        // Evitamos doble llamado inicial
+        if (now - lastChecked.current > 30000 && initStarted.current) {
             lastChecked.current = now
             refreshProfile()
         }
@@ -91,12 +99,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // Inicialización única
         if (!initStarted.current) {
             initStarted.current = true
+            lastChecked.current = Date.now()
 
-            // Timeout de seguridad por si Supabase tarda demasiado (7 seg)
+            // Timeout de seguridad por si Supabase tarda demasiado (5 seg)
             const timeout = setTimeout(() => {
                 console.warn('🚨 Auth initialization EMERGENCY TIMEOUT')
                 setLoading(false)
-            }, 7000)
+                // Si llegamos aquí y hay usuario pero no rol, asignamos fallback
+                if (user && !role) setRole('repartidor')
+            }, 5000)
 
             refreshProfile(true).then(() => clearTimeout(timeout))
         }
@@ -118,21 +129,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
                     if (session?.user) {
                         setUser(session.user)
-                        // No esperamos a fetchProfile aquí directamente si ya estamos cargando (refreshProfile lo hará)
-                        const { data, error } = await supabase
-                            .from('profiles')
-                            .select('role')
-                            .eq('id', session.user.id)
-                            .single()
+                        // Aseguramos que el loading se vaya rápido
+                        if (!role) setRole('repartidor')
+                        setLoading(false)
 
-                        if (!error && data) {
-                            setRole(data.role as UserRole)
-                        } else if (!role) {
-                            setRole('repartidor')
-                        }
+                        // Buscamos perfil real
+                        await fetchProfile(session.user.id)
                     } else if (event !== 'INITIAL_SESSION') {
                         setUser(null)
                         setRole(null)
+                        setLoading(false)
                     }
                 } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
                     setUser(null)
@@ -141,12 +147,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
                 }
             } catch (err) {
                 console.error('Error in onAuthStateChange handler:', err)
-            } finally {
-                // we don't setLoading(false) here to avoid race conditions with refreshProfile(true)
-                // only if NOT initial load
-                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'SIGNED_OUT') {
-                    setLoading(false)
-                }
+                setLoading(false)
             }
         })
 
