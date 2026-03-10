@@ -22,6 +22,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true)
     const [mounted, setMounted] = useState(false)
     const supabase = createClient()
+    const pathname = usePathname()
+    const lastChecked = useRef<number>(0)
+    const initStarted = useRef<boolean>(false)
 
     const fetchProfile = async (userId: string) => {
         const { data, error } = await supabase
@@ -38,7 +41,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const refreshProfile = async () => {
+    const refreshProfile = async (isInitial: boolean = false) => {
+        console.log(`🔍 Refreshing session (isInitial: ${isInitial})...`)
         try {
             const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
             if (userError) throw userError
@@ -56,30 +60,40 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             setUser(null)
             setRole(null)
         } finally {
-            setLoading(false)
+            console.log('✅ Session refreshed')
+            if (isInitial) setLoading(false)
         }
     }
 
-    const pathname = usePathname()
-    const lastChecked = useRef<number>(0)
-
     // Re-verificar sesión en cada navegación (máximo cada 30 seg para no saturar)
     useEffect(() => {
+        if (pathname === '/login') return
         const now = Date.now()
-        if (now - lastChecked.current > 30000 && pathname !== '/login') {
+        if (now - lastChecked.current > 30000 && mounted) {
             lastChecked.current = now
             refreshProfile()
         }
-    }, [pathname])
+    }, [pathname, mounted])
 
     useEffect(() => {
         setMounted(true)
-        refreshProfile()
+
+        // Inicialización única
+        if (!initStarted.current) {
+            initStarted.current = true
+
+            // Timeout de seguridad por si Supabase tarda demasiado (5 seg)
+            const timeout = setTimeout(() => {
+                setLoading(false)
+            }, 5000)
+
+            refreshProfile(true).then(() => clearTimeout(timeout))
+        }
 
         // Re-verificar sesión cuando la pestaña recupera el foco
         const handleFocus = () => {
             const now = Date.now()
-            if (now - lastChecked.current > 60000) { // Solo si pasó 1 min
+            if (now - lastChecked.current > 60000) {
                 lastChecked.current = now
                 refreshProfile()
             }
@@ -87,31 +101,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         window.addEventListener('focus', handleFocus)
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-            try {
+            console.log('📦 Auth Event:', event)
+
+            if (['SIGNED_IN', 'TOKEN_REFRESHED', 'INITIAL_SESSION', 'USER_UPDATED'].includes(event)) {
                 if (session?.user) {
                     setUser(session.user)
-                    // Solo buscamos perfil si realmente hay sesión
-                    const { data, error } = await supabase
-                        .from('profiles')
-                        .select('role')
-                        .eq('id', session.user.id)
-                        .single()
-
-                    if (!error && data) {
-                        setRole(data.role as UserRole)
-                    } else if (!role) {
-                        setRole('repartidor')
-                    }
-                } else {
-                    // Si no hay sesión, limpiamos siempre para evitar "stuck" states
-                    setUser(null)
-                    setRole(null)
+                    await fetchProfile(session.user.id)
                 }
-            } catch (err) {
-                console.error('Error in onAuthStateChange:', err)
+                setLoading(false)
+            } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
                 setUser(null)
                 setRole(null)
-            } finally {
                 setLoading(false)
             }
         })
@@ -127,7 +127,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <UserContext.Provider value={{ user, role, loading, refreshProfile }}>
+        <UserContext.Provider value={{ user, role, loading, refreshProfile: () => refreshProfile() }}>
             {children}
         </UserContext.Provider>
     )
