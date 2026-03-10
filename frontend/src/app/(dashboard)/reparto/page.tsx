@@ -86,7 +86,7 @@ function RepartoPage() {
         try {
             if (role === 'admin') {
                 const [allOrders, allRoutes, allDrivers] = await Promise.all([
-                    getOrders({ delivery_date: date, status: 'confirmed' }),
+                    getOrders({ delivery_date: date, status: ['pending', 'confirmed'] }),
                     getRoutes(date),
                     getDrivers()
                 ])
