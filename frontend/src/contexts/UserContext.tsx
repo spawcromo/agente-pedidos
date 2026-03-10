@@ -119,14 +119,17 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // ═══════════════════════════════════════════
         // PASO 2: Escuchar cambios posteriores
         // ═══════════════════════════════════════════
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
             console.log(`📦 Auth Event: ${event}, Session: ${!!session}`)
 
             if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
                 if (session?.user) {
                     setState(s => ({ ...s, user: session.user }))
                     if (initDone.current) {
-                        await fetchAndSetRole(session.user.id)
+                        // Liberamos el callstack para evitar un deadlock interno de Supabase
+                        // que puede colgar todas las queries subsecuentes si hacemos supabase.from()
+                        // mientras gotrue-js está resolviendo un evento de auth.
+                        setTimeout(() => fetchAndSetRole(session.user.id), 0)
                     }
                 }
             } else if (event === 'SIGNED_OUT') {
@@ -148,27 +151,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             })
         }, 6000)
 
-        // ═══════════════════════════════════════════
-        // PASO 4: Re-check suave en foco de ventana
-        // ═══════════════════════════════════════════
-        const handleFocus = async () => {
-            const now = Date.now()
-            if (now - lastChecked.current > 600000) { // 10 min
-                lastChecked.current = now
-                console.log('🔍 Window focus: background check')
-                const { data: { session } } = await supabase.auth.getSession()
-                if (session?.user) {
-                    setState(s => ({ ...s, user: session.user }))
-                } else {
-                    setState({ user: null, role: null, loading: false })
-                }
-            }
-        }
-        window.addEventListener('focus', handleFocus)
+        // Supabase JS maneja el foco de ventana automáticamente por debajo, 
+        // así que ya no necesitamos forzar chequeos manuales que podrían sobreponerse.
 
         return () => {
             subscription.unsubscribe()
-            window.removeEventListener('focus', handleFocus)
             clearTimeout(emergencyTimeout)
         }
     }, [])
