@@ -33,6 +33,7 @@ function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null)
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
     const [loading, setLoading] = useState(true)
+    const [imgError, setImgError] = useState(false)
 
     useEffect(() => {
         let isMounted = true
@@ -85,11 +86,30 @@ function DashboardPage() {
 
         return (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 🚛</h1>
-                    <p className="text-muted-foreground text-lg">
-                        Aquí tienes un resumen de tus rutas asignadas para hoy.
-                    </p>
+                <div className="flex items-center gap-4">
+                    {/* Avatar */}
+                    {avatarUrl && !imgError ? (
+                        <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-500 shadow-lg shadow-amber-500/20">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={avatarUrl}
+                                alt={fullName || "User Avatar"}
+                                className="w-full h-full object-cover bg-muted"
+                                onError={() => setImgError(true)}
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-16 h-16 rounded-full bg-amber-500/10 border-2 border-amber-500/50 flex items-center justify-center text-amber-500 font-black text-2xl uppercase shadow-lg shadow-amber-500/10">
+                            {fullName ? fullName.substring(0, 2) : 'A'}
+                        </div>
+                    )}
+
+                    <div>
+                        <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 🚛</h1>
+                        <p className="text-muted-foreground text-lg mt-1">
+                            Aquí tienes un resumen de tus rutas asignadas para hoy.
+                        </p>
+                    </div>
                 </div>
 
                 {/* Repartidor Stats Grid */}
@@ -275,13 +295,14 @@ function DashboardPage() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <div className="flex items-center gap-4">
                 {/* Avatar */}
-                {avatarUrl ? (
+                {avatarUrl && !imgError ? (
                     <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-amber-500 shadow-lg shadow-amber-500/20">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={avatarUrl}
                             alt={fullName || "User Avatar"}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover bg-muted"
+                            onError={() => setImgError(true)}
                         />
                     </div>
                 ) : (
