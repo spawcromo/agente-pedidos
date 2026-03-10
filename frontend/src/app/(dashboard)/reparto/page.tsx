@@ -191,7 +191,9 @@ function RepartoPage() {
                 <header className="text-center space-y-2">
                     <h1 className="text-3xl font-bold">Mis Rutas</h1>
                     <p className="text-muted-foreground capitalize">
-                        {mounted ? new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }) : '...'}
+                        {activeRoute
+                            ? new Date(activeRoute.delivery_date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
+                            : 'Cargando...'}
                     </p>
                 </header>
 
@@ -249,7 +251,7 @@ function RepartoPage() {
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold">Logística y Reparto</h1>
-                    <p className="text-muted-foreground">Gestioná las rutas y asignaciones del día.</p>
+                    <p className="text-muted-foreground">Gestioná las rutas y asignaciones para la fecha seleccionada.</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <Input
@@ -338,7 +340,9 @@ function RepartoPage() {
 
                 {/* Panel 2 & 3: Rutas existentes */}
                 <div className="lg:col-span-2 space-y-4">
-                    <h2 className="text-xl font-bold">Rutas de Hoy ({routes.length})</h2>
+                    <h2 className="text-xl font-bold">
+                        Rutas del {mounted ? new Date(date + 'T12:00:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'numeric' }) : '...'} ({routes.length})
+                    </h2>
                     {routes.length === 0 ? (
                         <div className="py-20 text-center bg-card border border-dashed border-border rounded-lg opacity-50">
                             <div className="flex justify-center mb-4">
