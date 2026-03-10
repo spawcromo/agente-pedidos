@@ -1,6 +1,8 @@
 -- Migration: 007_dashboard_stats
 -- View for high-level dashboard metrics
 
+DROP VIEW IF EXISTS v_dashboard_stats;
+
 CREATE OR REPLACE VIEW v_dashboard_stats AS
 SELECT
   (SELECT COUNT(*) FROM orders WHERE status = 'pending') AS pending_orders,
