@@ -11,12 +11,17 @@ import {
     MapPin,
     Calendar,
     CircleDashed,
-    Clock
+    Clock,
+    AlertTriangle,
+    Eye,
+    Check,
+    Lock,
+    PenTool
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { getDashboardStats, type DashboardStats } from '@/services/stats'
+import { getEnhancedDashboardStats, type EnhancedDashboardStats, type ProductionEstimate } from '@/services/dashboard'
 import { getMyRoutes, type DeliveryRoute } from '@/services/logistics'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -30,7 +35,8 @@ const ARS = new Intl.NumberFormat('es-AR', {
 
 function DashboardPage() {
     const { role, user, fullName, avatarUrl } = useUser()
-    const [stats, setStats] = useState<DashboardStats | null>(null)
+    const [stats, setStats] = useState<EnhancedDashboardStats | null>(null)
+    const [production, setProduction] = useState<ProductionEstimate>({})
     const [myRoutes, setMyRoutes] = useState<DeliveryRoute[]>([])
     const [loading, setLoading] = useState(true)
     const [imgError, setImgError] = useState(false)
@@ -43,8 +49,11 @@ function DashboardPage() {
             setLoading(true)
             try {
                 if (role === 'admin') {
-                    const data = await getDashboardStats()
-                    if (isMounted) setStats(data)
+                    const { stats: s, production: p } = await getEnhancedDashboardStats()
+                    if (isMounted) {
+                        setStats(s)
+                        setProduction(p)
+                    }
                 } else if (role === 'repartidor' && user) {
                     const routes = await getMyRoutes(user.id)
                     if (isMounted) setMyRoutes(routes)
@@ -244,52 +253,7 @@ function DashboardPage() {
 
     // --- VIEW: ADMIN ---
     if (!stats) return null
-    const cards = [
-        {
-            title: 'Pedidos Pendientes',
-            value: stats.pending_orders,
-            description: 'Esperando validación',
-            icon: ClipboardList,
-            color: 'text-amber-500',
-            bg: 'bg-amber-500/10',
-            border: 'border-t-amber-500',
-            hover: 'hover:border-amber-500/50',
-            href: '/pedidos?status=pending'
-        },
-        {
-            title: 'Pedidos Confirmados',
-            value: stats.confirmed_orders,
-            description: 'Listos para producción',
-            icon: CheckCircle2,
-            color: 'text-green-500',
-            bg: 'bg-green-500/10',
-            border: 'border-t-green-500',
-            hover: 'hover:border-green-500/50',
-            href: '/pedidos?status=confirmed'
-        },
-        {
-            title: 'Repartidores',
-            value: `${stats.drivers_with_routes_today} / ${stats.active_drivers}`,
-            description: 'Con ruta asignada hoy',
-            icon: Truck,
-            color: 'text-cyan-500',
-            bg: 'bg-cyan-500/10',
-            border: 'border-t-cyan-500',
-            hover: 'hover:border-cyan-500/50',
-            href: '/reparto'
-        },
-        {
-            title: 'Rutas Completadas',
-            value: `${stats.completed_routes_today} / ${stats.drivers_with_routes_today}`,
-            description: 'De las rutas de hoy',
-            icon: CircleDashed,
-            color: 'text-purple-500',
-            bg: 'bg-purple-500/10',
-            border: 'border-t-purple-500',
-            hover: 'hover:border-purple-500/50',
-            href: '/reparto'
-        }
-    ]
+
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
@@ -314,95 +278,265 @@ function DashboardPage() {
                 <div>
                     <h1 className="text-4xl font-bold tracking-tight">¡Hola{fullName ? `, ${fullName.split(' ')[0]}` : ''}! 👋</h1>
                     <p className="text-muted-foreground text-lg mt-1">
-                        Aquí tienes un resumen general de Avícola Baccaro para hoy.
+                        Hoy ejecutás los repartos ya planificados y preparás los pedidos de mañana.
                     </p>
                 </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {cards.map((card, i) => (
-                    <Link key={i} href={card.href}>
-                        <Card className={cn(
-                            "relative overflow-hidden group transition-all duration-500 cursor-pointer bg-card/40 backdrop-blur-md border-border/50 border-t-4",
-                            card.border,
-                            card.hover
-                        )}>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                                <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground">
-                                    {card.title}
-                                </CardTitle>
-                                <div className={`${card.bg} ${card.color} p-2 rounded-lg transition-transform group-hover:scale-110 duration-300`}>
-                                    <card.icon className="w-4 h-4" />
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-4xl font-black tracking-tight">
-                                    {card.value}
-                                </div>
-                                <CardDescription className="mt-1 flex items-center gap-1.5 font-medium transition-colors group-hover:text-foreground">
-                                    {card.description}
-                                    <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300" />
-                                </CardDescription>
-                            </CardContent>
+            {/* OPERACIÓN DE HOY */}
+            <div>
+                <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-4">Operación de Hoy</h2>
+                <div className="grid gap-4 md:grid-cols-4">
+                    <Card className="bg-amber-950/20 border-amber-900/50">
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm font-medium text-amber-500/80">Rutas de hoy</CardTitle>
+                            <div className="bg-amber-950/50 text-amber-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_total}</div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-amber-50">{stats.rutas_hoy_total}</div>
+                                <span className="text-sm font-medium text-amber-500/60">armadas</span>
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                            {/* Subtle background decoration */}
-                            <div className={`absolute -right-4 -bottom-4 w-24 h-24 ${card.bg} rounded-full blur-3xl opacity-10 group-hover:opacity-30 transition-opacity`} />
-                        </Card>
-                    </Link>
-                ))}
+                    <Card className="bg-emerald-950/20 border-emerald-900/50">
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm font-medium text-emerald-500/80">En progreso</CardTitle>
+                            <div className="bg-emerald-950/50 text-emerald-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_progreso}</div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-emerald-50">{stats.rutas_hoy_progreso}</div>
+                                <span className="text-sm font-medium text-emerald-500/60">activas</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-blue-950/20 border-blue-900/50">
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm font-medium text-blue-500/80">Completadas</CardTitle>
+                            <div className="bg-blue-950/50 text-blue-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_completadas}</div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-blue-50">{stats.rutas_hoy_completadas}</div>
+                                <span className="text-sm font-medium text-blue-500/60">finalizadas</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-red-950/20 border-red-900/50">
+                        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                            <CardTitle className="text-sm font-medium text-red-500/80">Entregas pendientes</CardTitle>
+                            <div className="bg-red-950/50 text-red-500/50 text-xs px-2 py-0.5 rounded font-bold">{stats.entregas_pendientes_hoy}</div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-red-50">{stats.entregas_pendientes_hoy}</div>
+                                <span className="text-sm font-medium text-red-500/60">pendientes</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
 
-            <Card className="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/20">
-                <CardHeader className="flex flex-row items-center gap-4">
-                    <div className="bg-amber-500 p-3 rounded-2xl shadow-lg shadow-amber-500/20">
-                        <TrendingUp className="w-6 h-6 text-white" />
+            {/* ALERTAS DE REPARTO */}
+            <div>
+                <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground">Alertas de Reparto</h2>
+                    <span className="text-[10px] uppercase font-mono text-muted-foreground/30">ID.E 30 P08-20 BIRESOF0S</span>
+                </div>
+                <Card className="bg-card/30 border-border/30 divide-y divide-border/20">
+                    <div className="p-4 flex items-center gap-3">
+                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                        <span className="text-sm text-muted-foreground">0 rutas llevan más de 30 min sin movimiento (Simulado)</span>
                     </div>
-                    <div>
-                        <CardTitle className="text-xl">Ventas Confirmadas Hoy</CardTitle>
-                        <CardDescription>Total acumulado de pedidos para entregar hoy</CardDescription>
+                    {stats.entregas_pendientes_hoy > 0 && stats.rutas_hoy_progreso > 0 && (
+                        <div className="p-4 flex items-center gap-3">
+                            <AlertTriangle className="w-4 h-4 text-amber-500" />
+                            <span className="text-sm text-foreground">{stats.entregas_pendientes_hoy} entregas siguen pendientes en rutas ya iniciadas</span>
+                        </div>
+                    )}
+                    <div className="p-4 flex items-center gap-3">
+                        <AlertTriangle className="w-4 h-4 text-amber-500" />
+                        <span className="text-sm text-muted-foreground">0 clientes reportaron una demora en la entrega (Simulado)</span>
                     </div>
-                    <div className="ml-auto text-4xl font-black tracking-tighter text-amber-500">
-                        {ARS.format(stats.revenue_today)}
-                    </div>
-                </CardHeader>
-            </Card>
+                </Card>
+            </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card className="border-border/50 bg-card/30">
-                    <CardHeader>
-                        <CardTitle>Acciones Rápidas</CardTitle>
-                        <CardDescription>Gestiones comunes del día a día</CardDescription>
+            {/* RUTAS Y REPARTIDORES DETAILS */}
+            <div className="grid gap-4 md:grid-cols-4">
+                <Card className="bg-card/30 border-border/30 flex flex-col">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-sm font-bold">Rutas de hoy</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid gap-4">
-                        <Link href="/pedidos">
-                            <Button variant="outline" className="w-full justify-start gap-3 h-12 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">
-                                <ClipboardList className="w-4 h-4" /> Gestionar Pedidos Nuevos
-                            </Button>
-                        </Link>
-                        <Link href="/produccion">
-                            <Button variant="outline" className="w-full justify-start gap-3 h-12 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">
-                                <Package className="w-4 h-4" /> Ver Necesidades de Producción
-                            </Button>
-                        </Link>
+                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground">
+                        <div className="flex justify-between items-center">
+                            <span>Total armadas: {stats.rutas_hoy_total}</span>
+                            <span className="font-mono text-foreground">{stats.rutas_hoy_total}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>En progreso: {stats.rutas_hoy_progreso}</span>
+                            <Truck className="w-4 h-4 text-emerald-500/70" />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>Completadas: {stats.rutas_hoy_completadas}</span>
+                            <Lock className="w-4 h-4 text-amber-500/70" />
+                        </div>
                     </CardContent>
+                    <div className="p-4 pt-0 mt-auto">
+                        <Link href="/reparto">
+                            <Button variant="outline" className="w-full bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400">Ver rutas</Button>
+                        </Link>
+                    </div>
                 </Card>
 
-                <Card className="border-border/50 bg-card/30 flex flex-col justify-center items-center p-8 text-center space-y-4">
-                    <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center">
-                        <Package className="w-8 h-8 text-amber-500" />
+                <Card className="bg-card/30 border-border/30 flex flex-col">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-sm font-bold">Repartidores hoy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground">
+                        <div className="flex justify-between items-center">
+                            <span>Totales: {stats.repartidores_totales}</span>
+                            <Eye className="w-4 h-4 text-emerald-500/70" />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>En ruta: {stats.repartidores_en_ruta}</span>
+                            <PenTool className="w-4 h-4 text-emerald-500/70" />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>Pendientes: {stats.repartidores_pendientes_salir}</span>
+                            <Check className="w-4 h-4 text-emerald-500/70" />
+                        </div>
+                    </CardContent>
+                    <div className="p-4 pt-0 mt-auto">
+                        <Link href="/reparto">
+                            <Button variant="outline" className="w-full bg-emerald-500/10 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/20 hover:text-emerald-400">Ver rutas</Button>
+                        </Link>
                     </div>
-                    <div>
-                        <h3 className="font-bold text-lg">¿Nuevo Pedido?</h3>
-                        <p className="text-sm text-muted-foreground max-w-[250px]">
-                            Puedes cargar un pedido manual rápidamente desde el dashboard de pedidos.
-                        </p>
-                    </div>
-                    <Link href="/pedidos">
-                        <Button className="bg-amber-500 hover:bg-amber-600 text-white gap-2">
-                            Ir a Pedidos <ArrowRight className="w-4 h-4" />
-                        </Button>
-                    </Link>
                 </Card>
+
+                <Card className="bg-card/30 border-border/30 flex flex-col">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-sm font-bold">Repartidores hoy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground">
+                        <div className="flex justify-between items-center">
+                            <span>Totales: {stats.repartidores_totales}</span>
+                            <span className="font-mono text-foreground">{stats.repartidores_en_ruta}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>Disponibles: {stats.repartidores_disponibles}</span>
+                            <Package className="w-4 h-4 text-red-400/70" />
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>Pendientes de salir: {stats.repartidores_pendientes_salir}</span>
+                            <Truck className="w-4 h-4 text-red-500/70" />
+                        </div>
+                    </CardContent>
+                    <div className="p-4 pt-0 mt-auto">
+                        <Link href="/reparto">
+                            <Button variant="outline" className="w-full bg-amber-500 border-amber-500 text-amber-950 hover:bg-amber-400 font-bold">Ver repartidores</Button>
+                        </Link>
+                    </div>
+                </Card>
+
+                <Card className="bg-card/30 border-border/30 flex flex-col">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-sm font-bold">Reparticiones hoy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1 space-y-4 text-sm text-muted-foreground p-0">
+                        {/* Dummy list to match mockup structure */}
+                        <div className="px-6 py-2 border-b border-border/20 flex justify-between items-center">
+                            <span>Reinicia: 4</span>
+                            <ArrowRight className="w-3 h-3 opacity-50" />
+                        </div>
+                        <div className="px-6 py-2 border-b border-border/20 flex justify-between items-center">
+                            <span>Sin info</span>
+                            <ArrowRight className="w-3 h-3 opacity-50" />
+                        </div>
+                        <div className="px-6 py-2 flex justify-between items-center">
+                            <span>Carga drops <Check className="w-3 h-3 inline ml-1 opacity-50" /></span>
+                        </div>
+                    </CardContent>
+                    <div className="p-4 pt-4 mt-auto">
+                        <Link href="/produccion">
+                            <Button variant="outline" className="w-full bg-amber-500/10 border-amber-500/20 text-amber-500 hover:bg-amber-500/20 hover:text-amber-400">Ver producción</Button>
+                        </Link>
+                    </div>
+                </Card>
+            </div>
+
+            {/* PEDIDOS MAÑANA VS PRODUCCIÓN */}
+            <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-4">
+                    <h2 className="text-xs uppercase tracking-widest font-black text-amber-500 flex items-center gap-2">
+                        PEDIDOS PARA MAÑANA <TrendingUp className="w-3 h-3 text-amber-500" />
+                    </h2>
+                    <Card className="bg-card/30 border-border/30">
+                        <div className="grid grid-cols-3 divide-x divide-border/20">
+                            <div className="p-6">
+                                <span className="text-amber-500 font-bold text-sm">Pedidos mañana</span>
+                                <div className="text-4xl font-black mt-2 flex items-baseline gap-2 text-foreground">
+                                    {stats.pedidos_manana_total}
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-4 flex justify-between">
+                                    <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-amber-500" /> Listos</span>
+                                    <span>armados</span>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <span className="text-emerald-500 font-bold text-sm">Confirmados</span>
+                                <div className="text-4xl font-black mt-2 text-foreground">{stats.pedidos_manana_confirmados}</div>
+                                <div className="text-xs text-muted-foreground mt-4">por validar</div>
+                            </div>
+                            <div className="p-6 flex flex-col justify-between">
+                                <ArrowRight className="w-4 h-4 text-muted-foreground self-end opacity-50" />
+                                <div>
+                                    <span className="text-sm text-muted-foreground">{stats.pedidos_manana_pendientes} pdts.</span>
+                                    <div className="text-xs text-muted-foreground mt-4">descartados ({stats.pedidos_manana_rechazados})</div>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+
+                <div className="space-y-4">
+                    <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground">PRODUCCIÓN ESTIMADA</h2>
+                    <Card className="bg-card/30 border-border/30">
+                        <div className="grid grid-cols-2 divide-x divide-border/20">
+                            <div className="flex flex-col">
+                                {Object.entries(production).slice(0, 2).map(([name, data], idx) => (
+                                    <div key={name} className={cn("p-6 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors", idx === 0 ? "border-b border-border/20" : "")}>
+                                        <span className="text-sm text-muted-foreground">{name}: <span className="font-bold text-foreground">{data.quantity} {data.unit}</span></span>
+                                        {idx === 0 ? <Eye className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" /> : <TrendingUp className="w-4 h-4 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                                    </div>
+                                ))}
+                                {Object.keys(production).length === 0 && (
+                                    <div className="p-6 text-sm text-muted-foreground border-b border-border/20">Pollo entero: <span className="font-bold text-foreground">0 kg</span></div>
+                                )}
+                                {Object.keys(production).length <= 1 && (
+                                    <div className="p-6 text-sm text-muted-foreground">Suprema: <span className="font-bold text-foreground">0 kg</span></div>
+                                )}
+                            </div>
+                            <div className="flex flex-col">
+                                {Object.entries(production).slice(2, 4).map(([name, data], idx) => (
+                                    <div key={name} className={cn("p-6 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors", idx === 0 ? "border-b border-border/20" : "")}>
+                                        <span className="text-sm text-muted-foreground">{name}: <span className="font-bold text-foreground">{data.quantity} {data.unit}</span></span>
+                                        <ArrowRight className="w-4 h-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
+                                    </div>
+                                ))}
+                                {Object.keys(production).length <= 2 && (
+                                    <div className="p-6 text-sm text-muted-foreground border-b border-border/20">Pata muslo: <span className="font-bold text-foreground">0 kg</span></div>
+                                )}
+                                {Object.keys(production).length <= 3 && (
+                                    <div className="p-6 text-sm text-muted-foreground">Milanesas: <span className="font-bold text-foreground">0 kg</span></div>
+                                )}
+                            </div>
+                        </div>
+                    </Card>
+                </div>
             </div>
         </div>
     )
