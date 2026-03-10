@@ -178,17 +178,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         // ═══════════════════════════════════════════
         // PASO 4: Re-check suave en foco de ventana
         // ═══════════════════════════════════════════
-        const handleFocus = () => {
+        const handleFocus = async () => {
             const now = Date.now()
             // Solo re-verificamos si pasaron más de 5 minutos
             if (now - lastChecked.current > 300000) {
                 lastChecked.current = now
                 console.log('🔍 Window focus: background refresh...')
-                supabase.auth.getSession().then(({ data: { session } }) => {
-                    if (session?.user) {
-                        setUser(session.user)
-                    }
-                })
+                const { data: { session } } = await supabase.auth.getSession()
+                if (session?.user) {
+                    setUser(session.user)
+                }
             }
         }
         window.addEventListener('focus', handleFocus)
