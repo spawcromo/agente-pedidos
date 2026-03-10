@@ -49,6 +49,7 @@ export async function getRoutes(date?: string): Promise<DeliveryRoute[]> {
 
 export async function getMyRoutes(driverId: string): Promise<DeliveryRoute[]> {
     const supabase = createClient()
+    const today = new Date().toISOString().split('T')[0]
     const { data, error } = await supabase
         .from('delivery_routes')
         .select(`
@@ -63,7 +64,7 @@ export async function getMyRoutes(driverId: string): Promise<DeliveryRoute[]> {
             )
         `)
         .eq('driver_id', driverId)
-        .neq('status', 'completed')
+        .gte('delivery_date', today) // Muestra rutas de hoy en adelante, estén completadas o no
         .order('delivery_date', { ascending: true })
 
     if (error) throw new Error(`Error al obtener mis rutas: ${error.message}`)
@@ -109,7 +110,7 @@ export async function updateStopStatus(stopId: string, status: 'pending' | 'deli
             completed_at: status === 'delivered' ? new Date().toISOString() : null
         })
         .eq('id', stopId)
-        .select('order_id')
+        .select('order_id, route_id')
         .single()
 
     if (error) throw new Error(`Error al actualizar parada: ${error.message}`)
@@ -122,6 +123,24 @@ export async function updateStopStatus(stopId: string, status: 'pending' | 'deli
             .eq('id', stop.order_id)
 
         if (orderError) console.error('Error syncing order status:', orderError.message)
+    }
+
+    // 3. Sync the route status
+    if (stop?.route_id) {
+        const { data: allStops } = await supabase
+            .from('delivery_stops')
+            .select('status')
+            .eq('route_id', stop.route_id)
+
+        if (allStops) {
+            const allDelivered = allStops.every((s: { status: string }) => s.status === 'delivered')
+            const routeStatus = allDelivered ? 'completed' : 'active'
+
+            await supabase
+                .from('delivery_routes')
+                .update({ status: routeStatus })
+                .eq('id', stop.route_id)
+        }
     }
 }
 
