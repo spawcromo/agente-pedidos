@@ -274,7 +274,16 @@ function PedidosPage() {
                         onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active')}
                     >
                         <SelectTrigger className="flex-1 sm:w-40" id="filter-estado">
-                            <SelectValue />
+                            <SelectValue placeholder="Pendientes + Conf.">
+                                {{
+                                    'active': 'Pendientes + Conf.',
+                                    'all': 'Todos los estados',
+                                    'pending': 'Solo Pendientes',
+                                    'confirmed': 'Solo Confirmados',
+                                    'delivered': 'Solo Entregados',
+                                    'rejected': 'Solo Rechazados',
+                                }[statusFilter]}
+                            </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="active">Pendientes + Conf.</SelectItem>
