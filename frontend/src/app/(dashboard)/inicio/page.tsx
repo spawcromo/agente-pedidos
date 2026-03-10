@@ -18,7 +18,8 @@ import {
     Lock,
     PenTool,
     ListTodo,
-    Users
+    Users,
+    XCircle
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -442,73 +443,39 @@ function DashboardPage() {
                 </Card>
             </div>
 
-            {/* PEDIDOS MAÑANA VS PRODUCCIÓN */}
-            <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-4">
-                    <h2 className="text-xs uppercase tracking-widest font-black text-amber-500 flex items-center gap-2">
-                        PEDIDOS PARA MAÑANA <TrendingUp className="w-3 h-3 text-amber-500" />
-                    </h2>
-                    <Card className="bg-card/30 border-border/30">
-                        <div className="grid grid-cols-3 divide-x divide-border/20">
-                            <div className="p-6">
-                                <span className="text-amber-500 font-bold text-sm">Pedidos mañana</span>
-                                <div className="text-4xl font-black mt-2 flex items-baseline gap-2 text-foreground">
-                                    {stats.pedidos_manana_total}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-4 flex justify-between">
-                                    <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-amber-500" /> Listos</span>
-                                    <span>armados</span>
-                                </div>
-                            </div>
-                            <div className="p-6">
-                                <span className="text-emerald-500 font-bold text-sm">Confirmados</span>
-                                <div className="text-4xl font-black mt-2 text-foreground">{stats.pedidos_manana_confirmados}</div>
-                                <div className="text-xs text-muted-foreground mt-4">por validar</div>
-                            </div>
-                            <div className="p-6 flex flex-col justify-between">
-                                <ArrowRight className="w-4 h-4 text-muted-foreground self-end opacity-50" />
-                                <div>
-                                    <span className="text-sm text-muted-foreground">{stats.pedidos_manana_pendientes} pdts.</span>
-                                    <div className="text-xs text-muted-foreground mt-4">descartados ({stats.pedidos_manana_rechazados})</div>
-                                </div>
-                            </div>
+            {/* PEDIDOS MAÑANA */}
+            <div>
+                <h2 className="text-xs uppercase tracking-widest font-black text-amber-500 flex items-center gap-2 mb-4 mt-8">
+                    PEDIDOS PARA MAÑANA <TrendingUp className="w-3 h-3 text-amber-500" />
+                </h2>
+                <div className="grid gap-4 md:grid-cols-4">
+                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <span className="text-sm font-bold text-amber-50">Pedidos mañana</span>
+                            <Calendar className="w-4 h-4 text-amber-500/60" />
                         </div>
+                        <div className="text-3xl font-black text-amber-50">{stats.pedidos_manana_total}</div>
                     </Card>
-                </div>
-
-                <div className="space-y-4">
-                    <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground">PRODUCCIÓN ESTIMADA</h2>
-                    <Card className="bg-card/30 border-border/30">
-                        <div className="grid grid-cols-2 divide-x divide-border/20">
-                            <div className="flex flex-col">
-                                {Object.entries(production).slice(0, 2).map(([name, data], idx) => (
-                                    <div key={name} className={cn("p-6 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors", idx === 0 ? "border-b border-border/20" : "")}>
-                                        <span className="text-sm text-muted-foreground">{name}: <span className="font-bold text-foreground">{data.quantity} {data.unit}</span></span>
-                                        {idx === 0 ? <Eye className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" /> : <TrendingUp className="w-4 h-4 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />}
-                                    </div>
-                                ))}
-                                {Object.keys(production).length === 0 && (
-                                    <div className="p-6 text-sm text-muted-foreground border-b border-border/20">Pollo entero: <span className="font-bold text-foreground">0 kg</span></div>
-                                )}
-                                {Object.keys(production).length <= 1 && (
-                                    <div className="p-6 text-sm text-muted-foreground">Suprema: <span className="font-bold text-foreground">0 kg</span></div>
-                                )}
-                            </div>
-                            <div className="flex flex-col">
-                                {Object.entries(production).slice(2, 4).map(([name, data], idx) => (
-                                    <div key={name} className={cn("p-6 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition-colors", idx === 0 ? "border-b border-border/20" : "")}>
-                                        <span className="text-sm text-muted-foreground">{name}: <span className="font-bold text-foreground">{data.quantity} {data.unit}</span></span>
-                                        <ArrowRight className="w-4 h-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" />
-                                    </div>
-                                ))}
-                                {Object.keys(production).length <= 2 && (
-                                    <div className="p-6 text-sm text-muted-foreground border-b border-border/20">Pata muslo: <span className="font-bold text-foreground">0 kg</span></div>
-                                )}
-                                {Object.keys(production).length <= 3 && (
-                                    <div className="p-6 text-sm text-muted-foreground">Milanesas: <span className="font-bold text-foreground">0 kg</span></div>
-                                )}
-                            </div>
+                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <span className="text-sm font-bold text-emerald-50">Confirmados</span>
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500/60" />
                         </div>
+                        <div className="text-3xl font-black text-emerald-500">{stats.pedidos_manana_confirmados}</div>
+                    </Card>
+                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <span className="text-sm font-bold text-amber-50">Pendientes</span>
+                            <Clock className="w-4 h-4 text-amber-500/60" />
+                        </div>
+                        <div className="text-3xl font-black text-amber-500">{stats.pedidos_manana_pendientes}</div>
+                    </Card>
+                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <span className="text-sm font-bold text-red-50">Rechazados</span>
+                            <XCircle className="w-4 h-4 text-red-500/60" />
+                        </div>
+                        <div className="text-3xl font-black text-red-500">{stats.pedidos_manana_rechazados}</div>
                     </Card>
                 </div>
             </div>
