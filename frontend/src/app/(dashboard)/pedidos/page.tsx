@@ -431,7 +431,7 @@ function PedidosPage() {
                                                         return (
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
-                                                                    <AlertCircle className="w-4 h-4 text-amber-500 animate-pulse cursor-help" />
+                                                                    <AlertCircle className="w-4 h-4 text-red-500 animate-pulse cursor-help" />
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
                                                                     <p>¿Hoy se puede entregar?</p>
