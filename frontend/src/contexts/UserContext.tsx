@@ -1,8 +1,9 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { usePathname } from 'next/navigation'
 
 type UserRole = 'admin' | 'repartidor' | null
 
@@ -59,14 +60,37 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+    const pathname = usePathname()
+    const lastChecked = useRef<number>(0)
+
+    // Re-verificar sesión en cada navegación (máximo cada 30 seg para no saturar)
+    useEffect(() => {
+        const now = Date.now()
+        if (now - lastChecked.current > 30000 && pathname !== '/login') {
+            lastChecked.current = now
+            refreshProfile()
+        }
+    }, [pathname])
+
     useEffect(() => {
         setMounted(true)
         refreshProfile()
 
+        // Re-verificar sesión cuando la pestaña recupera el foco
+        const handleFocus = () => {
+            const now = Date.now()
+            if (now - lastChecked.current > 60000) { // Solo si pasó 1 min
+                lastChecked.current = now
+                refreshProfile()
+            }
+        }
+        window.addEventListener('focus', handleFocus)
+
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-            if (session?.user) {
-                setUser(session.user)
-                try {
+            try {
+                if (session?.user) {
+                    setUser(session.user)
+                    // Solo buscamos perfil si realmente hay sesión
                     const { data, error } = await supabase
                         .from('profiles')
                         .select('role')
@@ -75,20 +99,27 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
                     if (!error && data) {
                         setRole(data.role as UserRole)
-                    } else if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+                    } else if (!role) {
                         setRole('repartidor')
                     }
-                } catch (err) {
-                    setRole('repartidor')
+                } else {
+                    // Si no hay sesión, limpiamos siempre para evitar "stuck" states
+                    setUser(null)
+                    setRole(null)
                 }
-            } else if (event === 'SIGNED_OUT') {
+            } catch (err) {
+                console.error('Error in onAuthStateChange:', err)
                 setUser(null)
                 setRole(null)
+            } finally {
+                setLoading(false)
             }
-            setLoading(false)
         })
 
-        return () => subscription.unsubscribe()
+        return () => {
+            subscription.unsubscribe()
+            window.removeEventListener('focus', handleFocus)
+        }
     }, [])
 
     if (!mounted) {
