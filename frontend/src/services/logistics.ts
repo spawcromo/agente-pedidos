@@ -16,7 +16,7 @@ export interface DeliveryRoute {
     delivery_date: string
     driver_id: string | null
     status: 'draft' | 'active' | 'completed'
-    driver?: { id: string; email: string }
+    driver?: { id: string; email: string; full_name?: string | null }
     stops: RouteStop[]
 }
 
@@ -26,7 +26,7 @@ export async function getRoutes(date?: string): Promise<DeliveryRoute[]> {
         .from('delivery_routes')
         .select(`
             *,
-            driver:profiles(id, email),
+            driver:profiles(id, email, full_name),
             stops:delivery_stops(
                 *,
                 order:orders(
@@ -135,11 +135,11 @@ export async function deleteRoute(routeId: string): Promise<void> {
     if (error) throw new Error(`Error al eliminar ruta: ${error.message}`)
 }
 
-export async function getDrivers(): Promise<{ id: string; email: string }[]> {
+export async function getDrivers(): Promise<{ id: string; email: string; full_name?: string | null }[]> {
     const supabase = createClient()
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, email')
+        .select('id, email, full_name')
         .eq('role', 'repartidor')
 
     if (error) throw new Error(`Error al obtener repartidores: ${error.message}`)

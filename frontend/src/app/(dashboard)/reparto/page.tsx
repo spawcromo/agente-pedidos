@@ -69,7 +69,7 @@ function RepartoPage() {
     // Admin state
     const [unassignedOrders, setUnassignedOrders] = useState<OrderWithDetails[]>([])
     const [routes, setRoutes] = useState<DeliveryRoute[]>([])
-    const [drivers, setDrivers] = useState<{ id: string; email: string }[]>([])
+    const [drivers, setDrivers] = useState<{ id: string; email: string; full_name?: string | null }[]>([])
     const [selectedOrders, setSelectedOrders] = useState<string[]>([])
     const [selectedDriver, setSelectedDriver] = useState<string>('')
 
@@ -320,7 +320,9 @@ function RepartoPage() {
                             </SelectTrigger>
                             <SelectContent className="min-w-[240px]">
                                 {drivers.map(d => (
-                                    <SelectItem key={d.id} value={d.id}>{d.email}</SelectItem>
+                                    <SelectItem key={d.id} value={d.id}>
+                                        {d.full_name || d.email}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -351,7 +353,7 @@ function RepartoPage() {
                                     <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
                                         <div className="flex-1 min-w-0 pr-2">
                                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chofer</p>
-                                            <p className="font-bold text-amber-500 truncate">{route.driver?.email || 'Sin asignar'}</p>
+                                            <p className="font-bold text-amber-500 truncate">{route.driver?.full_name || route.driver?.email || 'Sin asignar'}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
