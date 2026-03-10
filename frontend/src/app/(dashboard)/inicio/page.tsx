@@ -291,7 +291,7 @@ function DashboardPage() {
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
                             <CardTitle className="text-sm font-medium text-amber-50">Rutas de hoy</CardTitle>
-                            <div className="bg-amber-900/50 text-amber-500 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_total}</div>
+                            <div className="bg-amber-900/50 text-amber-500 p-1.5 rounded-md"><MapPin className="w-4 h-4" /></div>
                         </CardHeader>
                         <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
@@ -305,7 +305,7 @@ function DashboardPage() {
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
                             <CardTitle className="text-sm font-medium text-emerald-50">En progreso</CardTitle>
-                            <div className="bg-emerald-900/50 text-emerald-500 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_progreso}</div>
+                            <div className="bg-emerald-900/50 text-emerald-500 p-1.5 rounded-md"><Truck className="w-4 h-4" /></div>
                         </CardHeader>
                         <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
@@ -319,7 +319,7 @@ function DashboardPage() {
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
                             <CardTitle className="text-sm font-medium text-blue-50">Completadas</CardTitle>
-                            <div className="bg-blue-900/50 text-blue-500 text-xs px-2 py-0.5 rounded font-bold">{stats.rutas_hoy_completadas}</div>
+                            <div className="bg-blue-900/50 text-blue-500 p-1.5 rounded-md"><CheckCircle2 className="w-4 h-4" /></div>
                         </CardHeader>
                         <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
@@ -333,7 +333,7 @@ function DashboardPage() {
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-red-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pb-2 flex flex-row items-center justify-between z-10 relative">
                             <CardTitle className="text-sm font-medium text-red-50">Entregas pendientes</CardTitle>
-                            <div className="bg-red-900/50 text-red-500 text-xs px-2 py-0.5 rounded font-bold">{stats.entregas_pendientes_hoy}</div>
+                            <div className="bg-red-900/50 text-red-500 p-1.5 rounded-md"><Package className="w-4 h-4" /></div>
                         </CardHeader>
                         <CardContent className="z-10 relative">
                             <div className="flex items-baseline gap-2">
