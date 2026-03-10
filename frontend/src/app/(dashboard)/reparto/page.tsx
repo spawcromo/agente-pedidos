@@ -390,9 +390,9 @@ function RepartoPage() {
                                                 {route.stops.filter(s => s.status === 'delivered').length} / {route.stops.length}
                                             </span>
                                         </div>
-                                        <div className="w-full h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
+                                        <div className="w-full h-1.5 bg-white/10 rounded-full mt-2 overflow-hidden">
                                             <div
-                                                className="h-full bg-emerald-500 transition-all"
+                                                className="h-full bg-emerald-500 transition-all rounded-full"
                                                 style={{ width: `${(route.stops.filter(s => s.status === 'delivered').length / route.stops.length) * 100}%` }}
                                             />
                                         </div>
