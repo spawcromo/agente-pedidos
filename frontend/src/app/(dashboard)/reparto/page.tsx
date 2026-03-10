@@ -61,8 +61,9 @@ function RepartoPage() {
     useEffect(() => {
         setMounted(true)
         const d = new Date()
-        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-        setDate(today)
+        d.setDate(d.getDate() + 1) // Default to tomorrow
+        const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        setDate(tomorrow)
     }, [])
 
     // Admin state
