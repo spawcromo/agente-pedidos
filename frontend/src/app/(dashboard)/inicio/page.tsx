@@ -464,7 +464,7 @@ function DashboardPage() {
                 <h2 className="text-xs uppercase tracking-widest font-black text-amber-500 flex items-center gap-2 mb-4 mt-8">
                     PEDIDOS PARA MAÑANA <TrendingUp className="w-3 h-3 text-amber-500" />
                 </h2>
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
                     <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
                         <div className="flex justify-between items-start mb-4">
                             <span className="text-sm font-bold text-amber-50">Totales</span>
@@ -488,10 +488,24 @@ function DashboardPage() {
                     </Card>
                     <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
                         <div className="flex justify-between items-start mb-4">
+                            <span className="text-sm font-bold text-blue-50">Asignados</span>
+                            <Truck className="w-4 h-4 text-blue-500/60" />
+                        </div>
+                        <div className="text-3xl font-black text-blue-500">{stats.pedidos_manana_asignados}</div>
+                    </Card>
+                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
+                        <div className="flex justify-between items-start mb-4">
                             <span className="text-sm font-bold text-red-50">Rechazados</span>
                             <XCircle className="w-4 h-4 text-red-500/60" />
                         </div>
                         <div className="text-3xl font-black text-red-500">{stats.pedidos_manana_rechazados}</div>
+                    </Card>
+                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
+                        <div className="flex justify-between items-start mb-4">
+                            <span className="text-sm font-bold text-zinc-400">Cancelados</span>
+                            <XCircle className="w-4 h-4 text-zinc-500/60" />
+                        </div>
+                        <div className="text-3xl font-black text-zinc-500">{stats.pedidos_manana_cancelados}</div>
                     </Card>
                 </div>
             </div>

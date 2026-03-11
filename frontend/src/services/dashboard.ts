@@ -20,6 +20,8 @@ export interface EnhancedDashboardStats {
     pedidos_manana_confirmados: number
     pedidos_manana_pendientes: number
     pedidos_manana_rechazados: number
+    pedidos_manana_cancelados: number
+    pedidos_manana_asignados: number
 }
 
 export type ProductionEstimate = Record<string, { quantity: number; unit: string }>
@@ -59,13 +61,13 @@ export async function getEnhancedDashboardStats(): Promise<{
         .select(`
             id,
             status,
+            delivery_stops(id),
             order_items(
                 quantity,
                 product:products(name, unit)
             )
         `)
         .eq('delivery_date', tomorrow)
-        .in('status', ['pending', 'confirmed'])
 
     if (ordersError) {
         console.error('Error fetching production orders:', ordersError)
@@ -88,23 +90,56 @@ export async function getEnhancedDashboardStats(): Promise<{
     const production: ProductionEstimate = {}
 
     // Aggregate items
+    let pedidos_manana_total = statsData?.pedidos_manana_total || 0
+    let pedidos_manana_confirmados = statsData?.pedidos_manana_confirmados || 0
+    let pedidos_manana_pendientes = statsData?.pedidos_manana_pendientes || 0
+    let pedidos_manana_rechazados = statsData?.pedidos_manana_rechazados || 0
+    let pedidos_manana_cancelados = 0
+    let pedidos_manana_asignados = 0
+
+    // Transform production items and calculate order states
     if (ordersData) {
+        pedidos_manana_total = ordersData.length
+        pedidos_manana_confirmados = 0
+        pedidos_manana_pendientes = 0
+        pedidos_manana_rechazados = 0
+
         ordersData.forEach((order: any) => {
-            (order.order_items || []).forEach((item: any) => {
-                if (item.product && item.product.name) {
-                    const prodName = item.product.name
-                    if (!production[prodName]) {
-                        production[prodName] = { quantity: 0, unit: item.product.unit || 'u' }
-                    }
-                    production[prodName].quantity += Number(item.quantity) || 0
+            if (order.status === 'pending') pedidos_manana_pendientes++
+            else if (order.status === 'rejected') pedidos_manana_rechazados++
+            else if (order.status === 'cancelled') pedidos_manana_cancelados++
+            else if (order.status === 'confirmed') {
+                if (order.delivery_stops?.length > 0) {
+                    pedidos_manana_asignados++
+                } else {
+                    pedidos_manana_confirmados++
                 }
-            })
+            }
+
+            // production only counts confirmed and pending
+            if (order.status === 'pending' || order.status === 'confirmed') {
+                (order.order_items || []).forEach((item: any) => {
+                    if (item.product && item.product.name) {
+                        const prodName = item.product.name
+                        if (!production[prodName]) {
+                            production[prodName] = { quantity: 0, unit: item.product.unit || 'u' }
+                        }
+                        production[prodName].quantity += Number(item.quantity) || 0
+                    }
+                })
+            }
         })
     }
 
     const finalStats = statsData ? {
         ...statsData,
-        rutas_hoy_pendientes_iniciar: pendingRoutesCount || 0
+        rutas_hoy_pendientes_iniciar: pendingRoutesCount || 0,
+        pedidos_manana_total,
+        pedidos_manana_confirmados,
+        pedidos_manana_pendientes,
+        pedidos_manana_rechazados,
+        pedidos_manana_cancelados,
+        pedidos_manana_asignados
     } : null
 
     // 4. Planificacion de mañana
