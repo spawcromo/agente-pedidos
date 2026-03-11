@@ -367,26 +367,26 @@ function DashboardPage() {
             </div>
 
             {/* ALERTAS DE REPARTO */}
-            <div className="bg-[#14100C] border border-[#2A1F16] rounded-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-amber-500/10 to-transparent p-4 flex items-center justify-between border-b border-[#2A1F16]">
-                    <h2 className="text-xs uppercase tracking-widest font-black text-amber-500/90">Alertas de Reparto</h2>
-                    <span className="text-[10px] uppercase font-mono text-muted-foreground/30">ID.E 30 P08-20 BIRESOF0S</span>
+            <div className="space-y-3">
+                <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                    <span className="text-sm font-medium text-red-200">
+                        <strong className="text-red-50 font-bold">1</strong> ruta lleva más de 30 min sin movimiento <span className="opacity-50 text-xs font-normal">(Simulado)</span>
+                    </span>
                 </div>
-                <div className="divide-y divide-[#2A1F16]">
-                    <div className="p-4 flex items-center gap-3 hover:bg-white/[0.02] transition-colors">
-                        <AlertTriangle className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm text-muted-foreground"><strong className="text-amber-50 font-medium tracking-wide">1</strong> ruta lleva más de 30 min sin movimiento <span className="text-[10px] opacity-30">(Simulado)</span></span>
+                {stats.entregas_pendientes_hoy > 0 && stats.rutas_hoy_progreso > 0 && (
+                    <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                        <span className="text-sm font-medium text-red-200">
+                            <strong className="text-red-50 font-bold">{stats.entregas_pendientes_hoy}</strong> entregas siguen pendientes en rutas ya iniciadas
+                        </span>
                     </div>
-                    {stats.entregas_pendientes_hoy > 0 && stats.rutas_hoy_progreso > 0 && (
-                        <div className="p-4 flex items-center gap-3 hover:bg-white/[0.02] transition-colors">
-                            <AlertTriangle className="w-4 h-4 text-amber-500" />
-                            <span className="text-sm text-muted-foreground"><strong className="text-amber-50 font-medium tracking-wide">{stats.entregas_pendientes_hoy}</strong> entregas siguen pendientes en rutas ya iniciadas</span>
-                        </div>
-                    )}
-                    <div className="p-4 flex items-center gap-3 hover:bg-white/[0.02] transition-colors">
-                        <AlertTriangle className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm text-muted-foreground"><strong className="text-amber-50 font-medium tracking-wide">1</strong> cliente reportó una demora en la entrega <span className="text-[10px] opacity-30">(Simulado)</span></span>
-                    </div>
+                )}
+                <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
+                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                    <span className="text-sm font-medium text-red-200">
+                        <strong className="text-red-50 font-bold">1</strong> cliente reportó una demora en la entrega <span className="opacity-50 text-xs font-normal">(Simulado)</span>
+                    </span>
                 </div>
             </div>
 
