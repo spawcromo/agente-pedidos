@@ -180,14 +180,16 @@ function PedidosPage() {
     const selectedOrdersData = orders.filter(o => selected.has(o.id))
     const isBulkAssigned = selectedOrdersData.some(o => o.status === 'confirmed' && (o.delivery_stops?.length ?? 0) > 0)
     const isBulkDelivered = selectedOrdersData.some(o => o.status === 'delivered')
+    const hasCancelled = selectedOrdersData.some(o => o.status === 'cancelled')
 
     // Validations based on rules:
     // Asignados: Solo pueden cancelarse.
     // Delivered: Terminal, no moves.
+    // Cancelados: Solo pueden volver a pendiente, ni fecha.
     const canBulkPending = !isBulkAssigned && !isBulkDelivered
-    const canBulkConfirm = !isBulkAssigned && !isBulkDelivered
-    const canBulkReject = !isBulkAssigned && !isBulkDelivered
-    const canBulkDate = !isBulkDelivered && !isBulkAssigned
+    const canBulkConfirm = !isBulkAssigned && !isBulkDelivered && !hasCancelled
+    const canBulkReject = !isBulkAssigned && !isBulkDelivered && !hasCancelled
+    const canBulkDate = !isBulkDelivered && !isBulkAssigned && !hasCancelled
 
     // Actions
     async function handleStatus(id: string, status: OrderStatus) {
@@ -576,10 +578,14 @@ function PedidosPage() {
                                                     <MoreHorizontal className="w-5 h-5" />
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-48">
-                                                    <DropdownMenuItem onClick={() => openEdit(order)} className="gap-2">
-                                                        <Edit2 className="w-4 h-4" /> Ver / Editar
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
+                                                    {order.status !== 'cancelled' && (
+                                                        <>
+                                                            <DropdownMenuItem onClick={() => openEdit(order)} className="gap-2">
+                                                                <Edit2 className="w-4 h-4" /> Ver / Editar
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                        </>
+                                                    )}
                                                     {(() => {
                                                         const isAssigned = order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0;
                                                         return (
