@@ -555,7 +555,17 @@ function PedidosPage() {
                                             {ARS.format(orderTotal(order))}
                                         </TableCell>
                                         <TableCell>
-                                            <OrderStatusBadge status={order.status} isAssigned={(order.delivery_stops?.length ?? 0) > 0} />
+                                            <div className="flex flex-col gap-1.5 items-start">
+                                                <OrderStatusBadge status={order.status} isAssigned={order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0} />
+                                                {order.status === 'cancelled' && order.cancel_reason && (
+                                                    <span
+                                                        className="text-[10px] text-muted-foreground max-w-[130px] leading-tight line-clamp-2"
+                                                        title={order.cancel_reason}
+                                                    >
+                                                        {order.cancel_reason}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
