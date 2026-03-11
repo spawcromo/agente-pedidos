@@ -19,7 +19,8 @@ import {
     PenTool,
     ListTodo,
     Users,
-    XCircle
+    XCircle,
+    Ban
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -460,52 +461,93 @@ function DashboardPage() {
             </div>
 
             {/* PEDIDOS MAÑANA */}
-            <div>
-                <h2 className="text-xs uppercase tracking-widest font-black text-amber-500 flex items-center gap-2 mb-4 mt-8">
-                    PEDIDOS PARA MAÑANA <TrendingUp className="w-3 h-3 text-amber-500" />
+            <div className="bg-card/30 border border-border/30 rounded-xl p-6 mt-8">
+                <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-4">
+                    PEDIDOS PARA MAÑANA
                 </h2>
                 <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
-                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-amber-50">Totales</span>
-                            <Calendar className="w-4 h-4 text-amber-500/60" />
-                        </div>
-                        <div className="text-3xl font-black text-amber-50">{stats.pedidos_manana_total}</div>
+                    <Card className="bg-[#151D2A] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-blue-50">Totales</CardTitle>
+                            <div className="bg-blue-900/50 text-blue-500 p-1.5 rounded-md"><Calendar className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-blue-50">{stats.pedidos_manana_total}</div>
+                                <span className="text-sm font-medium text-blue-500/60">generados</span>
+                            </div>
+                        </CardContent>
                     </Card>
-                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-emerald-50">Confirmados</span>
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500/60" />
-                        </div>
-                        <div className="text-3xl font-black text-emerald-500">{stats.pedidos_manana_confirmados}</div>
+
+                    <Card className="bg-[#1A261A] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-emerald-50">Confirmados</CardTitle>
+                            <div className="bg-emerald-900/50 text-emerald-500 p-1.5 rounded-md"><CheckCircle2 className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-emerald-50">{stats.pedidos_manana_confirmados}</div>
+                                <span className="text-sm font-medium text-emerald-500/60">aprobados</span>
+                            </div>
+                        </CardContent>
                     </Card>
-                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-amber-50">Pendientes</span>
-                            <Clock className="w-4 h-4 text-amber-500/60" />
-                        </div>
-                        <div className="text-3xl font-black text-amber-500">{stats.pedidos_manana_pendientes}</div>
+
+                    <Card className="bg-[#2D2110] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-amber-50">Pendientes</CardTitle>
+                            <div className="bg-amber-900/50 text-amber-500 p-1.5 rounded-md"><Clock className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-amber-50">{stats.pedidos_manana_pendientes}</div>
+                                <span className="text-sm font-medium text-amber-500/60">en espera</span>
+                            </div>
+                        </CardContent>
                     </Card>
-                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-blue-50">Asignados</span>
-                            <Truck className="w-4 h-4 text-blue-500/60" />
-                        </div>
-                        <div className="text-3xl font-black text-blue-500">{stats.pedidos_manana_asignados}</div>
+
+                    <Card className="bg-[#261A30] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-purple-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-purple-50">Asignados</CardTitle>
+                            <div className="bg-purple-900/50 text-purple-500 p-1.5 rounded-md"><Truck className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-purple-50">{stats.pedidos_manana_asignados}</div>
+                                <span className="text-sm font-medium text-purple-500/60">en ruta</span>
+                            </div>
+                        </CardContent>
                     </Card>
-                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-red-50">Rechazados</span>
-                            <XCircle className="w-4 h-4 text-red-500/60" />
-                        </div>
-                        <div className="text-3xl font-black text-red-500">{stats.pedidos_manana_rechazados}</div>
+
+                    <Card className="bg-[#311717] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-red-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-red-50">Rechazados</CardTitle>
+                            <div className="bg-red-900/50 text-red-500 p-1.5 rounded-md"><XCircle className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-red-50">{stats.pedidos_manana_rechazados}</div>
+                                <span className="text-sm font-medium text-red-500/60">denegados</span>
+                            </div>
+                        </CardContent>
                     </Card>
-                    <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-zinc-400">Cancelados</span>
-                            <XCircle className="w-4 h-4 text-zinc-500/60" />
-                        </div>
-                        <div className="text-3xl font-black text-zinc-500">{stats.pedidos_manana_cancelados}</div>
+
+                    <Card className="bg-[#1A1A1A] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-zinc-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-zinc-50">Cancelados</CardTitle>
+                            <div className="bg-zinc-800/80 text-zinc-400 p-1.5 rounded-md"><Ban className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-zinc-50">{stats.pedidos_manana_cancelados}</div>
+                                <span className="text-sm font-medium text-zinc-500/60">anulados</span>
+                            </div>
+                        </CardContent>
                     </Card>
                 </div>
             </div>
