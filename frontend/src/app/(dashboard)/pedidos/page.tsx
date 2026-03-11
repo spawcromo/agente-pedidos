@@ -600,8 +600,8 @@ function PedidosPage() {
                                                                     </DropdownMenuItem>
                                                                 )}
 
-                                                                {/* Cancel is allowed anytime except if already cancelled. If assigned, this is the ONLY way to revert. */}
-                                                                {order.status !== 'cancelled' && (
+                                                                {/* Only assigned orders can be cancelled (which removes them from the route) */}
+                                                                {isAssigned && order.status !== 'cancelled' && (
                                                                     <DropdownMenuItem onClick={() => handleStatus(order.id, 'cancelled')} className="gap-2 text-destructive mt-1 border-t border-border pt-2">
                                                                         <XCircle className="w-4 h-4" /> Cancelar Pedido
                                                                     </DropdownMenuItem>
