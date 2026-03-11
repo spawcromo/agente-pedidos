@@ -11,21 +11,54 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription
+} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { Label } from '@/components/ui/label'
+import {
     Contact,
     Search,
     MessageCircle,
-    UserCircle2
+    UserCircle2,
+    Plus,
+    Truck
 } from "lucide-react"
-import { getRepartidores, Repartidor } from '@/services/repartidores'
+import { getRepartidores, updateRepartidorStatus, Repartidor } from '@/services/repartidores'
+import { createRepartidor } from '@/app/actions/repartidores'
 import { withRole } from '@/components/hoc/withRole'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+
+const STATUS_LABELS: Record<string, string> = {
+    disponible: 'Disponible',
+    enfermo: 'Enfermo',
+    vacaciones: 'Vacaciones',
+    no_disponible: 'No Disponible'
+}
+const STATUS_COLORS: Record<string, string> = {
+    disponible: 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10',
+    enfermo: 'text-amber-500 border-amber-500/20 bg-amber-500/10',
+    vacaciones: 'text-blue-500 border-blue-500/20 bg-blue-500/10',
+    no_disponible: 'text-red-500 border-red-500/20 bg-red-500/10'
+}
 
 function RepartidoresPage() {
     const [repartidores, setRepartidores] = useState<Repartidor[]>([])
     const [filtered, setFiltered] = useState<Repartidor[]>([])
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(true)
+
+    // Create Modal state
+    const [createOpen, setCreateOpen] = useState(false)
+    const [createLoading, setCreateLoading] = useState(false)
+    const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '' })
 
     const load = useCallback(async () => {
         try {
@@ -66,6 +99,9 @@ function RepartidoresPage() {
                         Directorio de repartidores activos.
                     </p>
                 </div>
+                <Button onClick={() => setCreateOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2">
+                    <Plus className="w-4 h-4" /> Nuevo Repartidor
+                </Button>
             </div>
 
             <div className="bg-[#14100C] border border-[#2A1F16] rounded-xl overflow-hidden shadow-2xl mt-6">
@@ -89,7 +125,8 @@ function RepartidoresPage() {
                             <TableRow className="border-[#2A1F16] hover:bg-transparent">
                                 <TableHead className="text-amber-500/80 font-semibold w-[300px]">Nombre</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold w-[200px]">Teléfono</TableHead>
-                                <TableHead className="text-amber-500/80 font-semibold">Email</TableHead>
+                                <TableHead className="text-amber-500/80 font-semibold">Rutas (Hoy / Mañana)</TableHead>
+                                <TableHead className="text-amber-500/80 font-semibold">Estado</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold text-right">Acciones</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -133,11 +170,39 @@ function RepartidoresPage() {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {rep.email ? (
-                                                <span className="text-muted-foreground">{rep.email}</span>
-                                            ) : (
-                                                <span className="text-muted-foreground italic text-xs">No registrado</span>
-                                            )}
+                                            <div className="flex flex-col gap-1">
+                                                <Badge variant="outline" className="w-fit border-amber-500/20 text-amber-500 bg-amber-500/5 text-[10px] gap-1">
+                                                    <Truck className="w-3 h-3" /> Hoy: {rep.routes_hoy || 0}
+                                                </Badge>
+                                                <Badge variant="outline" className="w-fit border-blue-500/20 text-blue-400 bg-blue-500/5 text-[10px] gap-1">
+                                                    <Truck className="w-3 h-3" /> Mañana: {rep.routes_manana || 0}
+                                                </Badge>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Select
+                                                value={rep.driver_status || 'disponible'}
+                                                onValueChange={async (val) => {
+                                                    try {
+                                                        await updateRepartidorStatus(rep.id, val as string)
+                                                        toast.success('Estado actualizado')
+                                                        load()
+                                                    } catch (err: any) {
+                                                        toast.error('Error al actualizar estado')
+                                                    }
+                                                }}
+                                            >
+                                                <SelectTrigger className={`h-8 w-[140px] text-xs font-semibold ${STATUS_COLORS[rep.driver_status || 'disponible']}`}>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {Object.entries(STATUS_LABELS).map(([key, label]) => (
+                                                        <SelectItem key={key} value={key} className="text-xs font-semibold">
+                                                            {label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                         </TableCell>
                                         <TableCell className="text-right">
                                             {rep.phone && (
@@ -158,6 +223,79 @@ function RepartidoresPage() {
                     </Table>
                 </div>
             </div>
+
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <DialogContent className="sm:max-w-md bg-[#14100C] border-[#2A1F16]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl text-amber-500">Nuevo Repartidor</DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                            Asegurate de tener la SUPABASE_SERVICE_ROLE_KEY cargada en Vercel/.env.local para poder crear cuentas.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label className="text-white">Nombre Completo</Label>
+                            <Input
+                                placeholder="Ej: Juan Pérez"
+                                value={formData.fullName}
+                                onChange={(e) => setFormData(f => ({ ...f, fullName: e.target.value }))}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-white">Email</Label>
+                            <Input
+                                type="email"
+                                placeholder="Ej: juan@baccaro.com"
+                                value={formData.email}
+                                onChange={(e) => setFormData(f => ({ ...f, email: e.target.value }))}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-white">Teléfono (WhatsApp)</Label>
+                            <Input
+                                placeholder="Ej: 5491123456789"
+                                value={formData.phone}
+                                onChange={(e) => setFormData(f => ({ ...f, phone: e.target.value }))}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-white">Contraseña</Label>
+                            <Input
+                                placeholder="Por defecto: Baccaro2026!"
+                                value={formData.password}
+                                onChange={(e) => setFormData(f => ({ ...f, password: e.target.value }))}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setCreateOpen(false)}>Cancelar</Button>
+                        <Button
+                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+                            disabled={createLoading || !formData.fullName || !formData.email}
+                            onClick={async () => {
+                                setCreateLoading(true)
+                                try {
+                                    await createRepartidor(formData)
+                                    toast.success('Repartidor creado correctamente')
+                                    setCreateOpen(false)
+                                    setFormData({ fullName: '', email: '', phone: '', password: '' })
+                                    load()
+                                } catch (err: any) {
+                                    toast.error(err.message)
+                                } finally {
+                                    setCreateLoading(false)
+                                }
+                            }}
+                        >
+                            {createLoading ? 'Creando...' : 'Crear Cuenta'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

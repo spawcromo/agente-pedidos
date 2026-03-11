@@ -467,7 +467,7 @@ function DashboardPage() {
                             <span className="font-bold text-white">{stats.repartidores_pendientes_salir}</span>
                         </div>
                         <div className="pt-4">
-                            <Link href="/reparto">
+                            <Link href="/rutas">
                                 <Button className="w-full bg-[#141A14] hover:bg-[#1A261A] border border-[#1A261A] text-emerald-500/90 font-medium h-9 text-xs transition-colors">Ver repartidores</Button>
                             </Link>
                         </div>
@@ -565,6 +565,15 @@ function DashboardPage() {
                         </CardContent>
                     </Card>
                 </div>
+                
+                {(stats.pedidos_manana_pendientes > 0 || planificacion.pedidos_sin_ruta > 0) && (
+                    <div className="mt-6 bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                        <span className="text-sm font-medium text-red-200">
+                            Tenés pedidos sin confirmar o sin asignar a ruta.
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* PLANIFICACION Y PRODUCCION MAÑANA */}
