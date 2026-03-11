@@ -552,7 +552,7 @@ function PedidosPage() {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     {(() => {
-                                                        const isAssigned = (order.delivery_stops?.length ?? 0) > 0;
+                                                        const isAssigned = order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0;
                                                         return (
                                                             <>
                                                                 {!isAssigned && order.status !== 'confirmed' && order.status !== 'cancelled' && (
