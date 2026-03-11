@@ -18,7 +18,8 @@ import {
     BarChart3,
     LogOut,
     Utensils,
-    LayoutDashboard
+    LayoutDashboard,
+    Contact
 } from "lucide-react"
 
 const NAV_ITEMS = [
@@ -27,7 +28,8 @@ const NAV_ITEMS = [
     { href: "/produccion", label: "Producción", icon: <Package className="w-4 h-4" />, roles: ['admin'] },
     { href: "/clientes", label: "Clientes", icon: <Users className="w-4 h-4" />, roles: ['admin'] },
     { href: "/productos", label: "Productos", icon: <Utensils className="w-4 h-4" />, roles: ['admin'] },
-    { href: "/reparto", label: "Reparto", icon: <Truck className="w-4 h-4" />, roles: ['admin', 'repartidor'] },
+    { href: "/repartidores", label: "Repartidores", icon: <Contact className="w-4 h-4" />, roles: ['admin'] },
+    { href: "/rutas", label: "Rutas", icon: <Truck className="w-4 h-4" />, roles: ['admin', 'repartidor'] },
     { href: "/estadisticas", label: "Estadísticas", icon: <BarChart3 className="w-4 h-4" />, roles: ['admin'] },
 ] as const
 

@@ -57,7 +57,7 @@ const ARS = new Intl.NumberFormat('es-AR', {
     maximumFractionDigits: 0,
 })
 
-function RepartoPage() {
+function RutasPage() {
     const { role, user, loading: userLoading } = useUser()
     const [date, setDate] = useState('')
     const [loading, setLoading] = useState(true)
@@ -306,7 +306,7 @@ function RepartoPage() {
         <div className="space-y-8" suppressHydrationWarning>
             <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold">Logística y Reparto</h1>
+                    <h1 className="text-3xl font-bold">Rutas</h1>
                     <p className="text-muted-foreground">Gestioná las rutas y asignaciones para la fecha seleccionada.</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -577,4 +577,4 @@ function StopCard({ stop, index, onDone, onCancel }: { stop: RouteStop, index: n
     )
 }
 
-export default withRole(RepartoPage, ['admin', 'repartidor'])
+export default withRole(RutasPage, ['admin', 'repartidor'])

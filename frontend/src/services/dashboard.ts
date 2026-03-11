@@ -8,6 +8,7 @@ export interface EnhancedDashboardStats {
     rutas_hoy_completadas: number
     rutas_hoy_pendientes_iniciar: number
     entregas_pendientes_hoy: number
+    pedidos_hoy_cancelados: number
 
     // 2. REPARTIDORES HOY
     repartidores_totales: number
@@ -87,6 +88,16 @@ export async function getEnhancedDashboardStats(): Promise<{
         console.error('Error fetching pending routes:', pendingRoutesError)
     }
 
+    const { count: pedidosHoyCanceladosCount, error: pedidosHoyCanceladosError } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('delivery_date', currentToday)
+        .eq('status', 'cancelled')
+
+    if (pedidosHoyCanceladosError) {
+        console.error('Error fetching cancelled orders today:', pedidosHoyCanceladosError)
+    }
+
     const production: ProductionEstimate = {}
 
     // Aggregate items
@@ -134,6 +145,7 @@ export async function getEnhancedDashboardStats(): Promise<{
     const finalStats = statsData ? {
         ...statsData,
         rutas_hoy_pendientes_iniciar: pendingRoutesCount || 0,
+        pedidos_hoy_cancelados: pedidosHoyCanceladosCount || 0,
         pedidos_manana_total,
         pedidos_manana_confirmados,
         pedidos_manana_pendientes,
