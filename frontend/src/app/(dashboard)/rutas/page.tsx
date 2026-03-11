@@ -88,6 +88,10 @@ function RutasPage() {
     const [cancelData, setCancelData] = useState<{ stopId: string, orderId: string } | null>(null)
     const [cancelReason, setCancelReason] = useState('')
 
+    // Delete Route state
+    const [deleteRouteDialogOpen, setDeleteRouteDialogOpen] = useState(false)
+    const [routeToDelete, setRouteToDelete] = useState<string | null>(null)
+
     const loadData = useCallback(async () => {
         if (!role || !user || !date) {
             // Keep loading true until date and role are available
@@ -163,11 +167,13 @@ function RutasPage() {
         }
     }
 
-    async function handleDeleteRoute(routeId: string) {
-        if (!confirm('¿Eliminar esta ruta? Los pedidos volverán a estar disponibles.')) return
+    async function confirmDeleteRoute() {
+        if (!routeToDelete) return
         try {
-            await deleteRoute(routeId)
+            await deleteRoute(routeToDelete)
             toast.success('Ruta eliminada')
+            setDeleteRouteDialogOpen(false)
+            setRouteToDelete(null)
             loadData()
         } catch (err) {
             toast.error('Error al eliminar ruta')
@@ -420,7 +426,10 @@ function RutasPage() {
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
                                             <button
-                                                onClick={() => handleDeleteRoute(route.id)}
+                                                onClick={() => {
+                                                    setRouteToDelete(route.id)
+                                                    setDeleteRouteDialogOpen(true)
+                                                }}
                                                 className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
                                                 title="Eliminar ruta"
                                             >
@@ -492,6 +501,24 @@ function RutasPage() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>Atrás</Button>
                         <Button onClick={handleCancelSubmit} variant="destructive" disabled={!cancelReason.trim()}>Confirmar Cancelación</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={deleteRouteDialogOpen} onOpenChange={setDeleteRouteDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-destructive">Eliminar Ruta</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            ¿Estás seguro que querés eliminar esta ruta? 
+                            Los pedidos que estaban asignados aquí no se cancelarán, volverán a estar disponibles en la lista de seleccionables "Sin Asignar" para reasignarlos a otra ruta.
+                        </p>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeleteRouteDialogOpen(false)}>Atrás</Button>
+                        <Button onClick={confirmDeleteRoute} variant="destructive">Confirmar Eliminación</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
