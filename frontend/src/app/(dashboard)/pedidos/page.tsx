@@ -177,6 +177,18 @@ function PedidosPage() {
         setSelected(next)
     }
 
+    const selectedOrdersData = orders.filter(o => selected.has(o.id))
+    const isBulkAssigned = selectedOrdersData.some(o => o.status === 'confirmed' && (o.delivery_stops?.length ?? 0) > 0)
+    const isBulkDelivered = selectedOrdersData.some(o => o.status === 'delivered')
+
+    // Validations based on rules:
+    // Asignados: Solo pueden cancelarse.
+    // Delivered: Terminal, no moves.
+    const canBulkPending = !isBulkAssigned && !isBulkDelivered
+    const canBulkConfirm = !isBulkAssigned && !isBulkDelivered
+    const canBulkReject = !isBulkAssigned && !isBulkDelivered
+    const canBulkDate = !isBulkDelivered && !isBulkAssigned
+
     // Actions
     async function handleStatus(id: string, status: OrderStatus) {
         if (status === 'cancelled') {
@@ -366,25 +378,32 @@ function PedidosPage() {
                                 <CheckCircle2 className="w-4 h-4" /> Acciones masivas
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuItem onClick={() => setBulkDateOpen(true)} className="gap-2">
+                                <DropdownMenuItem onClick={() => setBulkDateOpen(true)} disabled={!canBulkDate} className="gap-2">
                                     <Calendar className="w-4 h-4 text-blue-500" /> Cambiar Fecha
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkStatus('pending')} className="gap-2">
+                                <DropdownMenuItem onClick={() => handleBulkStatus('pending')} disabled={!canBulkPending} className="gap-2">
                                     <Clock className="w-4 h-4 text-muted-foreground" /> Mover a Pendiente
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkStatus('confirmed')} className="gap-2">
+                                <DropdownMenuItem onClick={() => handleBulkStatus('confirmed')} disabled={!canBulkConfirm} className="gap-2">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar seleccionados
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkStatus('delivered')} className="gap-2">
+                                <DropdownMenuItem onClick={() => handleBulkStatus('delivered')} disabled={!canBulkConfirm} className="gap-2">
                                     <Truck className="w-4 h-4 text-blue-500" /> Marcar como Entregados
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     onClick={() => handleBulkStatus('rejected')}
-                                    className="text-destructive font-medium gap-2 focus:text-destructive"
+                                    disabled={!canBulkReject}
+                                    className="text-destructive font-medium gap-2 focus:text-destructive focus:bg-destructive/10"
                                 >
                                     <XCircle className="w-4 h-4" /> Rechazar seleccionados
                                 </DropdownMenuItem>
+
+                                {isBulkAssigned && (
+                                    <div className="px-2 py-1.5 text-xs text-muted-foreground bg-muted/30 mt-2">
+                                        Hay pedidos asignados a ruta. Para modificarlos, deben cancelarse primero.
+                                    </div>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
