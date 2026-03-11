@@ -467,7 +467,7 @@ function DashboardPage() {
                 <div className="grid gap-4 md:grid-cols-4">
                     <Card className="bg-[#14100C] border-[#2A1F16] flex flex-col rounded-xl p-5 justify-between">
                         <div className="flex justify-between items-start mb-4">
-                            <span className="text-sm font-bold text-amber-50">Pedidos mañana</span>
+                            <span className="text-sm font-bold text-amber-50">Totales</span>
                             <Calendar className="w-4 h-4 text-amber-500/60" />
                         </div>
                         <div className="text-3xl font-black text-amber-50">{stats.pedidos_manana_total}</div>
