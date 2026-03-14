@@ -359,10 +359,10 @@ function PedidosPage() {
                         value={statusFilter}
                         onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active' | 'assigned')}
                     >
-                        <SelectTrigger className="flex-1 sm:w-40" id="filter-estado">
+                        <SelectTrigger className="w-fit min-w-[200px]" id="filter-estado">
                             <SelectValue placeholder="Pendientes + Conf.">
                                 {{
-                                    'active': 'Sin asignar (Pend + Conf)',
+                                    'active': 'Pendientes + Confirmados',
                                     'assigned': 'Solo Asignados a Ruta',
                                     'all': 'Todos los estados',
                                     'pending': 'Solo Pendientes',
@@ -374,7 +374,7 @@ function PedidosPage() {
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="active">Sin asignar (Pend + Conf)</SelectItem>
+                            <SelectItem value="active">Pendientes + Confirmados</SelectItem>
                             <SelectItem value="assigned">Solo Asignados a Ruta</SelectItem>
                             <SelectItem value="all">Todos los estados</SelectItem>
                             <SelectItem value="pending">Solo Pendientes</SelectItem>
