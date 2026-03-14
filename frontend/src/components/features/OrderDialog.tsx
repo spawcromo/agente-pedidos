@@ -271,9 +271,17 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                         <Input
                                             type="number"
                                             min="0"
-                                            step="0.1"
+                                            step={products.find(p => p.id === watch(`items.${index}.product_id`))?.unit === 'unidad' ? '1' : '0.1'}
                                             className="text-center"
-                                            {...register(`items.${index}.quantity`)}
+                                            {...register(`items.${index}.quantity`, {
+                                                validate: (value) => {
+                                                    const prod = products.find(p => p.id === watch(`items.${index}.product_id`))
+                                                    if (prod?.unit === 'unidad' && !Number.isInteger(Number(value))) {
+                                                        return 'Para productos por unidad use números enteros'
+                                                    }
+                                                    return true
+                                                }
+                                            })}
                                         />
                                     </div>
                                     <div className="col-span-3">
