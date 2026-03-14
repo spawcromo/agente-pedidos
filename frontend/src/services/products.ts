@@ -6,7 +6,7 @@ export async function getProducts(): Promise<Product[]> {
     const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true })
 
     if (error) throw new Error(`Error al obtener productos: ${error.message}`)
     return data ?? []

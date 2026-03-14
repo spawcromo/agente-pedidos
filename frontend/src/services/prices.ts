@@ -36,7 +36,7 @@ export async function getPriceListWithPrices(priceListId: string): Promise<Produ
     const { data: products, error: prodError } = await supabase
         .from('products')
         .select('id, name, unit, active')
-        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true })
 
     if (prodError) throw new Error(`Error al obtener productos: ${prodError.message}`)
 
@@ -126,6 +126,17 @@ export async function updateProductPrice(priceId: string, price: number, priceLi
             
         if (error) throw new Error(`Error al actualizar precio: ${error.message}`)
     }
+}
+
+export async function bulkUpdateProductPrices(prices: { price_list_id: string; product_id: string; price: number }[]) {
+    const supabase = createClient()
+    const { data, error } = await supabase
+        .from('product_prices')
+        .upsert(prices, { onConflict: 'price_list_id, product_id' })
+        .select()
+
+    if (error) throw new Error(`Error al guardar precios: ${error.message}`)
+    return data
 }
 
 export async function deletePriceList(id: string) {

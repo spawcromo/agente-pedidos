@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Plus, Tags, Trash2, ChevronRight, ArrowLeft } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { Plus, Tags, Trash2, ChevronRight, ArrowLeft, Save, X as CloseIcon, Filter } from 'lucide-react'
 import { toast } from 'sonner'
 import {
     getPriceLists,
     getPriceListWithPrices,
     createPriceList,
-    updateProductPrice,
+    bulkUpdateProductPrices,
     deletePriceList,
     type PriceList,
     type ProductPrice
@@ -23,13 +23,16 @@ import {
 } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { withRole } from '@/components/hoc/withRole'
+import { cn } from '@/lib/utils'
 
 function PreciosPage() {
     const [lists, setLists] = useState<PriceList[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedList, setSelectedList] = useState<PriceList | null>(null)
     const [prices, setPrices] = useState<ProductPrice[]>([])
+    const [editedPrices, setEditedPrices] = useState<Record<string, number>>({})
     const [saving, setSaving] = useState(false)
+    const [stockFilter, setStockFilter] = useState<'all' | 'in_stock' | 'out_of_stock'>('all')
 
     // Modal Create List
     const [createOpen, setCreateOpen] = useState(false)
@@ -56,6 +59,7 @@ function PreciosPage() {
             setLoading(true)
             const data = await getPriceListWithPrices(list.id)
             setPrices(data)
+            setEditedPrices({})
             setSelectedList(list)
         } catch (err: any) {
             toast.error(err.message)
@@ -63,6 +67,12 @@ function PreciosPage() {
             setLoading(false)
         }
     }
+
+    const filteredPrices = useMemo(() => {
+        if (stockFilter === 'all') return prices
+        if (stockFilter === 'in_stock') return prices.filter(p => p.product?.active)
+        return prices.filter(p => !p.product?.active)
+    }, [prices, stockFilter])
 
     async function handleCreateList() {
         try {
@@ -83,19 +93,34 @@ function PreciosPage() {
         }
     }
 
-    async function handleUpdatePrice(priceId: string, newPrice: number, productId: string) {
+    const hasChanges = Object.keys(editedPrices).length > 0
+
+    async function handleSaveAll() {
+        if (!selectedList) return
         try {
-            const result = await updateProductPrice(priceId, newPrice, selectedList?.id, productId)
+            setSaving(true)
+            const payload = Object.entries(editedPrices).map(([productId, price]) => ({
+                price_list_id: selectedList.id,
+                product_id: productId,
+                price
+            }))
             
-            // If it was a temp ID, update it to the real ID from DB
-            if (priceId.startsWith('temp-') && result) {
-                setPrices(prev => prev.map(p => p.product_id === productId ? { ...p, id: result.id, price: newPrice } : p))
-            } else {
-                setPrices(prev => prev.map(p => p.id === priceId ? { ...p, price: newPrice } : p))
-            }
+            await bulkUpdateProductPrices(payload)
+            toast.success('Precios actualizados correctamente')
+            
+            // Reload to get actual IDs and sync
+            const data = await getPriceListWithPrices(selectedList.id)
+            setPrices(data)
+            setEditedPrices({})
         } catch (err: any) {
             toast.error(err.message)
+        } finally {
+            setSaving(false)
         }
+    }
+
+    function handleCancel() {
+        setEditedPrices({})
     }
 
     if (loading && !lists.length) {
@@ -104,82 +129,153 @@ function PreciosPage() {
 
     if (selectedList) {
         return (
-            <div className="space-y-6">
-                <header className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => setSelectedList(null)}>
-                        <ArrowLeft className="w-5 h-5" />
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold">{selectedList.name}</h1>
-                        <p className="text-muted-foreground">Gestioná los precios individuales de esta lista.</p>
+            <div className="space-y-4">
+                <header className="flex items-center justify-between gap-4 bg-card/50 p-3 rounded-xl border border-border">
+                    <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedList(null)} className="h-8 w-8">
+                            <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                        <div>
+                            <h1 className="text-lg font-bold text-white leading-tight">{selectedList.name}</h1>
+                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Edición de precios x unidad</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <Select value={stockFilter} onValueChange={(v: any) => setStockFilter(v)}>
+                            <SelectTrigger className="w-[140px] h-8 bg-[#1A1510] border-[#2A1F16] text-[10px] uppercase font-bold">
+                                <Filter className="w-3 h-3 mr-2 opacity-50" />
+                                <SelectValue placeholder="Stock..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#14100C] border-[#2A1F16]">
+                                <SelectItem value="all" className="text-xs">Todos</SelectItem>
+                                <SelectItem value="in_stock" className="text-xs">Con Stock</SelectItem>
+                                <SelectItem value="out_of_stock" className="text-xs">Sin Stock</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {hasChanges && (
+                            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-200">
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={handleCancel}
+                                    className="h-8 py-0 px-3 text-[10px] font-black border-border/50 hover:bg-red-500/10 hover:text-red-500"
+                                >
+                                    <CloseIcon className="w-3 h-3 mr-1" /> CANCELAR
+                                </Button>
+                                <Button 
+                                    size="sm" 
+                                    onClick={handleSaveAll}
+                                    disabled={saving}
+                                    className="h-8 py-0 px-3 text-[10px] font-black bg-amber-500 hover:bg-amber-600 text-amber-950 shadow-lg shadow-amber-500/20"
+                                >
+                                    <Save className="w-3 h-3 mr-1" /> {saving ? 'GUARDANDO...' : 'GUARDAR'}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </header>
 
-                <div className="bg-card border border-border rounded-lg overflow-hidden">
+                <div className="bg-card border border-border rounded-xl overflow-hidden shadow-2xl">
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-muted/30">
-                                <TableHead className="text-amber-500 font-bold">Producto</TableHead>
-                                <TableHead className="w-32 text-center text-amber-500 font-bold">Unidad</TableHead>
-                                <TableHead className="w-48 text-right text-amber-500 font-bold">Precio</TableHead>
+                            <TableRow className="bg-muted/30 border-b border-border hover:bg-muted/30 h-7">
+                                <TableHead className="text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0 px-4">Producto</TableHead>
+                                <TableHead className="w-20 text-center text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0">Unidad</TableHead>
+                                <TableHead className="w-32 text-right text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0 px-4">Precio</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {prices.length === 0 ? (
+                            {filteredPrices.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">
-                                        No hay productos registrados.
+                                    <TableCell colSpan={3} className="text-center py-10 text-muted-foreground italic text-xs">
+                                        No hay productos que coincidan con el filtro.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                prices.map((p) => (
-                                    <TableRow key={p.id} className={`hover:bg-amber-500/5 transition-colors ${!p.product?.active ? 'opacity-50' : ''}`}>
-                                        <TableCell className="font-medium text-white text-lg">
-                                            {p.product?.name}
-                                            {!p.product?.active && (
-                                                <span className="ml-2 text-[10px] uppercase bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-bold">
-                                                    Sin Stock
-                                                </span>
+                                filteredPrices.map((p) => {
+                                    const currentPrice = editedPrices[p.product_id] ?? p.price
+                                    const isEdited = editedPrices[p.product_id] !== undefined
+                                    
+                                    return (
+                                        <TableRow 
+                                            key={p.id} 
+                                            className={cn(
+                                                "hover:bg-amber-500/[0.03] border-b border-border/40 group h-8 transition-colors",
+                                                !p.product?.active && "opacity-40 grayscale-[0.5]"
                                             )}
-                                        </TableCell>
-                                        <TableCell className="text-center text-muted-foreground">
-                                            {p.product?.unit === 'kg' ? 'Kilogramo' : 'Unidad'}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <span className="text-lg font-bold text-amber-500">$</span>
-                                                <Input
-                                                    type="number"
-                                                    value={p.price}
-                                                    onChange={(e) => {
-                                                        const val = parseFloat(e.target.value)
-                                                        if (!isNaN(val)) {
-                                                          handleUpdatePrice(p.id, val, p.product_id)
-                                                        }
-                                                    }}
-                                                    className="w-32 text-right h-10 bg-[#1A1510] border-[#2A1F16] text-lg font-bold"
-                                                />
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                        >
+                                            <TableCell className="py-0.5 px-4 h-8">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-semibold text-white/90">{p.product?.name}</span>
+                                                    {!p.product?.active && (
+                                                        <span className="text-[7px] uppercase bg-red-500/10 text-red-500 px-1 py-0 rounded border border-red-500/20 font-black tracking-tighter">
+                                                            S-STOCK
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center py-0.5 h-8">
+                                                <span className="text-[9px] text-muted-foreground uppercase font-black opacity-60">
+                                                    {p.product?.unit === 'kg' ? 'Kg' : 'Ud'}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell className="text-right py-0.5 px-4 h-8">
+                                                <div className="flex items-center justify-end gap-1.5 h-full">
+                                                    <span className={cn(
+                                                        "text-[10px] font-black",
+                                                        isEdited ? 'text-amber-500 animate-pulse' : 'text-amber-500/40'
+                                                    )}>$</span>
+                                                    <Input
+                                                        type="number"
+                                                        value={currentPrice}
+                                                        onChange={(e) => {
+                                                            const val = parseFloat(e.target.value)
+                                                            if (!isNaN(val)) {
+                                                                setEditedPrices(prev => ({ ...prev, [p.product_id]: val }))
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "w-20 text-right h-6 px-1.5 text-xs font-bold bg-[#1A1510] transition-all border-none focus-visible:ring-1 focus-visible:ring-amber-500/50",
+                                                            isEdited 
+                                                            ? 'text-amber-500 bg-amber-500/10' 
+                                                            : 'text-white/80'
+                                                        )}
+                                                    />
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })
                             )}
                         </TableBody>
                     </Table>
                 </div>
+                
+                {hasChanges && (
+                    <div className="flex justify-between items-center px-2">
+                        <p className="text-[9px] text-amber-500/70 font-bold uppercase tracking-widest italic animate-pulse">
+                            * CAMBIOS SIN GUARDAR
+                        </p>
+                        <p className="text-[9px] text-muted-foreground font-medium">
+                            {Object.keys(editedPrices).length} productos modificados
+                        </p>
+                    </div>
+                )}
             </div>
         )
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <header className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold">Listas de Precios</h1>
-                    <p className="text-muted-foreground">Gestioná diferentes esquemas de precios para tus clientes.</p>
+                    <p className="text-muted-foreground text-sm">Gestioná diferentes esquemas de precios para tus clientes.</p>
                 </div>
-                <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2" onClick={() => setCreateOpen(true)}>
-                    <Plus className="w-4 h-4" /> Nueva Lista
+                <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black gap-2 h-9 px-4 text-xs" onClick={() => setCreateOpen(true)}>
+                    <Plus className="w-4 h-4" /> NUEVA LISTA
                 </Button>
             </header>
 
@@ -187,19 +283,21 @@ function PreciosPage() {
                 {lists.map((list) => (
                     <div 
                         key={list.id} 
-                        className="bg-card border border-border rounded-xl p-6 hover:border-amber-500/50 transition-all cursor-pointer group flex flex-col justify-between h-48 relative overflow-hidden"
+                        className="bg-card border border-border rounded-xl p-5 hover:border-amber-500/50 transition-all cursor-pointer group flex flex-col justify-between h-40 relative overflow-hidden"
                         onClick={() => handleSelectList(list)}
                     >
-                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                             <Tags className="w-24 h-24" />
+                        <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                             <Tags className="w-20 h-20" />
                         </div>
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <Tags className="text-amber-500 w-8 h-8" />
-                                <ChevronRight className="w-6 h-6 text-muted-foreground group-hover:text-amber-500 transition-colors" />
+                            <div className="flex items-center justify-between mb-3">
+                                <Tags className="text-amber-500 w-7 h-7" />
+                                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-amber-500 transition-colors" />
                             </div>
-                            <h3 className="text-2xl font-bold text-white group-hover:text-amber-500 transition-colors">{list.name}</h3>
-                            <p className="text-xs text-muted-foreground mt-2">Creada el {new Date(list.created_at).toLocaleDateString()}</p>
+                            <h3 className="text-xl font-bold text-white group-hover:text-amber-500 transition-colors">{list.name}</h3>
+                            <p className="text-[10px] uppercase font-bold text-muted-foreground mt-1 opacity-60">
+                                {new Date(list.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
                         </div>
                         <div className="flex justify-end relative z-10">
                              {list.name !== 'Lista Base' && (
@@ -226,26 +324,26 @@ function PreciosPage() {
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogContent className="sm:max-w-md bg-[#14100C] border-[#2A1F16]">
                     <DialogHeader>
-                        <DialogTitle className="text-xl text-amber-500">Nueva Lista de Precios</DialogTitle>
+                        <DialogTitle className="text-xl font-black text-amber-500 uppercase tracking-tighter">Nueva Lista de Precios</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label className="text-white text-xs uppercase font-bold tracking-wider">Nombre de la lista</Label>
+                            <Label className="text-white text-[10px] uppercase font-black tracking-widest opacity-70">Nombre de la lista</Label>
                             <Input
                                 placeholder="Ej: Mayorista 2026"
                                 value={newListData.name}
                                 onChange={(e) => setNewListData(f => ({ ...f, name: e.target.value }))}
-                                className="bg-[#1A1510] border-[#2A1F16]"
+                                className="bg-[#1A1510] border-[#2A1F16] h-10 font-bold"
                             />
                         </div>
                         
                         <div className="space-y-2">
-                            <Label className="text-white text-xs uppercase font-bold tracking-wider">Copiar desde (opcional)</Label>
+                            <Label className="text-white text-[10px] uppercase font-black tracking-widest opacity-70">Copiar desde (opcional)</Label>
                             <Select value={newListData.baseListId} onValueChange={(v) => setNewListData(f => ({ ...f, baseListId: v || '' }))}>
-                                <SelectTrigger className="bg-[#1A1510] border-[#2A1F16]">
+                                <SelectTrigger className="bg-[#1A1510] border-[#2A1F16] h-10 font-bold">
                                     <SelectValue placeholder="Lista base..." />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-[#14100C] border-[#2A1F16]">
                                     <SelectItem value="none">Ninguna (vacía)</SelectItem>
                                     {lists.map(l => (
                                         <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
@@ -256,7 +354,7 @@ function PreciosPage() {
 
                         {newListData.baseListId && newListData.baseListId !== 'none' && (
                             <div className="space-y-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
-                                <Label className="text-amber-500 text-[10px] uppercase font-bold tracking-tighter">Coeficiente de multiplicación</Label>
+                                <Label className="text-amber-500 text-[10px] uppercase font-black tracking-tighter">Coeficiente de multiplicación</Label>
                                 <div className="flex items-center gap-4">
                                     <Input
                                         type="number"
@@ -264,24 +362,24 @@ function PreciosPage() {
                                         min="0"
                                         value={newListData.multiplier}
                                         onChange={(e) => setNewListData(f => ({ ...f, multiplier: e.target.value }))}
-                                        className="bg-[#1A1510] border-[#2A1F16] h-10 w-24 text-center font-bold"
+                                        className="bg-[#1A1510] border-[#2A1F16] h-10 w-24 text-center font-bold text-amber-500"
                                     />
-                                    <div className="flex-1 text-[11px] text-muted-foreground leading-tight">
-                                        Todos los precios de la lista base se multiplicarán por este valor. <br/>
-                                        <span className="text-white font-bold">1.20 = +20%</span>
+                                    <div className="flex-1 text-[10px] text-muted-foreground leading-tight font-medium">
+                                        Todos los precios se multiplicarán. <br/>
+                                        <span className="text-white font-black">1.10 = +10%</span>
                                     </div>
                                 </div>
                             </div>
                         )}
                     </div>
-                    <DialogFooter>
-                        <Button variant="ghost" onClick={() => setCreateOpen(false)}>Cancelar</Button>
+                    <DialogFooter className="gap-2">
+                        <Button variant="ghost" onClick={() => setCreateOpen(false)} className="text-[10px] font-black uppercase">Cancelar</Button>
                         <Button
-                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-8 shadow-lg shadow-amber-500/10"
+                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black px-8 shadow-lg shadow-amber-500/10 text-[10px] uppercase"
                             disabled={saving || !newListData.name}
                             onClick={handleCreateList}
                         >
-                            {saving ? 'Creando...' : 'Crear Lista'}
+                            {saving ? 'CREANDO...' : 'CREAR LISTA'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
