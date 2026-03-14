@@ -95,8 +95,8 @@ function DashboardPage() {
         const completedStops = myRoutes.reduce((acc, r) => acc + r.stops.filter(s => s.status === 'delivered').length, 0)
         const pendingRoutes = myRoutes.filter(r => {
             if (r.status === 'completed') return false
-            const allDelivered = r.stops.length > 0 && r.stops.every(s => s.status === 'delivered')
-            return !allDelivered
+            const allDone = r.stops.length > 0 && r.stops.every(s => s.status === 'delivered' || s.order.status === 'cancelled')
+            return !allDone
         }).length
 
         return (
@@ -148,8 +148,8 @@ function DashboardPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-6 pb-6">
-                            <div className="text-4xl font-black">{completedStops} / {totalStops}</div>
-                            <p className="text-xs text-muted-foreground mt-1 font-medium">Paradas completadas hoy</p>
+                            <div className="text-4xl font-black">{myRoutes.reduce((acc, r) => acc + r.stops.filter(s => s.status === 'delivered' || s.order.status === 'cancelled').length, 0)} / {totalStops}</div>
+                            <p className="text-xs text-muted-foreground mt-1 font-medium">Paradas terminadas hoy</p>
                         </CardContent>
                     </Card>
 
@@ -201,25 +201,27 @@ function DashboardPage() {
                                                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Ruta #{idx + 1}</p>
                                                         <h3 className="text-lg font-bold flex items-center gap-2">
                                                             {route.stops.length} Paradas
-                                                            {progress === 100 && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                                                            {(route.status === 'completed' || route.stops.every(s => s.status === 'delivered' || s.order.status === 'cancelled')) && <CheckCircle2 className="w-4 h-4 text-green-500" />}
                                                         </h3>
                                                     </div>
                                                     <Badge variant="outline" className={cn(
-                                                        progress === 100 ? "border-green-500/20 text-green-400 bg-green-500/5" : "border-amber-500/20 text-amber-400 bg-amber-500/5"
+                                                        (route.status === 'completed' || route.stops.every(s => s.status === 'delivered' || s.order.status === 'cancelled')) ? "border-green-500/20 text-green-400 bg-green-500/5" : "border-amber-500/20 text-amber-400 bg-amber-500/5"
                                                     )}>
-                                                        {progress === 100 ? 'Completado' : 'En progreso'}
+                                                        {(route.status === 'completed' || route.stops.every(s => s.status === 'delivered' || s.order.status === 'cancelled')) ? 'Completado' : 'En progreso'}
                                                     </Badge>
                                                 </div>
 
                                                 <div className="space-y-1.5">
                                                     <div className="flex justify-between text-xs">
                                                         <span className="text-muted-foreground">Progreso de ruta</span>
-                                                        <span className="font-bold">{Math.round(progress)}%</span>
+                                                        <span className="font-bold">
+                                                            {Math.round((route.stops.filter(s => s.status === 'delivered' || s.order.status === 'cancelled').length / route.stops.length) * 100)}%
+                                                        </span>
                                                     </div>
                                                     <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-amber-500 transition-all duration-500"
-                                                            style={{ width: `${progress}%` }}
+                                                            style={{ width: `${(route.stops.filter(s => s.status === 'delivered' || s.order.status === 'cancelled').length / route.stops.length) * 100}%` }}
                                                         />
                                                     </div>
                                                 </div>
