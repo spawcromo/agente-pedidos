@@ -509,7 +509,7 @@ function RutasPage() {
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
-                                            {route.status === 'draft' && (
+                                            {(route.status === 'draft' || route.status === 'completed') && (
                                                 <button
                                                     onClick={() => {
                                                         setRouteToDelete(route.id)
