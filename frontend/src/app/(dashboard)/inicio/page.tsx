@@ -130,36 +130,36 @@ function DashboardPage() {
                 {/* Repartidor Stats Grid */}
                 <div className="grid gap-6 md:grid-cols-3">
                     <Card className="bg-card/40 backdrop-blur-md border-border/50 border-t-4 border-t-amber-500 hover:border-amber-500/50 transition-all duration-300">
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pt-5 pb-1 px-6">
                             <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
                                 <Truck className="w-4 h-4 text-amber-500" /> Rutas Activas
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-6 pb-6">
                             <div className="text-4xl font-black">{pendingRoutes}</div>
                             <p className="text-xs text-muted-foreground mt-1 font-medium">Pendientes de completar</p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-card/40 backdrop-blur-md border-border/50 border-t-4 border-t-green-500 hover:border-green-500/50 transition-all duration-300">
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pt-5 pb-1 px-6">
                             <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-green-500" /> Entregas Realizadas
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-6 pb-6">
                             <div className="text-4xl font-black">{completedStops} / {totalStops}</div>
                             <p className="text-xs text-muted-foreground mt-1 font-medium">Paradas completadas hoy</p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-card/40 backdrop-blur-md border-border/50 border-t-4 border-t-blue-500 hover:border-blue-500/50 transition-all duration-300">
-                        <CardHeader className="pb-2">
+                        <CardHeader className="pt-5 pb-1 px-6">
                             <CardTitle className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-blue-500" /> Próxima Parada
                             </CardTitle>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="px-6 pb-6">
                             <div className="text-xl font-black truncate text-blue-400">
                                 {myRoutes.find(r => r.stops.some(s => s.status === 'pending'))
                                     ?.stops.find(s => s.status === 'pending')
@@ -195,7 +195,7 @@ function DashboardPage() {
                                 return (
                                     <Link key={route.id} href="/rutas">
                                         <Card className="group hover:border-amber-500/50 transition-all cursor-pointer bg-card/40 overflow-hidden relative">
-                                            <div className="p-5 flex flex-col gap-4">
+                                            <div className="p-6 flex flex-col gap-5">
                                                 <div className="flex justify-between items-start">
                                                     <div>
                                                         <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Ruta #{idx + 1}</p>
@@ -239,10 +239,10 @@ function DashboardPage() {
 
                 {/* Quick Actions for Repartidor */}
                 <Card className="bg-muted/10 border-border/50">
-                    <CardHeader>
+                    <CardHeader className="pt-6 px-6 pb-2">
                         <CardTitle className="text-lg">Acciones Rápidas</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-wrap gap-4">
+                    <CardContent className="flex flex-wrap gap-4 px-6 pb-6 text-sm">
                         <Link href="/rutas">
                             <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2">
                                 <Truck className="w-4 h-4" /> Ir a mis Paradas
