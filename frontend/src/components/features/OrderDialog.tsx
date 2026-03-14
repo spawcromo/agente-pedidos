@@ -185,9 +185,14 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                         {!isEditing && (
                             <div className="space-y-1.5">
                                 <Label>Cliente</Label>
-                                <Select onValueChange={(v) => setValue('client_id', v as string)}>
+                                <Select 
+                                    value={selectedClientId} 
+                                    onValueChange={(v) => setValue('client_id', v as string)}
+                                >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Seleccionar cliente..." />
+                                        <SelectValue placeholder="Seleccionar cliente...">
+                                            {clients.find(c => c.id === selectedClientId)?.name}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         {clients.map((c) => (
