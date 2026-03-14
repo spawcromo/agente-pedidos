@@ -538,7 +538,9 @@ function RutasPage() {
                                                         <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
                                                             {stop.order.client?.name}
                                                         </span>
-                                                        {stop.status === 'delivered' ? (
+                                                        {stop.order.status === 'cancelled' ? (
+                                                            <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1 border-destructive/30 text-destructive bg-destructive/5 font-bold">CANCELADO</Badge>
+                                                        ) : stop.status === 'delivered' ? (
                                                             <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />
                                                         ) : (
                                                             <div className="ml-auto flex items-center gap-2">
@@ -574,13 +576,13 @@ function RutasPage() {
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="text-muted-foreground">Progreso</span>
                                             <span className="font-bold">
-                                                {route.stops.filter(s => s.status === 'delivered').length} / {route.stops.length}
+                                                {route.stops.filter(s => s.status === 'delivered' || s.order.status === 'cancelled').length} / {route.stops.length}
                                             </span>
                                         </div>
                                         <div className="w-full h-1.5 bg-white/10 rounded-full mt-2 overflow-hidden">
                                             <div
                                                 className="h-full bg-emerald-500 transition-all rounded-full"
-                                                style={{ width: `${(route.stops.filter(s => s.status === 'delivered').length / route.stops.length) * 100}%` }}
+                                                style={{ width: `${(route.stops.filter(s => s.status === 'delivered' || s.order.status === 'cancelled').length / route.stops.length) * 100}%` }}
                                             />
                                         </div>
                                     </div>
@@ -636,20 +638,29 @@ function RutasPage() {
 
 function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: RouteStop, index: number, isRouteActive: boolean, onDone: () => void, onCancel: () => void }) {
     const isDelivered = stop.status === 'delivered'
+    const isCancelled = stop.order.status === 'cancelled'
 
     return (
         <div className={cn(
             "relative bg-card border border-border rounded-lg p-5 transition-all shadow-sm",
-            isDelivered ? "opacity-60 grayscale" : "hover:border-amber-500/50"
+            (isDelivered || isCancelled) ? "opacity-60 grayscale" : "hover:border-amber-500/50"
         )}>
-            <div className="absolute -left-3 top-5 h-8 w-8 bg-amber-500 text-amber-950 rounded-lg flex items-center justify-center font-bold shadow-lg border-4 border-background">
+            <div className={cn(
+                "absolute -left-3 top-5 h-8 w-8 rounded-lg flex items-center justify-center font-bold shadow-lg border-4 border-background",
+                isCancelled ? "bg-muted text-muted-foreground" : "bg-amber-500 text-amber-950"
+            )}>
                 {index + 1}
             </div>
 
             <div className="pl-6 space-y-4">
                 <div className="flex justify-between items-start gap-4">
                     <div>
-                        <h3 className="text-xl font-bold">{stop.order.client?.name}</h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-xl font-bold">{stop.order.client?.name}</h3>
+                            {isCancelled && (
+                                <Badge variant="destructive" className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-tighter">CANCELADO</Badge>
+                            )}
+                        </div>
                         <p className="text-amber-400 font-medium text-sm flex items-center gap-1.5">
                             <MapPin className="w-4 h-4" /> {stop.order.client?.address}
                         </p>
@@ -668,7 +679,11 @@ function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: Rout
                     >
                         <ExternalLink className="w-4 h-4" /> Abrir GPS
                     </a>
-                    {!isDelivered ? (
+                    {isCancelled ? (
+                        <div className="flex-1 bg-red-500/10 text-red-500 py-3 rounded-lg text-center text-sm font-bold border border-red-500/20 flex items-center justify-center gap-2">
+                            <XCircle className="w-4 h-4" /> PEDIDO CANCELADO
+                        </div>
+                    ) : !isDelivered ? (
                         <>
                             <button
                                 onClick={onCancel}

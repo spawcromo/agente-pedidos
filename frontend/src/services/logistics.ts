@@ -129,12 +129,14 @@ export async function updateStopStatus(stopId: string, status: 'pending' | 'deli
     if (stop?.route_id) {
         const { data: allStops } = await supabase
             .from('delivery_stops')
-            .select('status')
+            .select('status, order:orders(status)')
             .eq('route_id', stop.route_id)
 
         if (allStops) {
-            const allDelivered = allStops.every((s: { status: string }) => s.status === 'delivered')
-            const routeStatus = allDelivered ? 'completed' : 'active'
+            const allDone = (allStops as any[]).every(s => 
+                s.status === 'delivered' || s.order?.status === 'cancelled'
+            )
+            const routeStatus = allDone ? 'completed' : 'active'
 
             await supabase
                 .from('delivery_routes')
@@ -156,13 +158,36 @@ export async function removeStopAndCancelOrder(stopId: string, orderId: string, 
 
     if (orderError) throw new Error(`Error al cancelar pedido: ${orderError.message}`)
 
-    // 2. Delete stop
-    const { error: stopError } = await supabase
-        .from('delivery_stops')
-        .delete()
-        .eq('id', stopId)
+    // 2. We NO LONGER delete the stop record as per user request
+    // This allows it to remain visible in the route list with a "CANCELADO" label
 
-    if (stopError) throw new Error(`Error al remover parada: ${stopError.message}`)
+    // 3. Sync the route status
+    // Fetch route_id first if not available
+    const { data: routeInfo } = await supabase
+        .from('delivery_stops')
+        .select('route_id')
+        .eq('id', stopId)
+        .single()
+
+    if (routeInfo?.route_id) {
+        const { data: allStops } = await supabase
+            .from('delivery_stops')
+            .select('status, order:orders(status)')
+            .eq('route_id', routeInfo.route_id)
+
+        if (allStops) {
+            const allDone = (allStops as any[]).every(s => 
+                s.status === 'delivered' || (s.id === stopId ? true : s.order?.status === 'cancelled')
+            )
+            // Wait, if I just updated the order status above, s.order?.status should be 'cancelled' for the current stopId too
+            const routeStatus = allDone ? 'completed' : 'active'
+
+            await supabase
+                .from('delivery_routes')
+                .update({ status: routeStatus })
+                .eq('id', routeInfo.route_id)
+        }
+    }
 }
 
 export async function deleteRoute(routeId: string): Promise<void> {
