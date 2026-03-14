@@ -30,16 +30,40 @@ export async function getPriceLists(): Promise<PriceList[]> {
 
 export async function getPriceListWithPrices(priceListId: string): Promise<ProductPrice[]> {
     const supabase = createClient()
-    const { data, error } = await supabase
+    
+    // 1. Get all active products
+    const { data: products, error: prodError } = await supabase
+        .from('products')
+        .select('id, name, unit')
+        .eq('active', true)
+        .order('sort_order', { ascending: true })
+
+    if (prodError) throw new Error(`Error al obtener productos: ${prodError.message}`)
+
+    // 2. Get prices for this list
+    const { data: prices, error: priceError } = await supabase
         .from('product_prices')
-        .select(`
-            *,
-            product:products(name, unit)
-        `)
+        .select(`*`)
         .eq('price_list_id', priceListId)
 
-    if (error) throw new Error(`Error al obtener precios de la lista: ${error.message}`)
-    return data ?? []
+    if (priceError) throw new Error(`Error al obtener precios: ${priceError.message}`)
+
+    // 3. Merge: Every product must be in the list
+    const priceMap = new Map<string, any>((prices ?? []).map((p: any) => [p.product_id, p]))
+    
+    return (products ?? []).map((prod: any) => {
+        const existing = priceMap.get(prod.id)
+        return {
+            id: existing?.id ?? `temp-${prod.id}`, // temp ID if not in DB yet
+            price_list_id: priceListId,
+            product_id: prod.id,
+            price: existing?.price ?? 0,
+            product: {
+                name: prod.name,
+                unit: prod.unit
+            }
+        }
+    })
 }
 
 export async function createPriceList(name: string, baseListId?: string, multiplier: number = 1) {
@@ -79,14 +103,28 @@ export async function createPriceList(name: string, baseListId?: string, multipl
     return newList
 }
 
-export async function updateProductPrice(priceId: string, price: number) {
+export async function updateProductPrice(priceId: string, price: number, priceListId?: string, productId?: string) {
     const supabase = createClient()
-    const { error } = await supabase
-        .from('product_prices')
-        .update({ price })
-        .eq('id', priceId)
+    
+    if (priceId.startsWith('temp-')) {
+        if (!priceListId || !productId) throw new Error("Faltan datos para crear nuevo precio")
         
-    if (error) throw new Error(`Error al actualizar precio: ${error.message}`)
+        const { data, error } = await supabase
+            .from('product_prices')
+            .insert({ price_list_id: priceListId, product_id: productId, price })
+            .select()
+            .single()
+            
+        if (error) throw new Error(`Error al crear precio: ${error.message}`)
+        return data
+    } else {
+        const { error } = await supabase
+            .from('product_prices')
+            .update({ price })
+            .eq('id', priceId)
+            
+        if (error) throw new Error(`Error al actualizar precio: ${error.message}`)
+    }
 }
 
 export async function deletePriceList(id: string) {

@@ -26,8 +26,6 @@ import type { Product } from '@/types/database'
 interface ProductFormData {
     name: string
     unit: string
-    base_price: number
-    price_wholesale: number
     sort_order: number
     active: boolean
 }
@@ -51,13 +49,11 @@ export function ProductDialog({
         handleSubmit,
         reset,
         setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<ProductFormData>({
         defaultValues: {
-            name: '',
             unit: 'kg',
-            base_price: 0,
-            price_wholesale: 0,
             sort_order: 0,
             active: true,
         },
@@ -68,8 +64,6 @@ export function ProductDialog({
             reset({
                 name: product.name,
                 unit: product.unit,
-                base_price: product.base_price,
-                price_wholesale: product.price_wholesale,
                 sort_order: product.sort_order,
                 active: product.active,
             })
@@ -77,8 +71,6 @@ export function ProductDialog({
             reset({
                 name: '',
                 unit: 'kg',
-                base_price: 0,
-                price_wholesale: 0,
                 sort_order: 0,
                 active: true,
             })
@@ -89,8 +81,6 @@ export function ProductDialog({
         try {
             const payload = {
                 ...data,
-                base_price: Number(data.base_price),
-                price_wholesale: Number(data.price_wholesale),
                 sort_order: Number(data.sort_order),
             }
             if (isEditing) {
@@ -141,47 +131,27 @@ export function ProductDialog({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="kg">kg</SelectItem>
+                                <SelectItem value="kg">Kilogramo (kg)</SelectItem>
                                 <SelectItem value="unidad">Unidad</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
-                    {/* Precios */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="base_price">Precio de Lista (Base)</Label>
-                            <Input
-                                id="base_price"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                {...register('base_price', { required: 'Requerido', min: 0 })}
-                            />
-                            {errors.base_price && (
-                                <p className="text-xs text-destructive">
-                                    {errors.base_price.message}
-                                </p>
-                            )}
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="price_wholesale">Precio Mayorista</Label>
-                            <Input
-                                id="price_wholesale"
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                {...register('price_wholesale', {
-                                    required: 'Requerido',
-                                    min: 0,
-                                })}
-                            />
-                            {errors.price_wholesale && (
-                                <p className="text-xs text-destructive">
-                                    {errors.price_wholesale.message}
-                                </p>
-                            )}
-                        </div>
+                    {/* Estado de Stock */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="active">Estado de Stock</Label>
+                        <Select
+                            value={watch('active') ? 'true' : 'false'}
+                            onValueChange={(v) => setValue('active', v === 'true')}
+                        >
+                            <SelectTrigger id="active">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="true">Con stock</SelectItem>
+                                <SelectItem value="false">Sin stock</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Orden */}

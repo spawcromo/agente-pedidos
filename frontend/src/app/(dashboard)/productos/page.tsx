@@ -89,7 +89,7 @@ function ProductosPage() {
     async function handleToggleActive(product: Product) {
         try {
             await toggleProductActive(product.id, !product.active)
-            toast.success(`Producto ${!product.active ? 'activado' : 'desactivado'}`)
+            toast.success(`Stock actualizado: ${!product.active ? 'Con stock' : 'Sin stock'}`)
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error al actualizar estado')
@@ -103,7 +103,7 @@ function ProductosPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
                     <p className="text-muted-foreground">
-                        Catálogo de productos y precios.
+                        Catálogo de productos y disponibilidad de stock.
                     </p>
                 </div>
                 <Button onClick={openCreate} id="btn-nuevo-producto" className="w-full sm:w-auto gap-2">
@@ -120,22 +120,20 @@ function ProductosPage() {
                                 <TableHead className="w-8">#</TableHead>
                                 <TableHead className="min-w-[150px]">Producto</TableHead>
                                 <TableHead>Unidad</TableHead>
-                                <TableHead className="text-right">Precio Base</TableHead>
-                                <TableHead className="text-right">Mayorista</TableHead>
-                                <TableHead>Estado</TableHead>
+                                <TableHead>Stock</TableHead>
                                 <TableHead className="w-12" />
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
+                                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
                                         Cargando...
                                     </TableCell>
                                 </TableRow>
                             ) : products.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
+                                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
                                         No hay productos.
                                     </TableCell>
                                 </TableRow>
@@ -154,21 +152,15 @@ function ProductosPage() {
                                         <TableCell className="font-semibold text-foreground">{product.name}</TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider px-1.5 h-5">
-                                                {product.unit}
+                                                {product.unit === 'kg' ? 'Kilogramo' : 'Unidad'}
                                             </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right font-mono font-medium text-amber-500">
-                                            {ARS.format(product.base_price)}
-                                        </TableCell>
-                                        <TableCell className="text-right font-mono font-medium text-emerald-500">
-                                            {ARS.format(product.price_wholesale)}
                                         </TableCell>
                                         <TableCell>
                                             <Badge
                                                 variant={product.active ? 'default' : 'secondary'}
                                                 className={product.active ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : ''}
                                             >
-                                                {product.active ? 'Activo' : 'Inactivo'}
+                                                {product.active ? 'Con stock' : 'Sin stock'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
@@ -185,9 +177,9 @@ function ProductosPage() {
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleToggleActive(product)} className="gap-2">
                                                         {product.active ? (
-                                                            <><EyeOff className="w-4 h-4" /> Desactivar</>
+                                                            <><EyeOff className="w-4 h-4" /> Sin stock</>
                                                         ) : (
-                                                            <><Eye className="w-4 h-4" /> Activar</>
+                                                            <><Eye className="w-4 h-4" /> Con stock</>
                                                         )}
                                                     </DropdownMenuItem>
                                                     <DropdownMenuSeparator />

@@ -83,12 +83,16 @@ function PreciosPage() {
         }
     }
 
-    async function handleUpdatePrice(priceId: string, newPrice: number) {
+    async function handleUpdatePrice(priceId: string, newPrice: number, productId: string) {
         try {
-            await updateProductPrice(priceId, newPrice)
-            setPrices(prev => prev.map(p => p.id === priceId ? { ...p, price: newPrice } : p))
-            // Minimal toast to avoid spamming
-            // toast.success('Precio actualizado', { duration: 1000 })
+            const result = await updateProductPrice(priceId, newPrice, selectedList?.id, productId)
+            
+            // If it was a temp ID, update it to the real ID from DB
+            if (priceId.startsWith('temp-') && result) {
+                setPrices(prev => prev.map(p => p.product_id === productId ? { ...p, id: result.id, price: newPrice } : p))
+            } else {
+                setPrices(prev => prev.map(p => p.id === priceId ? { ...p, price: newPrice } : p))
+            }
         } catch (err: any) {
             toast.error(err.message)
         }
@@ -124,14 +128,16 @@ function PreciosPage() {
                             {prices.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">
-                                        No hay productos en esta lista.
+                                        No hay productos con stock disponibles.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 prices.map((p) => (
                                     <TableRow key={p.id} className="hover:bg-amber-500/5 transition-colors">
                                         <TableCell className="font-medium text-white text-lg">{p.product?.name}</TableCell>
-                                        <TableCell className="text-center text-muted-foreground">{p.product?.unit}</TableCell>
+                                        <TableCell className="text-center text-muted-foreground">
+                                            {p.product?.unit === 'kg' ? 'Kilogramo' : 'Unidad'}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <span className="text-lg font-bold text-amber-500">$</span>
@@ -141,7 +147,7 @@ function PreciosPage() {
                                                     onChange={(e) => {
                                                         const val = parseFloat(e.target.value)
                                                         if (!isNaN(val)) {
-                                                          handleUpdatePrice(p.id, val)
+                                                          handleUpdatePrice(p.id, val, p.product_id)
                                                         }
                                                     }}
                                                     className="w-32 text-right h-10 bg-[#1A1510] border-[#2A1F16] text-lg font-bold"
@@ -189,20 +195,22 @@ function PreciosPage() {
                             <p className="text-xs text-muted-foreground mt-2">Creada el {new Date(list.created_at).toLocaleDateString()}</p>
                         </div>
                         <div className="flex justify-end relative z-10">
-                             <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 h-8 w-8 transition-colors"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    if(confirm(`¿Eliminar la lista "${list.name}"? Los clientes asignados quedarán sin lista.`)) {
-                                        setLoading(true)
-                                        deletePriceList(list.id).then(loadLists).catch(err => toast.error(err.message))
-                                    }
-                                }}
-                             >
-                                <Trash2 className="w-4 h-4" />
-                             </Button>
+                             {list.name !== 'Lista Base' && (
+                                 <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 h-8 w-8 transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        if(confirm(`¿Eliminar la lista "${list.name}"? Los clientes asignados quedarán sin lista.`)) {
+                                            setLoading(true)
+                                            deletePriceList(list.id).then(loadLists).catch(err => toast.error(err.message))
+                                        }
+                                    }}
+                                 >
+                                    <Trash2 className="w-4 h-4" />
+                                 </Button>
+                             )}
                         </div>
                     </div>
                 ))}

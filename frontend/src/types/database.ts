@@ -39,8 +39,8 @@ export interface Product {
   id: string
   name: string
   unit: string
-  base_price: number
-  price_wholesale: number
+  base_price?: number
+  price_wholesale?: number
   active: boolean
   sort_order: number
 }
