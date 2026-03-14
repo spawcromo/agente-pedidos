@@ -31,7 +31,7 @@ export async function getRoutes(date?: string): Promise<DeliveryRoute[]> {
                 *,
                 order:orders(
                     *,
-                    client:clients(id, name, phone, address, client_type),
+                    client:clients(id, name, phone, address),
                     order_items(*, product:products(name, unit))
                 )
             )
@@ -58,7 +58,7 @@ export async function getMyRoutes(driverId: string): Promise<DeliveryRoute[]> {
                 *,
                 order:orders(
                     *,
-                    client:clients(id, name, phone, address, client_type),
+                    client:clients(id, name, phone, address),
                     order_items(*, product:products(name, unit))
                 )
             )

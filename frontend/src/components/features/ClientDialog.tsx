@@ -32,7 +32,6 @@ type FormData = {
     lat: string
     lng: string
     opening_hours: string
-    client_type: 'retail' | 'wholesale'
     notes: string
     price_list_id: string
 }
@@ -74,7 +73,6 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
             lat: '',
             lng: '',
             opening_hours: '',
-            client_type: 'retail',
             notes: '',
             price_list_id: ''
         },
@@ -89,14 +87,13 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                 lat: client.lat?.toString() ?? '',
                 lng: client.lng?.toString() ?? '',
                 opening_hours: client.opening_hours ?? '',
-                client_type: client.client_type,
                 notes: client.notes ?? '',
                 price_list_id: client.price_list_id ?? ''
             })
         } else {
             reset({
                 name: '', phone: '', address: '', lat: '', lng: '',
-                opening_hours: '', client_type: 'retail', notes: '',
+                opening_hours: '', notes: '',
                 price_list_id: ''
             })
         }
@@ -111,7 +108,6 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                 lat: data.lat ? parseFloat(data.lat) : null,
                 lng: data.lng ? parseFloat(data.lng) : null,
                 opening_hours: data.opening_hours.trim() || null,
-                client_type: data.client_type,
                 notes: data.notes.trim() || null,
                 price_list_id: data.price_list_id.trim() || null,
             }

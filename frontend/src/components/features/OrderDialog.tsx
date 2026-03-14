@@ -108,11 +108,10 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
         if (customPrice) {
             setValue(`items.${index}.unit_price`, customPrice.price.toString())
         } else {
-            // Fallback to legacy price if no custom price found
+            // Fallback to product.base_price if no custom list price found
             const product = products.find((p) => p.id === productId)
-            const client = clients.find((c) => c.id === selectedClientId)
-            if (product && client) {
-                const price = client.client_type === 'wholesale' ? product.price_wholesale : product.base_price
+            if (product) {
+                const price = product.base_price ?? 0
                 setValue(`items.${index}.unit_price`, price.toString())
             }
         }

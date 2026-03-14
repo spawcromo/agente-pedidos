@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Order, OrderStatus, OrderItem } from '@/types/database'
 
 export type OrderWithDetails = Order & {
-    client: { id: string; name: string; phone: string; client_type: string }
+    client: { id: string; name: string; phone: string }
     order_items: (OrderItem & { product: { name: string; unit: string } })[]
     delivery_stops?: { id: string; status: string }[]
 }
@@ -16,7 +16,7 @@ export async function getOrders(filters?: {
         .from('orders')
         .select(`
       *,
-      client:clients(id, name, phone, client_type),
+      client:clients(id, name, phone),
       order_items(*, product:products(name, unit)),
       delivery_stops(id, status)
     `)
@@ -45,7 +45,7 @@ export async function getOrderById(id: string): Promise<OrderWithDetails> {
         .from('orders')
         .select(`
       *,
-      client:clients(id, name, phone, client_type),
+      client:clients(id, name, phone),
       order_items(*, product:products(name, unit)),
       delivery_stops(id, status)
     `)

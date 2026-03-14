@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import type { Client, ClientType } from '@/types/database'
+import type { Client } from '@/types/database'
 
 export async function getClients(): Promise<Client[]> {
     const supabase = createClient()
@@ -31,7 +31,6 @@ export interface ClientPayload {
     lat: number | null
     lng: number | null
     opening_hours: string | null
-    client_type: ClientType
     notes: string | null
     price_list_id: string | null
 }
