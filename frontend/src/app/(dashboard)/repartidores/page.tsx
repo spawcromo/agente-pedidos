@@ -40,7 +40,7 @@ const STATUS_LABELS: Record<string, string> = {
     disponible: 'Disponible',
     enfermo: 'Enfermo',
     vacaciones: 'Vacaciones',
-    no_disponible: 'No Disponible'
+    no_disponible: 'No disponible'
 }
 const STATUS_COLORS: Record<string, string> = {
     disponible: 'text-emerald-500 border-emerald-500/20 bg-emerald-500/10',
@@ -193,7 +193,9 @@ function RepartidoresPage() {
                                                 }}
                                             >
                                                 <SelectTrigger className={`h-8 w-[140px] text-xs font-semibold ${STATUS_COLORS[rep.driver_status || 'disponible']}`}>
-                                                    <SelectValue />
+                                                    <SelectValue>
+                                                        {STATUS_LABELS[rep.driver_status || 'disponible']}
+                                                    </SelectValue>
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {Object.entries(STATUS_LABELS).map(([key, label]) => (
