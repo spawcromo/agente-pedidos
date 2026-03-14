@@ -73,7 +73,7 @@ function PedidosPage() {
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
     })
     
-    const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all' | 'active'>('active')
+    const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all' | 'active' | 'assigned'>('active')
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState<OrderWithDetails | null>(null)
@@ -108,11 +108,22 @@ function PedidosPage() {
             setCurrentPage(1)
             const data = await getOrders({
                 delivery_date: dateFilter || undefined,
-                status: statusFilter === 'active'
+                status: statusFilter === 'active' || statusFilter === 'assigned'
                     ? ['pending', 'confirmed']
                     : (statusFilter !== 'all' ? statusFilter : undefined),
             })
-            setOrders(data)
+
+            // Client-side filtering for "Assigned" logic
+            let filteredData = data
+            if (statusFilter === 'active') {
+                // Return only those NOT assigned to a route
+                filteredData = data.filter(o => !o.delivery_stops || o.delivery_stops.length === 0)
+            } else if (statusFilter === 'assigned') {
+                // Return only those assigned to a route
+                filteredData = data.filter(o => o.delivery_stops && o.delivery_stops.length > 0)
+            }
+
+            setOrders(filteredData)
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error al cargar pedidos')
         } finally {
@@ -346,12 +357,13 @@ function PedidosPage() {
                     />
                     <Select
                         value={statusFilter}
-                        onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active')}
+                        onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active' | 'assigned')}
                     >
                         <SelectTrigger className="flex-1 sm:w-40" id="filter-estado">
                             <SelectValue placeholder="Pendientes + Conf.">
                                 {{
-                                    'active': 'Pendientes + Conf.',
+                                    'active': 'Sin asignar (Pend + Conf)',
+                                    'assigned': 'Solo Asignados a Ruta',
                                     'all': 'Todos los estados',
                                     'pending': 'Solo Pendientes',
                                     'confirmed': 'Solo Confirmados',
@@ -362,7 +374,8 @@ function PedidosPage() {
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="active">Pendientes + Conf.</SelectItem>
+                            <SelectItem value="active">Sin asignar (Pend + Conf)</SelectItem>
+                            <SelectItem value="assigned">Solo Asignados a Ruta</SelectItem>
                             <SelectItem value="all">Todos los estados</SelectItem>
                             <SelectItem value="pending">Solo Pendientes</SelectItem>
                             <SelectItem value="confirmed">Solo Confirmados</SelectItem>
