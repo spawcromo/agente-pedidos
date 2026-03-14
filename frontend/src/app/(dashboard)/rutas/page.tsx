@@ -491,49 +491,84 @@ function RutasPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {routes.map(route => (
                                 <div key={route.id} className="bg-card border border-border rounded-sm overflow-hidden flex flex-col group/route">
-                                    <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center">
-                                        <div className="flex-1 min-w-0 pr-2">
-                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chofer</p>
+                                    <div className="p-4 border-b border-border bg-muted/30 flex justify-between items-center gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Chofer</p>
+                                                <Badge className={cn(
+                                                    "text-[10px] px-1.5 h-4 border-none",
+                                                    route.status === 'active' ? "bg-amber-500 text-amber-950" : 
+                                                    route.status === 'completed' ? "bg-emerald-500 text-white" : 
+                                                    "bg-muted text-muted-foreground"
+                                                )}>
+                                                    {route.status === 'active' ? 'EN RUTA' : 
+                                                     route.status === 'completed' ? 'FINALIZADA' : 'PENDIENTE'}
+                                                </Badge>
+                                            </div>
                                             <p className="font-bold text-amber-500 truncate">{route.driver?.full_name || route.driver?.email || 'Sin asignar'}</p>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
-                                            <button
-                                                onClick={() => {
-                                                    setRouteToDelete(route.id)
-                                                    setDeleteRouteDialogOpen(true)
-                                                }}
-                                                className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
-                                                title="Eliminar ruta"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {route.status === 'draft' && (
+                                                <button
+                                                    onClick={() => {
+                                                        setRouteToDelete(route.id)
+                                                        setDeleteRouteDialogOpen(true)
+                                                    }}
+                                                    className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
+                                                    title="Eliminar ruta"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="p-4 flex-1 space-y-2">
-                                        {route.stops.sort((a, b) => a.position - b.position).map((stop, i) => (
-                                            <div key={stop.id} className="flex items-center gap-2 text-sm text-foreground/80">
-                                                <span className="text-[10px] text-muted-foreground w-4 text-center">{i + 1}</span>
-                                                <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
-                                                    {stop.order.client?.name}
-                                                </span>
-                                                {stop.status === 'delivered' ? (
-                                                    <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />
-                                                ) : (
-                                                    <button
-                                                        onClick={() => {
-                                                            setCancelData({ stopId: stop.id, orderId: stop.order_id })
-                                                            setCancelReason('')
-                                                            setCancelDialogOpen(true)
-                                                        }}
-                                                        className="ml-auto text-muted-foreground hover:text-destructive opacity-0 group-hover/route:opacity-100 transition-opacity"
-                                                        title="Cancelar pedido de la ruta"
-                                                    >
-                                                        <XCircle className="w-3.5 h-3.5" />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
+                                        {(() => {
+                                            const sortedStops = [...route.stops].sort((a, b) => a.position - b.position)
+                                            const nextStop = sortedStops.find(s => s.status === 'pending')
+
+                                            return sortedStops.map((stop, i) => {
+                                                const isNext = stop.id === nextStop?.id
+                                                const canCancel = route.status === 'draft' || (route.status === 'active' && !isNext)
+
+                                                return (
+                                                    <div key={stop.id} className="flex items-center gap-2 text-sm text-foreground/80">
+                                                        <span className="text-[10px] text-muted-foreground w-4 text-center">{i + 1}</span>
+                                                        <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
+                                                            {stop.order.client?.name}
+                                                        </span>
+                                                        {stop.status === 'delivered' ? (
+                                                            <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />
+                                                        ) : (
+                                                            <div className="ml-auto flex items-center gap-2">
+                                                                {isNext && route.status === 'active' && (
+                                                                    <Badge variant="outline" className="text-[9px] h-4 px-1 border-amber-500/30 text-amber-500 bg-amber-500/5">SIGUIENTE</Badge>
+                                                                )}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        if (!canCancel) return
+                                                                        setCancelData({ stopId: stop.id, orderId: stop.order_id })
+                                                                        setCancelReason('')
+                                                                        setCancelDialogOpen(true)
+                                                                    }}
+                                                                    disabled={!canCancel}
+                                                                    className={cn(
+                                                                        "text-muted-foreground transition-all",
+                                                                        canCancel 
+                                                                            ? "hover:text-destructive opacity-0 group-hover/route:opacity-100" 
+                                                                            : "opacity-20 cursor-not-allowed"
+                                                                    )}
+                                                                    title={!canCancel ? "No se puede cancelar la próxima entrega" : "Cancelar pedido de la ruta"}
+                                                                >
+                                                                    <XCircle className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })
+                                        })()}
                                     </div>
                                     <div className="p-4 bg-muted/10 border-t border-border mt-auto">
                                         <div className="flex justify-between items-center text-xs">
