@@ -544,7 +544,22 @@ function PedidosPage() {
                                                 {(() => {
                                                     const d = new Date()
                                                     const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                                                    const isAssigned = order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0;
+                                                    
+                                                    // Caso: Entrega Hoy
                                                     if (order.delivery_date === today) {
+                                                        if (isAssigned) {
+                                                            return (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 cursor-help" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Asignado a ruta para hoy</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )
+                                                        }
                                                         return (
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
@@ -556,6 +571,21 @@ function PedidosPage() {
                                                             </Tooltip>
                                                         )
                                                     }
+
+                                                    // Caso: Fecha Pasada y no finalizado
+                                                    if (order.delivery_date < today && !['delivered', 'cancelled', 'rejected'].includes(order.status)) {
+                                                        return (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <AlertCircle className="w-4 h-4 text-red-500 animate-pulse cursor-help" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent side="right">
+                                                                    <p>Fecha pasada: ¿Se entregó?</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )
+                                                    }
+                                                    
                                                     return null
                                                 })()}
                                             </div>
