@@ -65,7 +65,14 @@ function PedidosPage() {
     const [orders, setOrders] = useState<OrderWithDetails[]>([])
     const [loading, setLoading] = useState(true)
     const [mounted, setMounted] = useState(false)
-    const [dateFilter, setDateFilter] = useState('')
+    
+    // Default to tomorrow's date
+    const [dateFilter, setDateFilter] = useState(() => {
+        const d = new Date()
+        d.setDate(d.getDate() + 1)
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    })
+    
     const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all' | 'active'>('active')
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [dialogOpen, setDialogOpen] = useState(false)
@@ -367,31 +374,39 @@ function PedidosPage() {
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none"
-                        onClick={() => {
-                            const d = new Date()
-                            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-                            setDateFilter(today)
-                        }}
-                    >
-                        Hoy
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none"
-                        onClick={() => {
-                            const d = new Date()
-                            d.setDate(d.getDate() + 1)
-                            const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-                            setDateFilter(tomorrow)
-                        }}
-                    >
-                        Mañana
-                    </Button>
+                    {(() => {
+                        const d = new Date()
+                        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                        d.setDate(d.getDate() + 1)
+                        const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                        
+                        return (
+                            <>
+                                <Button
+                                    variant={dateFilter === today ? "default" : "outline"}
+                                    size="sm"
+                                    className={cn(
+                                        "flex-1 sm:flex-none font-bold",
+                                        dateFilter === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                    )}
+                                    onClick={() => setDateFilter(today)}
+                                >
+                                    Hoy
+                                </Button>
+                                <Button
+                                    variant={dateFilter === tomorrow ? "default" : "outline"}
+                                    size="sm"
+                                    className={cn(
+                                        "flex-1 sm:flex-none font-bold",
+                                        dateFilter === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                    )}
+                                    onClick={() => setDateFilter(tomorrow)}
+                                >
+                                    Mañana
+                                </Button>
+                            </>
+                        )
+                    })()}
                 </div>
 
                 {selected.size > 0 && (
