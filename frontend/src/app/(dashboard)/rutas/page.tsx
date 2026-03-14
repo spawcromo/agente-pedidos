@@ -75,7 +75,7 @@ function RutasPage() {
     // Admin state
     const [unassignedOrders, setUnassignedOrders] = useState<OrderWithDetails[]>([])
     const [routes, setRoutes] = useState<DeliveryRoute[]>([])
-    const [drivers, setDrivers] = useState<{ id: string; email: string; full_name?: string | null }[]>([])
+    const [drivers, setDrivers] = useState<{ id: string; email: string; full_name?: string | null; driver_status?: string | null }[]>([])
     const [selectedOrders, setSelectedOrders] = useState<string[]>([])
     const [selectedDriver, setSelectedDriver] = useState<string>('')
 
@@ -385,11 +385,17 @@ function RutasPage() {
                                 </SelectValue>
                             </SelectTrigger>
                             <SelectContent className="min-w-[240px]">
-                                {drivers.map(d => (
-                                    <SelectItem key={d.id} value={d.id}>
-                                        {d.full_name || d.email}
-                                    </SelectItem>
-                                ))}
+                                {drivers.length === 0 ? (
+                                    <p className="p-2 text-xs text-muted-foreground text-center">Cargando repartidores...</p>
+                                ) : drivers.filter(d => d.driver_status === 'disponible').length === 0 ? (
+                                    <p className="p-2 text-xs text-destructive text-center font-bold">Sin repartidores disponibles</p>
+                                ) : (
+                                    drivers.filter(d => d.driver_status === 'disponible').map(d => (
+                                        <SelectItem key={d.id} value={d.id}>
+                                            {d.full_name || d.email}
+                                        </SelectItem>
+                                    ))
+                                )}
                             </SelectContent>
                         </Select>
                         <Button

@@ -175,11 +175,11 @@ export async function deleteRoute(routeId: string): Promise<void> {
     if (error) throw new Error(`Error al eliminar ruta: ${error.message}`)
 }
 
-export async function getDrivers(): Promise<{ id: string; email: string; full_name?: string | null }[]> {
+export async function getDrivers(): Promise<{ id: string; email: string; full_name?: string | null; driver_status?: string | null }[]> {
     const supabase = createClient()
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, full_name')
+        .select('id, email, full_name, driver_status')
         .eq('role', 'repartidor')
 
     if (error) throw new Error(`Error al obtener repartidores: ${error.message}`)

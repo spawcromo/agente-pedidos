@@ -117,3 +117,26 @@ export async function deleteRepartidor(id: string) {
 
     return { success: true }
 }
+
+export async function updateRepartidor(id: string, data: { fullName: string, phone: string }) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Configuración incompleta')
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
+    const { error } = await supabaseAdmin
+        .from('profiles')
+        .update({
+            full_name: data.fullName,
+            phone: data.phone
+        })
+        .eq('id', id)
+
+    if (error) throw new Error(error.message)
+
+    return { success: true }
+}

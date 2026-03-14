@@ -29,10 +29,11 @@ import {
     UserCircle2,
     Plus,
     Truck,
-    Trash2
+    Trash2,
+    Edit2
 } from "lucide-react"
 import { getRepartidores, updateRepartidorStatus, Repartidor } from '@/services/repartidores'
-import { createRepartidor, updateRepartidorStatusAction, deleteRepartidor } from '@/app/actions/repartidores'
+import { createRepartidor, updateRepartidorStatusAction, deleteRepartidor, updateRepartidor } from '@/app/actions/repartidores'
 import { withRole } from '@/components/hoc/withRole'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -60,6 +61,12 @@ function RepartidoresPage() {
     const [createOpen, setCreateOpen] = useState(false)
     const [createLoading, setCreateLoading] = useState(false)
     const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '' })
+
+    // Edit Modal state
+    const [editOpen, setEditOpen] = useState(false)
+    const [repToEdit, setRepToEdit] = useState<Repartidor | null>(null)
+    const [editLoading, setEditLoading] = useState(false)
+    const [editData, setEditData] = useState({ fullName: '', phone: '' })
 
     // Delete Modal state
     const [deleteOpen, setDeleteOpen] = useState(false)
@@ -131,11 +138,10 @@ function RepartidoresPage() {
                         <TableHeader>
                             <TableRow className="border-[#2A1F16] hover:bg-transparent">
                                 <TableHead className="text-amber-500/80 font-semibold w-[300px]">Nombre</TableHead>
-                                <TableHead className="text-amber-500/80 font-semibold w-[200px]">Teléfono</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Rutas (Hoy / Mañana)</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Estado</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold w-[220px]">Hablar al WhatsApp</TableHead>
-                                <TableHead className="w-12" />
+                                <TableHead className="w-24" />
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -169,13 +175,6 @@ function RepartidoresPage() {
                                                     <span className="font-semibold text-white">{rep.full_name || 'Sin nombre'}</span>
                                                 </div>
                                             </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            {rep.phone ? (
-                                                <span className="text-muted-foreground">{rep.phone}</span>
-                                            ) : (
-                                                <span className="text-muted-foreground italic text-xs">No registrado</span>
-                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-row items-center gap-2">
@@ -214,34 +213,50 @@ function RepartidoresPage() {
                                                 </SelectContent>
                                             </Select>
                                         </TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell>
                                             {rep.phone ? (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="h-9 px-3 text-emerald-500 border border-emerald-500/20 hover:border-emerald-500/40 hover:text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2 font-bold"
-                                                    onClick={() => window.open(`https://wa.me/${rep.phone?.replace(/\D/g, '')}`, '_blank')}
+                                                <a
+                                                    href={`https://wa.me/${rep.phone?.replace(/\D/g, '')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 group"
                                                 >
-                                                    <MessageCircle className="h-4 w-4" />
-                                                    WhatsApp
-                                                </Button>
+                                                    <div className="h-8 px-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2 text-emerald-500 font-bold hover:bg-emerald-500/20 transition-colors">
+                                                        <MessageCircle className="h-4 w-4" />
+                                                        <span>{rep.phone}</span>
+                                                    </div>
+                                                </a>
                                             ) : (
                                                 <span className="text-muted-foreground/30 italic text-xs">Sin teléfono</span>
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-500 hover:text-red-400 hover:bg-red-500/10 h-8 w-8"
-                                                onClick={() => {
-                                                    setRepToDelete(rep)
-                                                    setDeletePassword('')
-                                                    setDeleteOpen(true)
-                                                }}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-amber-500 hover:text-amber-400 hover:bg-amber-500/10 h-8 w-8"
+                                                    onClick={() => {
+                                                        setRepToEdit(rep)
+                                                        setEditData({ fullName: rep.full_name || '', phone: rep.phone || '' })
+                                                        setEditOpen(true)
+                                                    }}
+                                                >
+                                                    <Edit2 className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-500 hover:text-red-400 hover:bg-red-500/10 h-8 w-8"
+                                                    onClick={() => {
+                                                        setRepToDelete(rep)
+                                                        setDeletePassword('')
+                                                        setDeleteOpen(true)
+                                                    }}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -323,6 +338,58 @@ function RepartidoresPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            {/* Edit Repartidor Modal */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent className="sm:max-w-md bg-[#14100C] border-[#2A1F16]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl text-amber-500">Editar Repartidor</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label className="text-white">Nombre Completo</Label>
+                            <Input
+                                placeholder="Ej: Juan Pérez"
+                                value={editData.fullName}
+                                onChange={(e) => setEditData(f => ({ ...f, fullName: e.target.value }))}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-white">Teléfono (WhatsApp)</Label>
+                            <Input
+                                placeholder="Ej: 5491123456789"
+                                value={editData.phone}
+                                onChange={(e) => setEditData(f => ({ ...f, phone: e.target.value }))}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setEditOpen(false)}>Cancelar</Button>
+                        <Button
+                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+                            disabled={editLoading || !editData.fullName}
+                            onClick={async () => {
+                                if (!repToEdit) return
+                                setEditLoading(true)
+                                try {
+                                    await updateRepartidor(repToEdit.id, editData)
+                                    toast.success('Repartidor actualizado')
+                                    setEditOpen(false)
+                                    load()
+                                } catch (err: any) {
+                                    toast.error(err.message)
+                                } finally {
+                                    setEditLoading(false)
+                                }
+                            }}
+                        >
+                            {editLoading ? 'Guardando...' : 'Guardar Cambios'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             {/* Delete Confirmation Modal */}
             <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <DialogContent className="sm:max-w-md bg-[#14100C] border-[#2A1F16]">
