@@ -35,7 +35,8 @@ import {
     ArrowUp,
     ArrowDown,
     AlertCircle,
-    Trash2
+    Trash2,
+    Ban
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -601,15 +602,17 @@ function PedidosPage() {
                                                 >
                                                     <MoreHorizontal className="w-5 h-5" />
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-48">
+                                                <DropdownMenuContent align="end" className="w-56">
+                                                    {/* Primary Actions */}
                                                     {order.status !== 'cancelled' && (
-                                                        <>
-                                                            <DropdownMenuItem onClick={() => openEdit(order)} className="gap-2">
-                                                                <Edit2 className="w-4 h-4" /> Ver / Editar
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuSeparator />
-                                                        </>
+                                                        <DropdownMenuItem onClick={() => openEdit(order)} className="gap-2">
+                                                            <Edit2 className="w-4 h-4" /> Ver / Editar
+                                                        </DropdownMenuItem>
                                                     )}
+
+                                                    <DropdownMenuSeparator />
+
+                                                    {/* Status Transitions */}
                                                     {(() => {
                                                         const isAssigned = order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0;
                                                         return (
@@ -632,12 +635,12 @@ function PedidosPage() {
 
                                                                 {/* Only assigned orders can be cancelled (which removes them from the route) */}
                                                                 {isAssigned && order.status !== 'cancelled' && (
-                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'cancelled')} className="gap-2 text-destructive mt-1 border-t border-border pt-2">
-                                                                        <XCircle className="w-4 h-4" /> Cancelar Pedido
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'cancelled')} className="gap-2 text-destructive">
+                                                                        <Ban className="w-4 h-4" /> Cancelar Pedido
                                                                     </DropdownMenuItem>
                                                                 )}
 
-                                                                {/* Provide a way out if cancelled to put it back to pending */}
+                                                                {/* Revert cancelled */}
                                                                 {order.status === 'cancelled' && (
                                                                     <DropdownMenuItem onClick={() => handleStatus(order.id, 'pending')} className="gap-2">
                                                                         <Clock className="w-4 h-4 text-amber-500" /> Revertir a Pendiente
@@ -645,6 +648,8 @@ function PedidosPage() {
                                                                 )}
 
                                                                 <DropdownMenuSeparator />
+
+                                                                {/* Destructive Actions */}
                                                                 <DropdownMenuItem
                                                                     onClick={() => {
                                                                         setOrderToDelete(order.id)
@@ -653,7 +658,8 @@ function PedidosPage() {
                                                                     }}
                                                                     className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
                                                                 >
-                                                                    <Trash2 className="w-4 h-4" /> Eliminar Definitivamente
+                                                                    <Trash2 className="w-4 h-4 shrink-0" />
+                                                                    <span>Eliminar Definitivamente</span>
                                                                 </DropdownMenuItem>
                                                             </>
                                                         )
