@@ -193,7 +193,7 @@ function DashboardPage() {
                             {myRoutes.map((route, idx) => {
                                 const progress = (route.stops.filter(s => s.status === 'delivered').length / route.stops.length) * 100
                                 return (
-                                    <Link key={route.id} href="/reparto">
+                                    <Link key={route.id} href="/rutas">
                                         <Card className="group hover:border-amber-500/50 transition-all cursor-pointer bg-card/40 overflow-hidden relative">
                                             <div className="p-5 flex flex-col gap-4">
                                                 <div className="flex justify-between items-start">
@@ -243,7 +243,7 @@ function DashboardPage() {
                         <CardTitle className="text-lg">Acciones Rápidas</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-4">
-                        <Link href="/reparto">
+                        <Link href="/rutas">
                             <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2">
                                 <Truck className="w-4 h-4" /> Ir a mis Paradas
                             </Button>
@@ -368,26 +368,22 @@ function DashboardPage() {
 
             {/* ALERTAS DE REPARTO */}
             <div className="space-y-3">
-                <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-                    <span className="text-sm font-medium text-red-200">
-                        <strong className="text-red-50 font-bold">1</strong> ruta lleva más de 30 min sin movimiento <span className="opacity-50 text-xs font-normal">(Simulado)</span>
-                    </span>
-                </div>
-                {stats.entregas_pendientes_hoy > 0 && stats.rutas_hoy_progreso > 0 && (
+                {stats.pedidos_hoy_cancelados > 0 && (
                     <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
                         <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
                         <span className="text-sm font-medium text-red-200">
-                            <strong className="text-red-50 font-bold">{stats.entregas_pendientes_hoy}</strong> entregas siguen pendientes en rutas ya iniciadas
+                            Hay <strong className="text-red-50 font-bold">{stats.pedidos_hoy_cancelados}</strong> pedidos cancelados hoy por el repartidor.
                         </span>
                     </div>
                 )}
-                <div className="bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
-                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-                    <span className="text-sm font-medium text-red-200">
-                        <strong className="text-red-50 font-bold">1</strong> cliente reportó una demora en la entrega <span className="opacity-50 text-xs font-normal">(Simulado)</span>
-                    </span>
-                </div>
+                {stats.entregas_pendientes_hoy > 0 && stats.rutas_hoy_progreso > 0 && (
+                    <div className="bg-amber-950/20 border border-amber-900/50 rounded-lg p-4 flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
+                        <span className="text-sm font-medium text-amber-200">
+                            <strong className="text-amber-50 font-bold">{stats.entregas_pendientes_hoy}</strong> pedidos pendientes de entrega en ruta iniciada
+                        </span>
+                    </div>
+                )}
             </div>
 
             {/* RUTAS Y REPARTIDORES DETAILS */}
@@ -426,7 +422,7 @@ function DashboardPage() {
                             <span className="font-bold text-white">{stats.rutas_hoy_pendientes_iniciar}</span>
                         </div>
                         <div className="pt-4">
-                            <Link href="/reparto">
+                            <Link href="/rutas">
                                 <Button className="w-full bg-[#1A140F] hover:bg-[#2A1F16] border border-[#2A1F16] text-amber-500/90 font-medium h-9 text-xs transition-colors">Ver rutas</Button>
                             </Link>
                         </div>
@@ -612,7 +608,7 @@ function DashboardPage() {
                             <span className="font-bold text-white">{planificacion.repartidores_libres}</span>
                         </div>
                         <div className="pt-4 mt-auto">
-                            <Link href="/reparto">
+                            <Link href="/rutas">
                                 <Button className="w-full bg-[#1A140F] hover:bg-[#2A1F16] border border-[#2A1F16] text-amber-500/90 font-medium h-9 text-xs transition-colors">Planificar</Button>
                             </Link>
                         </div>
