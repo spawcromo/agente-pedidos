@@ -129,7 +129,7 @@ function PreciosPage() {
 
     if (selectedList) {
         return (
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-3xl">
                 <header className="flex items-center justify-between gap-4 bg-card/50 p-3 rounded-xl border border-border">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => setSelectedList(null)} className="h-8 w-8">
@@ -182,8 +182,8 @@ function PreciosPage() {
                         <TableHeader>
                             <TableRow className="bg-muted/30 border-b border-border hover:bg-muted/30 h-7">
                                 <TableHead className="text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0 px-4">Producto</TableHead>
-                                <TableHead className="w-20 text-center text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0">Unidad</TableHead>
-                                <TableHead className="w-32 text-right text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0 px-4">Precio</TableHead>
+                                <TableHead className="w-16 text-center text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0">Unidad</TableHead>
+                                <TableHead className="w-28 text-right text-amber-500/80 font-bold text-[9px] uppercase tracking-wider h-7 py-0 px-4">Precio</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
