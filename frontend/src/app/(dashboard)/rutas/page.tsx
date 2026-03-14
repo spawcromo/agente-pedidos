@@ -350,6 +350,39 @@ function RutasPage() {
                     <p className="text-muted-foreground">Gestioná las rutas y asignaciones para la fecha seleccionada.</p>
                 </div>
                 <div className="flex items-center gap-2">
+                    {(() => {
+                        const d = new Date()
+                        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                        d.setDate(d.getDate() + 1)
+                        const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                        
+                        return (
+                            <>
+                                <Button
+                                    variant={date === today ? "default" : "outline"}
+                                    size="sm"
+                                    className={cn(
+                                        "font-bold h-10",
+                                        date === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                    )}
+                                    onClick={() => setDate(today)}
+                                >
+                                    Hoy
+                                </Button>
+                                <Button
+                                    variant={date === tomorrow ? "default" : "outline"}
+                                    size="sm"
+                                    className={cn(
+                                        "font-bold h-10",
+                                        date === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                    )}
+                                    onClick={() => setDate(tomorrow)}
+                                >
+                                    Mañana
+                                </Button>
+                            </>
+                        )
+                    })()}
                     <Input
                         type="date"
                         value={date}
