@@ -47,6 +47,12 @@ function PreciosPage() {
             setLoading(true)
             const data = await getPriceLists()
             setLists(data)
+            
+            // Pre-select 'Lista Base' if it exists
+            const baseList = data.find(l => l.name === 'Lista Base')
+            if (baseList) {
+                setNewListData(prev => ({ ...prev, baseListId: baseList.id }))
+            }
         } catch (err: any) {
             toast.error(err.message)
         } finally {
@@ -338,21 +344,14 @@ function PreciosPage() {
                         </div>
                         
                         <div className="space-y-2">
-                            <Label className="text-white text-[10px] uppercase font-black tracking-widest opacity-70">Copiar desde (opcional)</Label>
-                            <Select value={newListData.baseListId} onValueChange={(v) => setNewListData(f => ({ ...f, baseListId: v || '' }))}>
-                                <SelectTrigger className="bg-[#1A1510] border-[#2A1F16] h-10 font-bold">
-                                    <SelectValue placeholder="Lista base..." />
-                                </SelectTrigger>
-                                <SelectContent className="bg-[#14100C] border-[#2A1F16]">
-                                    <SelectItem value="none">Ninguna (vacía)</SelectItem>
-                                    {lists.map(l => (
-                                        <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Label className="text-white text-[10px] uppercase font-black tracking-widest opacity-70">Origen de los precios</Label>
+                            <div className="bg-[#1A1510] border border-[#2A1F16] h-10 px-3 flex items-center rounded-md">
+                                <span className="text-amber-500 font-bold text-xs">LISTA BASE</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground italic mt-1">Se tomarán los precios actuales de la Lista Base.</p>
                         </div>
 
-                        {newListData.baseListId && newListData.baseListId !== 'none' && (
+                        {newListData.baseListId && (
                             <div className="space-y-3 p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl">
                                 <Label className="text-amber-500 text-[10px] uppercase font-black tracking-tighter">Coeficiente de multiplicación</Label>
                                 <div className="flex items-center gap-4">
