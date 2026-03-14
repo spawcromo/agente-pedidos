@@ -11,7 +11,6 @@ export async function createRepartidor(data: {
     // Requires Service Role Key to manage users directly
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const servicePhone = process.env.SERVICE_PHONE
 
     if (!supabaseUrl || !serviceRoleKey) {
         throw new Error('El sistema no tiene configurada la SUPABASE_SERVICE_ROLE_KEY. Configurala en .env.local')
@@ -62,4 +61,24 @@ export async function createRepartidor(data: {
     }
 
     return { success: true, userId }
+}
+
+export async function updateRepartidorStatusAction(id: string, status: string) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Configuración incompleta')
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey)
+
+    const { error } = await supabaseAdmin
+        .from('profiles')
+        .update({ driver_status: status })
+        .eq('id', id)
+
+    if (error) throw new Error(error.message)
+
+    return { success: true }
 }

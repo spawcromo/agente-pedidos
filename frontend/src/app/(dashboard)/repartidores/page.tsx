@@ -31,7 +31,7 @@ import {
     Truck
 } from "lucide-react"
 import { getRepartidores, updateRepartidorStatus, Repartidor } from '@/services/repartidores'
-import { createRepartidor } from '@/app/actions/repartidores'
+import { createRepartidor, updateRepartidorStatusAction } from '@/app/actions/repartidores'
 import { withRole } from '@/components/hoc/withRole'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -127,7 +127,7 @@ function RepartidoresPage() {
                                 <TableHead className="text-amber-500/80 font-semibold w-[200px]">Teléfono</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Rutas (Hoy / Mañana)</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Estado</TableHead>
-                                <TableHead className="text-amber-500/80 font-semibold text-right">Acciones</TableHead>
+                                <TableHead className="text-amber-500/80 font-semibold w-[220px]">Hablar al WhatsApp</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -170,12 +170,12 @@ function RepartidoresPage() {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <Badge variant="outline" className="w-fit border-amber-500/20 text-amber-500 bg-amber-500/5 text-[10px] gap-1">
-                                                    <Truck className="w-3 h-3" /> Hoy: {rep.routes_hoy || 0}
+                                            <div className="flex flex-row items-center gap-2">
+                                                <Badge variant="outline" className="w-fit border-amber-500/20 text-amber-500 bg-amber-500/5 text-xs py-1 px-2.5 gap-1.5 font-bold">
+                                                    <Truck className="w-3.5 h-3.5" /> Hoy: {rep.routes_hoy || 0}
                                                 </Badge>
-                                                <Badge variant="outline" className="w-fit border-blue-500/20 text-blue-400 bg-blue-500/5 text-[10px] gap-1">
-                                                    <Truck className="w-3 h-3" /> Mañana: {rep.routes_manana || 0}
+                                                <Badge variant="outline" className="w-fit border-blue-500/20 text-blue-400 bg-blue-500/5 text-xs py-1 px-2.5 gap-1.5 font-bold">
+                                                    <Truck className="w-3.5 h-3.5" /> Mañana: {rep.routes_manana || 0}
                                                 </Badge>
                                             </div>
                                         </TableCell>
@@ -184,7 +184,7 @@ function RepartidoresPage() {
                                                 value={rep.driver_status || 'disponible'}
                                                 onValueChange={async (val) => {
                                                     try {
-                                                        await updateRepartidorStatus(rep.id, val as string)
+                                                        await updateRepartidorStatusAction(rep.id, val as string)
                                                         toast.success('Estado actualizado')
                                                         load()
                                                     } catch (err: any) {
@@ -205,15 +205,18 @@ function RepartidoresPage() {
                                             </Select>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            {rep.phone && (
+                                            {rep.phone ? (
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-8 w-8 p-0 text-emerald-500/80 hover:text-emerald-500 hover:bg-emerald-500/10"
+                                                    className="h-9 px-3 text-emerald-500 border border-emerald-500/20 hover:border-emerald-500/40 hover:text-emerald-400 hover:bg-emerald-500/10 flex items-center gap-2 font-bold"
                                                     onClick={() => window.open(`https://wa.me/${rep.phone?.replace(/\D/g, '')}`, '_blank')}
                                                 >
                                                     <MessageCircle className="h-4 w-4" />
+                                                    WhatsApp
                                                 </Button>
+                                            ) : (
+                                                <span className="text-muted-foreground/30 italic text-xs">Sin teléfono</span>
                                             )}
                                         </TableCell>
                                     </TableRow>
