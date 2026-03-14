@@ -43,6 +43,7 @@ import {
     getMyRoutes,
     getDrivers,
     createRoute,
+    updateRouteStatus,
     updateStopStatus,
     deleteRoute,
     removeStopAndCancelOrder,
@@ -167,6 +168,16 @@ function RutasPage() {
         }
     }
 
+    async function handleStartRoute(routeId: string) {
+        try {
+            await updateRouteStatus(routeId, 'active')
+            toast.success('Ruta iniciada. ¡Buen viaje!')
+            loadData()
+        } catch (err: any) {
+            toast.error(err.message)
+        }
+    }
+
     async function confirmDeleteRoute() {
         if (!routeToDelete) return
         try {
@@ -261,15 +272,38 @@ function RutasPage() {
                 ) : (
                     <div className="space-y-4">
                         <div className="flex justify-between items-center px-2">
-                            <Badge variant="outline" className="text-amber-500 border-amber-500/20">
+                            <Badge variant="outline" className={cn(
+                                "border-amber-500/20",
+                                activeRoute.status === 'active' ? "bg-amber-500/10 text-amber-500" : "bg-muted text-muted-foreground"
+                            )}>
+                                {activeRoute.status === 'active' ? 'EN PROGRESO' : 'PENDIENTE DE INICIO'}
+                            </Badge>
+                            <Badge variant="outline" className="text-muted-foreground border-border/50">
                                 {activeRoute.stops.filter(s => s.status === 'delivered').length} / {activeRoute.stops.length} completadas
                             </Badge>
                         </div>
+
+                        {activeRoute.status === 'draft' && (
+                            <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-xl space-y-4 text-center">
+                                <Truck className="w-12 h-12 text-amber-500 mx-auto animate-bounce" />
+                                <div className="space-y-1">
+                                    <h3 className="text-xl font-bold text-white">¿Listo para salir?</h3>
+                                    <p className="text-sm text-muted-foreground px-4">Al iniciar la ruta, el administrador podrá ver que ya estás en camino.</p>
+                                </div>
+                                <Button 
+                                    onClick={() => handleStartRoute(activeRoute.id)}
+                                    className="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-black h-14 text-lg uppercase tracking-tighter"
+                                >
+                                    Iniciar Ruta Ahora 🚛💨
+                                </Button>
+                            </div>
+                        )}
                         {activeRoute.stops.sort((a, b) => a.position - b.position).map((stop, index) => (
                             <StopCard
                                 key={stop.id}
                                 stop={stop}
                                 index={index}
+                                isRouteActive={activeRoute.status === 'active'}
                                 onDone={() => handleMarkStopDelivered(stop.id)}
                                 onCancel={() => {
                                     setCancelData({ stopId: stop.id, orderId: stop.order_id })
@@ -532,7 +566,7 @@ function RutasPage() {
     )
 }
 
-function StopCard({ stop, index, onDone, onCancel }: { stop: RouteStop, index: number, onDone: () => void, onCancel: () => void }) {
+function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: RouteStop, index: number, isRouteActive: boolean, onDone: () => void, onCancel: () => void }) {
     const isDelivered = stop.status === 'delivered'
 
     return (
@@ -577,7 +611,13 @@ function StopCard({ stop, index, onDone, onCancel }: { stop: RouteStop, index: n
                             </button>
                             <button
                                 onClick={onDone}
-                                className="flex-1 bg-amber-500 text-amber-950 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 border border-amber-500/20 shadow-lg shadow-amber-500/10"
+                                disabled={!isRouteActive}
+                                className={cn(
+                                    "flex-1 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 border shadow-lg",
+                                    isRouteActive 
+                                        ? "bg-amber-500 text-amber-950 border-amber-500/20 shadow-amber-500/10" 
+                                        : "bg-muted text-muted-foreground border-border opacity-50 cursor-not-allowed"
+                                )}
                             >
                                 <Check className="w-4 h-4" /> Entregar
                             </button>

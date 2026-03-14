@@ -80,7 +80,7 @@ export async function createRoute(date: string, driverId: string | null, orderId
         .insert({
             delivery_date: date,
             driver_id: driverId,
-            status: 'active'
+            status: 'draft'
         })
         .select()
         .single()
@@ -173,6 +173,16 @@ export async function deleteRoute(routeId: string): Promise<void> {
         .eq('id', routeId)
 
     if (error) throw new Error(`Error al eliminar ruta: ${error.message}`)
+}
+
+export async function updateRouteStatus(routeId: string, status: 'draft' | 'active' | 'completed'): Promise<void> {
+    const supabase = createClient()
+    const { error } = await supabase
+        .from('delivery_routes')
+        .update({ status })
+        .eq('id', routeId)
+
+    if (error) throw new Error(`Error al actualizar estado de la ruta: ${error.message}`)
 }
 
 export async function getDrivers(): Promise<{ id: string; email: string; full_name?: string | null; driver_status?: string | null }[]> {
