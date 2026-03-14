@@ -47,9 +47,16 @@ interface ClientDialogProps {
 export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogProps) {
     const isEditing = !!client
     const [priceLists, setPriceLists] = useState<PriceList[]>([])
+    const [loadingLists, setLoadingLists] = useState(true)
 
     useEffect(() => {
-        getPriceLists().then(setPriceLists).catch(console.error)
+        getPriceLists()
+            .then(setPriceLists)
+            .catch(err => {
+                console.error(err)
+                toast.error('Error al cargar listas de precios')
+            })
+            .finally(() => setLoadingLists(false))
     }, [])
 
     const {
@@ -156,20 +163,30 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                     {/* Lista de Precios */}
                     <div className="space-y-1.5">
                         <Label htmlFor="price_list_id">Lista de Precios</Label>
-                        <Select
-                            key={priceLists.length}
-                            value={watch('price_list_id')}
-                            onValueChange={(v) => setValue('price_list_id', v || '')}
-                        >
-                            <SelectTrigger id="price_list_id" className="w-full">
-                                <SelectValue placeholder="Seleccionar lista de precios..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {priceLists.map(pl => (
-                                    <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        {loadingLists ? (
+                            <div className="h-10 w-full animate-pulse bg-muted/50 rounded-md border border-border flex items-center px-3 text-xs text-muted-foreground outline-none">
+                                Cargando listas...
+                            </div>
+                        ) : (
+                            <Select
+                                value={watch('price_list_id') || undefined}
+                                onValueChange={(v) => setValue('price_list_id', v || '')}
+                            >
+                                <SelectTrigger id="price_list_id" className="w-full">
+                                    <SelectValue placeholder="Seleccionar lista de precios..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {priceLists.map(pl => (
+                                        <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
+                                    ))}
+                                    {priceLists.length === 0 && (
+                                        <div className="p-2 text-xs text-center text-muted-foreground">
+                                            No hay listas creadas
+                                        </div>
+                                    )}
+                                </SelectContent>
+                            </Select>
+                        )}
                     </div>
 
                     {/* Dirección */}
