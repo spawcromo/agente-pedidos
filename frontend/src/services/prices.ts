@@ -14,6 +14,7 @@ export interface ProductPrice {
     product?: {
         name: string
         unit: string
+        active: boolean
     }
 }
 
@@ -31,11 +32,10 @@ export async function getPriceLists(): Promise<PriceList[]> {
 export async function getPriceListWithPrices(priceListId: string): Promise<ProductPrice[]> {
     const supabase = createClient()
     
-    // 1. Get all active products
+    // 1. Get all products (even those without stock)
     const { data: products, error: prodError } = await supabase
         .from('products')
-        .select('id, name, unit')
-        .eq('active', true)
+        .select('id, name, unit, active')
         .order('sort_order', { ascending: true })
 
     if (prodError) throw new Error(`Error al obtener productos: ${prodError.message}`)
@@ -60,7 +60,8 @@ export async function getPriceListWithPrices(priceListId: string): Promise<Produ
             price: existing?.price ?? 0,
             product: {
                 name: prod.name,
-                unit: prod.unit
+                unit: prod.unit,
+                active: prod.active
             }
         }
     })

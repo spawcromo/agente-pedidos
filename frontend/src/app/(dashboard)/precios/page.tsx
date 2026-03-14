@@ -128,13 +128,20 @@ function PreciosPage() {
                             {prices.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={3} className="text-center py-8 text-muted-foreground italic">
-                                        No hay productos con stock disponibles.
+                                        No hay productos registrados.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 prices.map((p) => (
-                                    <TableRow key={p.id} className="hover:bg-amber-500/5 transition-colors">
-                                        <TableCell className="font-medium text-white text-lg">{p.product?.name}</TableCell>
+                                    <TableRow key={p.id} className={`hover:bg-amber-500/5 transition-colors ${!p.product?.active ? 'opacity-50' : ''}`}>
+                                        <TableCell className="font-medium text-white text-lg">
+                                            {p.product?.name}
+                                            {!p.product?.active && (
+                                                <span className="ml-2 text-[10px] uppercase bg-red-500/10 text-red-500 px-1.5 py-0.5 rounded border border-red-500/20 font-bold">
+                                                    Sin Stock
+                                                </span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-center text-muted-foreground">
                                             {p.product?.unit === 'kg' ? 'Kilogramo' : 'Unidad'}
                                         </TableCell>
