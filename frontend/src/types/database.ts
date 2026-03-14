@@ -18,6 +18,7 @@ export interface Client {
   notes: string | null
   created_at: string
   price_list_id: string | null
+  price_list?: { name: string }
 }
 
 export interface PriceList {

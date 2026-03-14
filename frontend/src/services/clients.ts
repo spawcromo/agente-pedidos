@@ -5,7 +5,7 @@ export async function getClients(): Promise<Client[]> {
     const supabase = createClient()
     const { data, error } = await supabase
         .from('clients')
-        .select('*')
+        .select('*, price_list:price_lists(name)')
         .order('name', { ascending: true })
 
     if (error) throw new Error(`Error al obtener clientes: ${error.message}`)

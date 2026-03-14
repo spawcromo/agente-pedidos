@@ -153,39 +153,22 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                         </div>
                     </div>
 
-                    {/* Tipo y Lista de Precios */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="client_type">Tipo de cliente (Legacy)</Label>
-                            <Select
-                                value={watch('client_type')}
-                                onValueChange={(v) => setValue('client_type', v as 'retail' | 'wholesale')}
-                            >
-                                <SelectTrigger id="client_type">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="retail">Minorista</SelectItem>
-                                    <SelectItem value="wholesale">Mayorista</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="price_list_id">Lista de Precios</Label>
-                            <Select
-                                value={watch('price_list_id')}
-                                onValueChange={(v) => setValue('price_list_id', v || '')}
-                            >
-                                <SelectTrigger id="price_list_id">
-                                    <SelectValue placeholder="Seleccionar lista..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {priceLists.map(pl => (
-                                        <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    {/* Lista de Precios */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="price_list_id">Lista de Precios</Label>
+                        <Select
+                            value={watch('price_list_id')}
+                            onValueChange={(v) => setValue('price_list_id', v || '')}
+                        >
+                            <SelectTrigger id="price_list_id" className="w-full">
+                                <SelectValue placeholder="Seleccionar lista de precios..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {priceLists.map(pl => (
+                                    <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* Dirección */}

@@ -36,10 +36,7 @@ import { getClients, deleteClientRecord } from '@/services/clients'
 import type { Client } from '@/types/database'
 import { withRole } from '@/components/hoc/withRole'
 
-const TYPE_LABEL: Record<string, string> = {
-    retail: 'Minorista',
-    wholesale: 'Mayorista',
-}
+
 
 function ClientesPage() {
     const [clients, setClients] = useState<Client[]>([])
@@ -104,7 +101,7 @@ function ClientesPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
                     <p className="text-muted-foreground">
-                        Datos de contacto, dirección, horarios y tipo de cada cliente.
+                        Datos de contacto, dirección, horarios y lista de precios de cada cliente.
                     </p>
                 </div>
                 <Button onClick={openCreate} id="btn-nuevo-cliente" className="w-full sm:w-auto gap-2">
@@ -131,7 +128,7 @@ function ClientesPage() {
                             <TableRow className="hover:bg-transparent">
                                 <TableHead className="min-w-[150px] pl-6">Cliente</TableHead>
                                 <TableHead>Teléfono</TableHead>
-                                <TableHead>Tipo</TableHead>
+                                <TableHead>Lista de Precios</TableHead>
                                 <TableHead className="min-w-[200px]">Dirección</TableHead>
                                 <TableHead className="w-12" />
                             </TableRow>
@@ -172,16 +169,16 @@ function ClientesPage() {
                                             </a>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge
-                                                variant="outline"
-                                                className={
-                                                    client.client_type === 'wholesale'
-                                                        ? 'border-purple-500/20 text-purple-400 bg-purple-500/5'
-                                                        : 'border-blue-500/20 text-blue-400 bg-blue-500/5'
-                                                }
-                                            >
-                                                {TYPE_LABEL[client.client_type]}
-                                            </Badge>
+                                            {client.price_list ? (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-amber-500/20 text-amber-500 bg-amber-500/5 font-bold"
+                                                >
+                                                    {client.price_list.name}
+                                                </Badge>
+                                            ) : (
+                                                <span className="text-muted-foreground text-xs italic">Sin lista</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="max-w-[200px] truncate text-sm">
                                             {client.address ? (
