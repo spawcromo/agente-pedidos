@@ -170,3 +170,12 @@ export async function updateOrderMetadata(
         .eq('id', id)
     if (error) throw new Error(`Error al actualizar metadatos: ${error.message}`)
 }
+
+export async function deleteOrder(id: string): Promise<void> {
+    const supabase = createClient()
+    const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id)
+    if (error) throw new Error(`Error al eliminar pedido: ${error.message}`)
+}

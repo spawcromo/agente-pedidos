@@ -34,7 +34,8 @@ import {
     ArrowUpDown,
     ArrowUp,
     ArrowDown,
-    AlertCircle
+    AlertCircle,
+    Trash2
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -44,7 +45,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
-    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, type OrderWithDetails,
+    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, deleteOrder, type OrderWithDetails,
 } from '@/services/orders'
 import type { OrderStatus } from '@/types/database'
 import { withRole } from '@/components/hoc/withRole'
@@ -81,6 +82,11 @@ function PedidosPage() {
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
     const [orderToCancel, setOrderToCancel] = useState<string | null>(null)
     const [cancelReason, setCancelReason] = useState('')
+
+    // Delete state
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
+    const [deletePassword, setDeletePassword] = useState('')
 
     useEffect(() => {
         setMounted(true)
@@ -225,6 +231,24 @@ function PedidosPage() {
             setCancelDialogOpen(false)
             setCancelReason('')
             setOrderToCancel(null)
+            load()
+        } catch (err: any) {
+            toast.error(err.message)
+        }
+    }
+
+    async function handleDeleteSubmit() {
+        if (deletePassword !== 'borrar') {
+            toast.error('Contraseña incorrecta')
+            return
+        }
+        if (!orderToDelete) return
+        try {
+            await deleteOrder(orderToDelete)
+            toast.success('Pedido eliminado permanentemente')
+            setDeleteDialogOpen(false)
+            setDeletePassword('')
+            setOrderToDelete(null)
             load()
         } catch (err: any) {
             toast.error(err.message)
@@ -619,6 +643,18 @@ function PedidosPage() {
                                                                         <Clock className="w-4 h-4 text-amber-500" /> Revertir a Pendiente
                                                                     </DropdownMenuItem>
                                                                 )}
+
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem
+                                                                    onClick={() => {
+                                                                        setOrderToDelete(order.id)
+                                                                        setDeletePassword('')
+                                                                        setDeleteDialogOpen(true)
+                                                                    }}
+                                                                    className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" /> Eliminar Definitivamente
+                                                                </DropdownMenuItem>
                                                             </>
                                                         )
                                                     })()}
@@ -693,6 +729,43 @@ function PedidosPage() {
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setCancelDialogOpen(false)}>Atrás</Button>
                         <Button onClick={handleCancelSubmit} variant="destructive" disabled={!cancelReason.trim()}>Confirmar Cancelación</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-destructive flex items-center gap-2">
+                            <Trash2 className="w-5 h-5" /> Eliminar Pedido Permanentemente
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Esta acción <strong className="text-foreground">no se puede deshacer</strong>. Se borrará el pedido de la base de datos completamente.
+                        </p>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contraseña de seguridad</label>
+                            <Input
+                                type="password"
+                                placeholder="Ingresá la contraseña para borrar..."
+                                value={deletePassword}
+                                onChange={(e) => setDeletePassword(e.target.value)}
+                                autoFocus
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleDeleteSubmit()
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancelar</Button>
+                        <Button
+                            onClick={handleDeleteSubmit}
+                            variant="destructive"
+                            disabled={!deletePassword}
+                        >
+                            Confirmar Eliminación
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
