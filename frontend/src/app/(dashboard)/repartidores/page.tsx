@@ -137,7 +137,8 @@ function RepartidoresPage() {
                     <Table>
                         <TableHeader>
                             <TableRow className="border-[#2A1F16] hover:bg-transparent">
-                                <TableHead className="text-amber-500/80 font-semibold w-[300px]">Nombre</TableHead>
+                                <TableHead className="text-amber-500/80 font-semibold w-[200px]">Nombre</TableHead>
+                                <TableHead className="text-amber-500/80 font-semibold">Email</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Rutas (Hoy / Mañana)</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Estado</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold w-[220px]">Hablar al WhatsApp</TableHead>
@@ -147,7 +148,7 @@ function RepartidoresPage() {
                         <TableBody>
                             {loading ? (
                                 <TableRow className="border-[#2A1F16]">
-                                    <TableCell colSpan={4} className="h-64 text-center">
+                                    <TableCell colSpan={5} className="h-64 text-center">
                                         <div className="flex flex-col items-center justify-center text-muted-foreground">
                                             <div className="w-8 h-8 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mb-4" />
                                             Cargando repartidores...
@@ -156,7 +157,7 @@ function RepartidoresPage() {
                                 </TableRow>
                             ) : filtered.length === 0 ? (
                                 <TableRow className="border-[#2A1F16]">
-                                    <TableCell colSpan={4} className="h-64 text-center">
+                                    <TableCell colSpan={5} className="h-64 text-center">
                                         <div className="flex flex-col items-center justify-center text-muted-foreground">
                                             <Contact className="w-12 h-12 mb-4 text-[#2A1F16]" />
                                             No hay repartidores registrados.
@@ -175,6 +176,9 @@ function RepartidoresPage() {
                                                     <span className="font-semibold text-white">{rep.full_name || 'Sin nombre'}</span>
                                                 </div>
                                             </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <span className="text-muted-foreground text-sm font-mono">{rep.email}</span>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-row items-center gap-2">
