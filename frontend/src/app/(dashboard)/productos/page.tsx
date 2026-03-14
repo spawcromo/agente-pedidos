@@ -120,7 +120,7 @@ function ProductosPage() {
                                 <TableHead className="w-8">#</TableHead>
                                 <TableHead className="min-w-[150px]">Producto</TableHead>
                                 <TableHead>Unidad</TableHead>
-                                <TableHead className="text-right">Minorista</TableHead>
+                                <TableHead className="text-right">Precio Base</TableHead>
                                 <TableHead className="text-right">Mayorista</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead className="w-12" />
@@ -158,7 +158,7 @@ function ProductosPage() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right font-mono font-medium text-amber-500">
-                                            {ARS.format(product.price_retail)}
+                                            {ARS.format(product.base_price)}
                                         </TableCell>
                                         <TableCell className="text-right font-mono font-medium text-emerald-500">
                                             {ARS.format(product.price_wholesale)}

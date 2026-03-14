@@ -33,6 +33,7 @@ export interface ClientPayload {
     opening_hours: string | null
     client_type: ClientType
     notes: string | null
+    price_list_id: string | null
 }
 
 export async function createClientRecord(payload: ClientPayload): Promise<Client> {

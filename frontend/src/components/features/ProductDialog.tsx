@@ -26,7 +26,7 @@ import type { Product } from '@/types/database'
 interface ProductFormData {
     name: string
     unit: string
-    price_retail: number
+    base_price: number
     price_wholesale: number
     sort_order: number
     active: boolean
@@ -56,7 +56,7 @@ export function ProductDialog({
         defaultValues: {
             name: '',
             unit: 'kg',
-            price_retail: 0,
+            base_price: 0,
             price_wholesale: 0,
             sort_order: 0,
             active: true,
@@ -68,7 +68,7 @@ export function ProductDialog({
             reset({
                 name: product.name,
                 unit: product.unit,
-                price_retail: product.price_retail,
+                base_price: product.base_price,
                 price_wholesale: product.price_wholesale,
                 sort_order: product.sort_order,
                 active: product.active,
@@ -77,7 +77,7 @@ export function ProductDialog({
             reset({
                 name: '',
                 unit: 'kg',
-                price_retail: 0,
+                base_price: 0,
                 price_wholesale: 0,
                 sort_order: 0,
                 active: true,
@@ -89,7 +89,7 @@ export function ProductDialog({
         try {
             const payload = {
                 ...data,
-                price_retail: Number(data.price_retail),
+                base_price: Number(data.base_price),
                 price_wholesale: Number(data.price_wholesale),
                 sort_order: Number(data.sort_order),
             }
@@ -150,17 +150,17 @@ export function ProductDialog({
                     {/* Precios */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="price_retail">Precio Minorista</Label>
+                            <Label htmlFor="base_price">Precio de Lista (Base)</Label>
                             <Input
-                                id="price_retail"
+                                id="base_price"
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                {...register('price_retail', { required: 'Requerido', min: 0 })}
+                                {...register('base_price', { required: 'Requerido', min: 0 })}
                             />
-                            {errors.price_retail && (
+                            {errors.base_price && (
                                 <p className="text-xs text-destructive">
-                                    {errors.price_retail.message}
+                                    {errors.base_price.message}
                                 </p>
                             )}
                         </div>

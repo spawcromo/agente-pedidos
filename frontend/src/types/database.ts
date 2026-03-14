@@ -17,13 +17,28 @@ export interface Client {
   client_type: ClientType
   notes: string | null
   created_at: string
+  price_list_id: string | null
+}
+
+export interface PriceList {
+  id: string
+  name: string
+  created_at: string
+}
+
+export interface ProductPrice {
+  id: string
+  price_list_id: string
+  product_id: string
+  price: number
+  product?: Product
 }
 
 export interface Product {
   id: string
   name: string
   unit: string
-  price_retail: number
+  base_price: number
   price_wholesale: number
   active: boolean
   sort_order: number

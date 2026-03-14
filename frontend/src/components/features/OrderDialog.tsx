@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/select'
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { updateOrderItems, updateOrderMetadata, type OrderWithDetails } from '@/services/orders'
+import { getPriceListWithPrices, type ProductPrice } from '@/services/prices'
 import { getProducts } from '@/services/products'
 import { getClients } from '@/services/clients'
 import { createOrder } from '@/services/orders'
@@ -42,6 +43,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
     const isEditing = !!order
     const [products, setProducts] = useState<Product[]>([])
     const [clients, setClients] = useState<Client[]>([])
+    const [currentPrices, setCurrentPrices] = useState<ProductPrice[]>([])
 
     const { register, handleSubmit, control, reset, setValue, watch, formState: { errors, isSubmitting } } =
         useForm<FormData>({
@@ -61,6 +63,18 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
         getProducts().then(setProducts).catch(console.error)
         getClients().then(setClients).catch(console.error)
     }, [])
+
+    // Fetch prices when client changes
+    useEffect(() => {
+        const client = clients.find(c => c.id === selectedClientId)
+        if (client?.price_list_id) {
+            getPriceListWithPrices(client.price_list_id)
+                .then(setCurrentPrices)
+                .catch(console.error)
+        } else {
+            setCurrentPrices([])
+        }
+    }, [selectedClientId, clients])
 
     useEffect(() => {
         if (order) {
@@ -89,11 +103,18 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
     // Auto-fill unit_price when product is selected, based on client type
     function handleProductChange(index: number, productId: string) {
         setValue(`items.${index}.product_id`, productId)
-        const product = products.find((p) => p.id === productId)
-        const client = clients.find((c) => c.id === selectedClientId)
-        if (product && client) {
-            const price = client.client_type === 'wholesale' ? product.price_wholesale : product.price_retail
-            setValue(`items.${index}.unit_price`, price.toString())
+        const customPrice = currentPrices.find(p => p.product_id === productId)
+        
+        if (customPrice) {
+            setValue(`items.${index}.unit_price`, customPrice.price.toString())
+        } else {
+            // Fallback to legacy price if no custom price found
+            const product = products.find((p) => p.id === productId)
+            const client = clients.find((c) => c.id === selectedClientId)
+            if (product && client) {
+                const price = client.client_type === 'wholesale' ? product.price_wholesale : product.base_price
+                setValue(`items.${index}.unit_price`, price.toString())
+            }
         }
     }
 

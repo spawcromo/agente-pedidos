@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -22,6 +22,7 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { createClientRecord, updateClientRecord, type ClientPayload } from '@/services/clients'
+import { getPriceLists, type PriceList } from '@/services/prices'
 import type { Client } from '@/types/database'
 
 type FormData = {
@@ -33,6 +34,7 @@ type FormData = {
     opening_hours: string
     client_type: 'retail' | 'wholesale'
     notes: string
+    price_list_id: string
 }
 
 interface ClientDialogProps {
@@ -44,12 +46,18 @@ interface ClientDialogProps {
 
 export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogProps) {
     const isEditing = !!client
+    const [priceLists, setPriceLists] = useState<PriceList[]>([])
+
+    useEffect(() => {
+        getPriceLists().then(setPriceLists).catch(console.error)
+    }, [])
 
     const {
         register,
         handleSubmit,
         reset,
         setValue,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         defaultValues: {
@@ -61,6 +69,7 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
             opening_hours: '',
             client_type: 'retail',
             notes: '',
+            price_list_id: ''
         },
     })
 
@@ -75,11 +84,13 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                 opening_hours: client.opening_hours ?? '',
                 client_type: client.client_type,
                 notes: client.notes ?? '',
+                price_list_id: client.price_list_id ?? ''
             })
         } else {
             reset({
                 name: '', phone: '', address: '', lat: '', lng: '',
                 opening_hours: '', client_type: 'retail', notes: '',
+                price_list_id: ''
             })
         }
     }, [client, reset])
@@ -95,6 +106,7 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                 opening_hours: data.opening_hours.trim() || null,
                 client_type: data.client_type,
                 notes: data.notes.trim() || null,
+                price_list_id: data.price_list_id.trim() || null,
             }
 
             if (isEditing) {
@@ -141,21 +153,39 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                         </div>
                     </div>
 
-                    {/* Tipo de cliente */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="client_type">Tipo de cliente</Label>
-                        <Select
-                            defaultValue={client?.client_type ?? 'retail'}
-                            onValueChange={(v) => setValue('client_type', v as 'retail' | 'wholesale')}
-                        >
-                            <SelectTrigger id="client_type">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="retail">Minorista</SelectItem>
-                                <SelectItem value="wholesale">Mayorista</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    {/* Tipo y Lista de Precios */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="client_type">Tipo de cliente (Legacy)</Label>
+                            <Select
+                                value={watch('client_type')}
+                                onValueChange={(v) => setValue('client_type', v as 'retail' | 'wholesale')}
+                            >
+                                <SelectTrigger id="client_type">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="retail">Minorista</SelectItem>
+                                    <SelectItem value="wholesale">Mayorista</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="price_list_id">Lista de Precios</Label>
+                            <Select
+                                value={watch('price_list_id')}
+                                onValueChange={(v) => setValue('price_list_id', v || '')}
+                            >
+                                <SelectTrigger id="price_list_id">
+                                    <SelectValue placeholder="Seleccionar lista..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {priceLists.map(pl => (
+                                        <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     {/* Dirección */}
