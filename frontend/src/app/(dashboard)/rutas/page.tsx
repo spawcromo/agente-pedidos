@@ -535,9 +535,16 @@ function RutasPage() {
                                                 return (
                                                     <div key={stop.id} className="flex items-center gap-2 text-sm text-foreground/80">
                                                         <span className="text-[10px] text-muted-foreground w-4 text-center">{i + 1}</span>
-                                                        <span className={cn("truncate", stop.status === 'delivered' && "line-through opacity-50")}>
-                                                            {stop.order.client?.name}
-                                                        </span>
+                                                        <div className="flex-1 min-w-0">
+                                                            <span className={cn("truncate block", stop.status === 'delivered' && "line-through opacity-50")}>
+                                                                {stop.order.client?.name}
+                                                            </span>
+                                                            {stop.order.status === 'cancelled' && stop.order.cancel_reason && (
+                                                                <span className="text-[10px] text-destructive/80 block italic truncate">
+                                                                    Motivo: {stop.order.cancel_reason}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                         {stop.order.status === 'cancelled' ? (
                                                             <Badge variant="outline" className="ml-auto text-[9px] h-4 px-1 border-destructive/30 text-destructive bg-destructive/5 font-bold">CANCELADO</Badge>
                                                         ) : stop.status === 'delivered' ? (
@@ -680,8 +687,16 @@ function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: Rout
                         <ExternalLink className="w-4 h-4" /> Abrir GPS
                     </a>
                     {isCancelled ? (
-                        <div className="flex-1 bg-red-500/10 text-red-500 py-3 rounded-lg text-center text-sm font-bold border border-red-500/20 flex items-center justify-center gap-2">
-                            <XCircle className="w-4 h-4" /> PEDIDO CANCELADO
+                        <div className="space-y-3 flex-1">
+                            <div className="bg-red-500/10 text-red-500 py-3 rounded-lg text-center text-sm font-bold border border-red-500/20 flex items-center justify-center gap-2">
+                                <XCircle className="w-4 h-4" /> PEDIDO CANCELADO
+                            </div>
+                            {stop.order.cancel_reason && (
+                                <div className="p-3 bg-destructive/5 border border-destructive/20 rounded-lg text-xs">
+                                    <p className="font-bold text-destructive uppercase mb-1">Motivo del Admin/Sistema:</p>
+                                    <p className="text-foreground/80 italic">"{stop.order.cancel_reason}"</p>
+                                </div>
+                            )}
                         </div>
                     ) : !isDelivered ? (
                         <>
