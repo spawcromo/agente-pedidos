@@ -157,6 +157,7 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                     <div className="space-y-1.5">
                         <Label htmlFor="price_list_id">Lista de Precios</Label>
                         <Select
+                            key={priceLists.length}
                             value={watch('price_list_id')}
                             onValueChange={(v) => setValue('price_list_id', v || '')}
                         >
