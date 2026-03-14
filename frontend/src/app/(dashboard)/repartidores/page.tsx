@@ -28,10 +28,11 @@ import {
     MessageCircle,
     UserCircle2,
     Plus,
-    Truck
+    Truck,
+    Trash2
 } from "lucide-react"
 import { getRepartidores, updateRepartidorStatus, Repartidor } from '@/services/repartidores'
-import { createRepartidor, updateRepartidorStatusAction } from '@/app/actions/repartidores'
+import { createRepartidor, updateRepartidorStatusAction, deleteRepartidor } from '@/app/actions/repartidores'
 import { withRole } from '@/components/hoc/withRole'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -59,6 +60,12 @@ function RepartidoresPage() {
     const [createOpen, setCreateOpen] = useState(false)
     const [createLoading, setCreateLoading] = useState(false)
     const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '' })
+
+    // Delete Modal state
+    const [deleteOpen, setDeleteOpen] = useState(false)
+    const [repToDelete, setRepToDelete] = useState<Repartidor | null>(null)
+    const [deletePassword, setDeletePassword] = useState('')
+    const [deleteLoading, setDeleteLoading] = useState(false)
 
     const load = useCallback(async () => {
         try {
@@ -128,6 +135,7 @@ function RepartidoresPage() {
                                 <TableHead className="text-amber-500/80 font-semibold">Rutas (Hoy / Mañana)</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold">Estado</TableHead>
                                 <TableHead className="text-amber-500/80 font-semibold w-[220px]">Hablar al WhatsApp</TableHead>
+                                <TableHead className="w-12" />
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -221,6 +229,20 @@ function RepartidoresPage() {
                                                 <span className="text-muted-foreground/30 italic text-xs">Sin teléfono</span>
                                             )}
                                         </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-red-500 hover:text-red-400 hover:bg-red-500/10 h-8 w-8"
+                                                onClick={() => {
+                                                    setRepToDelete(rep)
+                                                    setDeletePassword('')
+                                                    setDeleteOpen(true)
+                                                }}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             )}
@@ -297,6 +319,62 @@ function RepartidoresPage() {
                             }}
                         >
                             {createLoading ? 'Creando...' : 'Crear Cuenta'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            {/* Delete Confirmation Modal */}
+            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                <DialogContent className="sm:max-w-md bg-[#14100C] border-[#2A1F16]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl text-red-500 flex items-center gap-2">
+                            <Trash2 className="w-5 h-5" /> Eliminar Repartidor
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <p className="text-sm text-muted-foreground text-center">
+                            Estás por eliminar a <strong className="text-white">{repToDelete?.full_name}</strong>. 
+                            Esta acción es irreversible y borrará su acceso al sistema.
+                        </p>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Contraseña de seguridad</Label>
+                            <Input
+                                type="password"
+                                placeholder="Ingresá 'borrar' para confirmar..."
+                                value={deletePassword}
+                                onChange={(e) => setDeletePassword(e.target.value)}
+                                className="bg-[#1A1510] border-[#2A1F16]"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && deletePassword === 'borrar') {
+                                        // trigger delete
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setDeleteOpen(false)}>Cancelar</Button>
+                        <Button
+                            variant="destructive"
+                            disabled={deleteLoading || deletePassword !== 'borrar'}
+                            onClick={async () => {
+                                if (deletePassword !== 'borrar') return
+                                setDeleteLoading(true)
+                                try {
+                                    if (repToDelete) {
+                                        await deleteRepartidor(repToDelete.id)
+                                        toast.success('Repartidor eliminado')
+                                        setDeleteOpen(false)
+                                        load()
+                                    }
+                                } catch (err: any) {
+                                    toast.error(err.message)
+                                } finally {
+                                    setDeleteLoading(false)
+                                }
+                            }}
+                        >
+                            {deleteLoading ? 'Eliminando...' : 'Confirmar Eliminación'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

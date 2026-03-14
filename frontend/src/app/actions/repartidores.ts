@@ -82,3 +82,38 @@ export async function updateRepartidorStatusAction(id: string, status: string) {
 
     return { success: true }
 }
+
+export async function deleteRepartidor(id: string) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !serviceRoleKey) {
+        throw new Error('Configuración incompleta')
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+
+    // Delete from profiles (though Auth delete should trigger this if cascading is setup, let's be explicit)
+    const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .delete()
+        .eq('id', id)
+
+    if (profileError) {
+        console.error('Error deleting profile:', profileError.message)
+    }
+
+    // Delete from Supabase Auth
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
+
+    if (authError) {
+        throw new Error(authError.message)
+    }
+
+    return { success: true }
+}
