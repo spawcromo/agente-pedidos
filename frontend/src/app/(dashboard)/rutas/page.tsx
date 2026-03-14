@@ -587,7 +587,6 @@ function StopCard({ stop, index, onDone, onCancel }: { stop: RouteStop, index: n
                             <CheckCircle2 className="w-4 h-4" /> Entregado
                         </div>
                     )}
-                    ...
                 </div>
 
                 <div className="pt-4 border-t border-border/50 grid grid-cols-1 gap-2">
