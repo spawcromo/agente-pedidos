@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn, formatUnit } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -358,13 +358,13 @@ function PedidosPage() {
                         type="date"
                         value={dateFilter}
                         onChange={(e) => setDateFilter(e.target.value)}
-                        className="flex-1 sm:w-40"
+                        className="flex-1 sm:w-40 h-10 rounded-xl"
                     />
                     <Select
                         value={statusFilter}
                         onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active' | 'assigned')}
                     >
-                        <SelectTrigger className="w-fit min-w-[200px]" id="filter-estado">
+                        <SelectTrigger className="w-fit min-w-[200px] h-10 rounded-xl" id="filter-estado">
                             <SelectValue placeholder="Pendientes + Conf.">
                                 {{
                                     'active': 'Pendientes + Confirmados',
@@ -402,10 +402,9 @@ function PedidosPage() {
                             <>
                                 <Button
                                     variant={dateFilter === today ? "default" : "outline"}
-                                    size="sm"
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold",
-                                        dateFilter === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        dateFilter === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDateFilter(today)}
                                 >
@@ -413,10 +412,9 @@ function PedidosPage() {
                                 </Button>
                                 <Button
                                     variant={dateFilter === tomorrow ? "default" : "outline"}
-                                    size="sm"
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold",
-                                        dateFilter === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        dateFilter === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDateFilter(tomorrow)}
                                 >
@@ -636,7 +634,7 @@ function PedidosPage() {
                                             <div className="space-y-0.5">
                                                 {(order.order_items ?? []).map((item) => (
                                                     <div key={item.id} className="text-sm">
-                                                        <span className="font-medium text-amber-500">{item.quantity}</span> {item.product?.unit} {item.product?.name}
+                                                        <span className="font-medium text-amber-500">{item.quantity}</span> {formatUnit(item.quantity, item.product?.unit || '')} {item.product?.name}
                                                     </div>
                                                 ))}
                                             </div>

@@ -31,8 +31,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import { withRole } from '@/components/hoc/withRole'
 import { useUser } from '@/contexts/UserContext'
-import { cn } from '@/lib/utils'
-
+import { cn, formatUnit } from '@/lib/utils'
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency', currency: 'ARS', maximumFractionDigits: 0,
 })
@@ -628,7 +627,7 @@ function DashboardPage() {
                                     <Package className="w-4 h-4 text-emerald-500/60" />
                                     <span className="text-muted-foreground">{name}:</span>
                                 </div>
-                                <span className="font-bold text-white">{prod.quantity} {prod.unit}</span>
+                                <span className="font-bold text-white">{prod.quantity} {formatUnit(prod.quantity, prod.unit)}</span>
                             </div>
                         ))}
                         {Object.entries(production).length === 0 && (

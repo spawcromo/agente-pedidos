@@ -4,11 +4,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { cn, formatUnit } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Package, Copy, ClipboardList } from "lucide-react"
 import { getProductionSummary, type ProductionSummaryRow } from '@/services/production'
 import { withRole } from '@/components/hoc/withRole'
-import { cn } from '@/lib/utils'
+
 
 function ProduccionPage() {
     const [date, setDate] = useState('')
@@ -102,10 +103,9 @@ function ProduccionPage() {
                             <>
                                 <Button
                                     variant={isToday ? "default" : "outline"}
-                                    size="sm"
                                     className={cn(
-                                        "flex-1 sm:flex-none",
-                                        isToday && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none font-bold"
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        isToday && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(today)}
                                 >
@@ -113,10 +113,9 @@ function ProduccionPage() {
                                 </Button>
                                 <Button
                                     variant={isTomorrow ? "default" : "outline"}
-                                    size="sm"
                                     className={cn(
-                                        "flex-1 sm:flex-none",
-                                        isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none font-bold"
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(tomorrow)}
                                 >
@@ -162,7 +161,7 @@ function ProduccionPage() {
                                         {row.product_name}
                                     </h3>
                                     <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-60 uppercase">
-                                        {row.unit}
+                                        {formatUnit(row.total_quantity, row.unit)}
                                     </Badge>
                                 </div>
 
@@ -172,7 +171,7 @@ function ProduccionPage() {
                                             {row.total_quantity}
                                         </span>
                                         <span className="text-sm font-bold text-muted-foreground uppercase">
-                                            {row.unit}
+                                            {formatUnit(row.total_quantity, row.unit)}
                                         </span>
                                     </div>
                                     <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-1.5 mt-1">

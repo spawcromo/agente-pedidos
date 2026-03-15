@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn, formatUnit } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -360,10 +360,9 @@ function RutasPage() {
                             <>
                                 <Button
                                     variant={date === today ? "default" : "outline"}
-                                    size="sm"
                                     className={cn(
-                                        "font-bold h-10",
-                                        date === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        date === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(today)}
                                 >
@@ -371,10 +370,9 @@ function RutasPage() {
                                 </Button>
                                 <Button
                                     variant={date === tomorrow ? "default" : "outline"}
-                                    size="sm"
                                     className={cn(
-                                        "font-bold h-10",
-                                        date === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none"
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        date === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(tomorrow)}
                                 >
@@ -387,7 +385,7 @@ function RutasPage() {
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="w-40"
+                        className="w-40 h-10 rounded-xl"
                     />
                 </div>
             </header>
@@ -446,7 +444,7 @@ function RutasPage() {
                     <div className="bg-amber-500/10 border border-amber-500/20 rounded-sm p-4 space-y-4">
                         <p className="text-sm font-bold text-amber-500">Crear Nueva Ruta</p>
                         <Select value={selectedDriver} onValueChange={(val) => setSelectedDriver(val ?? '')}>
-                            <SelectTrigger className="bg-background w-full">
+                            <SelectTrigger className="bg-background w-full h-10 rounded-xl">
                                 <SelectValue placeholder="Elegir Repartidor...">
                                     {drivers.find(d => d.id === selectedDriver)?.full_name || drivers.find(d => d.id === selectedDriver)?.email}
                                 </SelectValue>
