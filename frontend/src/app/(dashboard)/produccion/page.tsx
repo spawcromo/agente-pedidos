@@ -66,13 +66,13 @@ function ProduccionPage() {
                     variant="outline"
                     onClick={() => {
                         const text = rows
-                            .map((r) => `${r.product_name}: ${r.total_quantity} ${r.unit}`)
+                            .map(r => `${r.total_quantity} ${formatUnit(r.total_quantity, r.unit)} ${r.product_name}`)
                             .join('\n')
                         navigator.clipboard.writeText(text)
                         toast.success('Copiado al portapapeles')
                     }}
                     id="btn-copiar-resumen"
-                    className="w-full sm:w-auto gap-2"
+                    className="w-full sm:w-auto h-10 px-6 gap-2 rounded-xl transition-all active:scale-95 font-bold"
                 >
                     <Copy className="w-4 h-4" /> Copiar resumen
                 </Button>
@@ -80,13 +80,13 @@ function ProduccionPage() {
 
             {/* Date filter */}
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Input
                         id="fecha-produccion"
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="flex-1 sm:w-44"
+                        className="flex-1 sm:w-44 h-10 rounded-xl"
                     />
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
@@ -114,7 +114,7 @@ function ProduccionPage() {
                                 <Button
                                     variant={isTomorrow ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95 border-border",
                                         isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(tomorrow)}

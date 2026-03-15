@@ -115,13 +115,16 @@ function ClientesPage() {
 
             {/* Search */}
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-                <Input
-                    id="search-clientes"
-                    placeholder="Buscar por nombre, teléfono o dirección..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full sm:max-w-sm h-11 sm:h-10"
-                />
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                    <Input
+                        id="search-clientes"
+                        placeholder="Buscar por nombre, teléfono o dirección..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 h-10 rounded-xl"
+                    />
+                </div>
             </div>
 
             {/* Table */}

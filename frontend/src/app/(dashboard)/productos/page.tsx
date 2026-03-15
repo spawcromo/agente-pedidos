@@ -117,7 +117,7 @@ function ProductosPage() {
                 <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex items-center gap-2">
                         <Select value={stockFilter} onValueChange={(v: any) => setStockFilter(v)}>
-                            <SelectTrigger className="w-[180px] h-9 bg-card">
+                            <SelectTrigger className="w-[180px] h-10 rounded-xl bg-card border-border">
                                 <Filter className="w-4 h-4 mr-2 opacity-50" />
                                 <SelectValue placeholder="Filtrar por stock" />
                             </SelectTrigger>

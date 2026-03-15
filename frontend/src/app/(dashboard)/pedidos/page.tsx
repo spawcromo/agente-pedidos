@@ -352,7 +352,7 @@ function PedidosPage() {
 
             {/* Filters + Bulk actions */}
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center flex-wrap">
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                     <Input
                         id="filter-fecha"
                         type="date"
@@ -403,7 +403,7 @@ function PedidosPage() {
                                 <Button
                                     variant={dateFilter === today ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95 border-border",
                                         dateFilter === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDateFilter(today)}
@@ -413,7 +413,7 @@ function PedidosPage() {
                                 <Button
                                     variant={dateFilter === tomorrow ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95 border-border",
                                         dateFilter === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDateFilter(tomorrow)}
