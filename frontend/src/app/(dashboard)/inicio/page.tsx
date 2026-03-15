@@ -246,7 +246,7 @@ function DashboardPage() {
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-4 px-6 pb-6 text-sm">
                         <Link href="/rutas">
-                            <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2">
+                            <Button className="w-full sm:w-auto h-10 px-6 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95">
                                 <Truck className="w-4 h-4" /> Ir a mis Paradas
                             </Button>
                         </Link>

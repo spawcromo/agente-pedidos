@@ -466,7 +466,7 @@ function RutasPage() {
                             </SelectContent>
                         </Select>
                         <Button
-                            className="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+                            className="w-full h-10 px-6 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95"
                             disabled={selectedOrders.length === 0 || !selectedDriver}
                             onClick={handleCreateRoute}
                         >

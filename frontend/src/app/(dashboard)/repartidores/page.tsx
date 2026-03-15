@@ -113,7 +113,10 @@ function RepartidoresPage() {
                         Directorio de repartidores activos.
                     </p>
                 </div>
-                <Button onClick={() => setCreateOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2">
+                <Button 
+                    onClick={() => setCreateOpen(true)} 
+                    className="w-full sm:w-auto h-10 px-6 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95"
+                >
                     <Plus className="w-4 h-4" /> Nuevo Repartidor
                 </Button>
             </div>
@@ -320,7 +323,7 @@ function RepartidoresPage() {
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setCreateOpen(false)}>Cancelar</Button>
                         <Button
-                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+                            className="h-10 px-6 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95"
                             disabled={createLoading || !formData.fullName || !formData.email}
                             onClick={async () => {
                                 setCreateLoading(true)
@@ -371,7 +374,7 @@ function RepartidoresPage() {
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setEditOpen(false)}>Cancelar</Button>
                         <Button
-                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold"
+                            className="h-10 px-6 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95"
                             disabled={editLoading || !editData.fullName}
                             onClick={async () => {
                                 if (!repToEdit) return
