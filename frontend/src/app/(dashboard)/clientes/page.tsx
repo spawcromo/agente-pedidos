@@ -104,7 +104,11 @@ function ClientesPage() {
                         Datos de contacto, dirección, horarios y lista de precios de cada cliente.
                     </p>
                 </div>
-                <Button onClick={openCreate} id="btn-nuevo-cliente" className="w-full sm:w-auto gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none">
+                <Button 
+                    onClick={openCreate} 
+                    id="btn-nuevo-cliente" 
+                    className="w-full sm:w-auto h-10 px-6 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95"
+                >
                     <Plus className="w-4 h-4" /> Nuevo Cliente
                 </Button>
             </div>

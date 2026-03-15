@@ -36,7 +36,8 @@ import {
     ArrowDown,
     AlertCircle,
     Trash2,
-    Ban
+    Ban,
+    Plus
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -340,8 +341,12 @@ function PedidosPage() {
                         Gestioná, confirmá y organizá los pedidos del día.
                     </p>
                 </div>
-                <Button onClick={openCreate} id="btn-nuevo-pedido" className="w-full sm:w-auto">
-                    + Nuevo Pedido
+                <Button 
+                    onClick={openCreate} 
+                    id="btn-nuevo-pedido" 
+                    className="w-full sm:w-auto h-10 px-6 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95"
+                >
+                    <Plus className="w-4 h-4" /> Nuevo Pedido
                 </Button>
             </div>
 

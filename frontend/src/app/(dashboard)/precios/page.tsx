@@ -280,7 +280,10 @@ function PreciosPage() {
                     <h1 className="text-3xl font-bold">Listas de Precios</h1>
                     <p className="text-muted-foreground text-sm">Gestioná diferentes esquemas de precios para tus clientes.</p>
                 </div>
-                <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2 h-9 px-4 text-xs" onClick={() => setCreateOpen(true)}>
+                <Button 
+                    className="w-full sm:w-auto h-10 px-6 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95" 
+                    onClick={() => setCreateOpen(true)}
+                >
                     <Plus className="w-4 h-4" /> Nueva Lista
                 </Button>
             </header>
