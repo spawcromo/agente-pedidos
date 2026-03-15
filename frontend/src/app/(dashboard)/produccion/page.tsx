@@ -10,6 +10,7 @@ import {
 import { Package, Copy } from "lucide-react"
 import { getProductionSummary, type ProductionSummaryRow } from '@/services/production'
 import { withRole } from '@/components/hoc/withRole'
+import { cn } from '@/lib/utils'
 
 function ProduccionPage() {
     const [date, setDate] = useState('')
@@ -57,7 +58,7 @@ function ProduccionPage() {
             {/* Header */}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Producción</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">Producción por día</h1>
                     <p className="text-muted-foreground">
                         Totales a preparar según pedidos confirmados.
                     </p>
@@ -90,31 +91,42 @@ function ProduccionPage() {
                     />
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none"
-                        onClick={() => {
-                            const d = new Date()
-                            const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-                            setDate(today)
-                        }}
-                    >
-                        Hoy
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none"
-                        onClick={() => {
-                            const d = new Date()
-                            d.setDate(d.getDate() + 1)
-                            const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-                            setDate(tomorrow)
-                        }}
-                    >
-                        Mañana
-                    </Button>
+                    {(() => {
+                        const d = new Date()
+                        const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                        const isToday = date === today
+
+                        d.setDate(d.getDate() + 1)
+                        const tomorrow = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                        const isTomorrow = date === tomorrow
+
+                        return (
+                            <>
+                                <Button
+                                    variant={isToday ? "default" : "outline"}
+                                    size="sm"
+                                    className={cn(
+                                        "flex-1 sm:flex-none",
+                                        isToday && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-amber-500 font-bold"
+                                    )}
+                                    onClick={() => setDate(today)}
+                                >
+                                    Hoy
+                                </Button>
+                                <Button
+                                    variant={isTomorrow ? "default" : "outline"}
+                                    size="sm"
+                                    className={cn(
+                                        "flex-1 sm:flex-none",
+                                        isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-amber-500 font-bold"
+                                    )}
+                                    onClick={() => setDate(tomorrow)}
+                                >
+                                    Mañana
+                                </Button>
+                            </>
+                        )
+                    })()}
                 </div>
                 {!loading && rows.length > 0 && (
                     <span className="text-sm text-muted-foreground">
