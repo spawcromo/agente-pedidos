@@ -105,7 +105,7 @@ function ProduccionPage() {
                                     size="sm"
                                     className={cn(
                                         "flex-1 sm:flex-none",
-                                        isToday && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-amber-500 font-bold"
+                                        isToday && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none font-bold"
                                     )}
                                     onClick={() => setDate(today)}
                                 >
@@ -116,7 +116,7 @@ function ProduccionPage() {
                                     size="sm"
                                     className={cn(
                                         "flex-1 sm:flex-none",
-                                        isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-amber-500 font-bold"
+                                        isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none font-bold"
                                     )}
                                     onClick={() => setDate(tomorrow)}
                                 >

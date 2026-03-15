@@ -166,17 +166,17 @@ function PreciosPage() {
                                     variant="outline" 
                                     size="sm" 
                                     onClick={handleCancel}
-                                    className="h-8 py-0 px-3 text-[10px] font-black border-border/50 hover:bg-red-500/10 hover:text-red-500"
+                                    className="h-8 py-0 px-3 text-[10px] font-bold border-border/50 hover:bg-red-500/10 hover:text-red-500"
                                 >
-                                    <CloseIcon className="w-3 h-3 mr-1" /> CANCELAR
+                                    <CloseIcon className="w-3 h-3 mr-1" /> Cancelar
                                 </Button>
                                 <Button 
                                     size="sm" 
                                     onClick={handleSaveAll}
                                     disabled={saving}
-                                    className="h-8 py-0 px-3 text-[10px] font-black bg-amber-500 hover:bg-amber-600 text-amber-950 shadow-lg shadow-amber-500/20"
+                                    className="h-8 py-0 px-3 text-[10px] font-bold bg-amber-500 hover:bg-amber-600 text-amber-950 shadow-lg shadow-amber-500/10 border-none"
                                 >
-                                    <Save className="w-3 h-3 mr-1" /> {saving ? 'GUARDANDO...' : 'GUARDAR'}
+                                    <Save className="w-3 h-3 mr-1" /> {saving ? 'Guardando...' : 'Guardar'}
                                 </Button>
                             </div>
                         )}
@@ -280,8 +280,8 @@ function PreciosPage() {
                     <h1 className="text-3xl font-bold">Listas de Precios</h1>
                     <p className="text-muted-foreground text-sm">Gestioná diferentes esquemas de precios para tus clientes.</p>
                 </div>
-                <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black gap-2 h-9 px-4 text-xs" onClick={() => setCreateOpen(true)}>
-                    <Plus className="w-4 h-4" /> NUEVA LISTA
+                <Button className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold gap-2 h-9 px-4 text-xs" onClick={() => setCreateOpen(true)}>
+                    <Plus className="w-4 h-4" /> Nueva Lista
                 </Button>
             </header>
 
@@ -372,13 +372,13 @@ function PreciosPage() {
                         )}
                     </div>
                     <DialogFooter className="gap-2">
-                        <Button variant="ghost" onClick={() => setCreateOpen(false)} className="text-[10px] font-black uppercase">Cancelar</Button>
+                        <Button variant="ghost" onClick={() => setCreateOpen(false)} className="text-[10px] font-bold">Cancelar</Button>
                         <Button
-                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black px-8 shadow-lg shadow-amber-500/10 text-[10px] uppercase"
+                            className="bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold px-8 shadow-lg shadow-amber-500/10 text-[10px]"
                             disabled={saving || !newListData.name}
                             onClick={handleCreateList}
                         >
-                            {saving ? 'CREANDO...' : 'CREAR LISTA'}
+                            {saving ? 'Creando...' : 'Crear Lista'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

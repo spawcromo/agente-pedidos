@@ -128,7 +128,7 @@ function ProductosPage() {
                             </SelectContent>
                         </Select>
                     </div>
-                    <Button onClick={openCreate} id="btn-nuevo-producto" className="h-9 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold">
+                    <Button onClick={openCreate} id="btn-nuevo-producto" className="h-9 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none">
                         <Plus className="w-4 h-4" /> Nuevo Producto
                     </Button>
                 </div>
