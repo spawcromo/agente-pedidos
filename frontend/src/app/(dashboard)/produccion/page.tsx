@@ -156,28 +156,37 @@ function ProduccionPage() {
                             key={row.product_id}
                             className="bg-card border border-border/50 hover:border-amber-500/30 transition-all rounded-xl p-5 group relative overflow-hidden"
                         >
-                            <div className="flex flex-col h-full justify-between gap-4">
+                            <div className="flex flex-col h-full gap-4">
+                                <div className="flex justify-between items-start">
+                                    <h3 className="text-lg font-bold leading-tight group-hover:text-amber-500 transition-colors">
+                                        {row.product_name}
+                                    </h3>
+                                    <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-60 uppercase">
+                                        {row.unit}
+                                    </Badge>
+                                </div>
+
                                 <div>
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h3 className="text-lg font-bold leading-tight group-hover:text-amber-500 transition-colors">
-                                            {row.product_name}
-                                        </h3>
-                                        <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-60 uppercase">
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-4xl font-black text-amber-500 tabular-nums">
+                                            {row.total_quantity}
+                                        </span>
+                                        <span className="text-sm font-bold text-muted-foreground uppercase">
                                             {row.unit}
-                                        </Badge>
+                                        </span>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest flex items-center gap-1">
-                                        <ClipboardList className="w-3 h-3" /> {row.order_count} Pedidos
+                                    <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-1.5 mt-1">
+                                        <ClipboardList className="w-3.5 h-3.5 text-amber-500/50" /> {row.order_count} {row.order_count === 1 ? 'Pedido' : 'Pedidos'}
                                     </p>
                                 </div>
 
-                                <div className="flex items-baseline gap-2 mt-2">
-                                    <span className="text-4xl font-black text-amber-500 tabular-nums">
-                                        {row.total_quantity}
-                                    </span>
-                                    <span className="text-sm font-bold text-muted-foreground uppercase">
-                                        {row.unit}
-                                    </span>
+                                <div className="space-y-1 pt-3 border-t border-border/40">
+                                    {row.client_breakdown.map((item, i) => (
+                                        <div key={i} className="flex justify-between items-center text-[10px]">
+                                            <span className="text-muted-foreground/80 truncate max-w-[140px] italic">{item.client_name}</span>
+                                            <span className="font-semibold text-muted-foreground">{item.quantity} {row.unit}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                             {/* Accent decorative element */}

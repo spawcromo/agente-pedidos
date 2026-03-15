@@ -14,10 +14,17 @@ SELECT
   p.name AS product_name,
   p.unit,
   SUM(oi.quantity) AS total_quantity,
-  COUNT(DISTINCT o.id) AS order_count
+  COUNT(DISTINCT o.id) AS order_count,
+  jsonb_agg(
+    jsonb_build_object(
+      'client_name', c.name,
+      'quantity', oi.quantity
+    ) ORDER BY oi.quantity DESC
+  ) AS client_breakdown
 FROM orders o
 JOIN order_items oi ON oi.order_id = o.id
 JOIN products p ON p.id = oi.product_id
+JOIN clients c ON c.id = o.client_id
 WHERE o.status = 'confirmed'
 GROUP BY o.delivery_date, p.id, p.name, p.unit
 ORDER BY p.sort_order;

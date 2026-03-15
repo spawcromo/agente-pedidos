@@ -7,6 +7,7 @@ export interface ProductionSummaryRow {
     unit: string
     total_quantity: number
     order_count: number
+    client_breakdown: { client_name: string; quantity: number }[]
 }
 
 export async function getProductionSummary(
