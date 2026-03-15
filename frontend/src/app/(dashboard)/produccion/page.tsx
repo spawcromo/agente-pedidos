@@ -181,7 +181,7 @@ function ProduccionPage() {
                                 </div>
 
                                 <div className="space-y-1 pt-3 border-t border-border/40">
-                                    {row.client_breakdown.map((item, i) => (
+                                    {(row.client_breakdown || []).map((item, i) => (
                                         <div key={i} className="flex justify-between items-center text-[10px]">
                                             <span className="text-muted-foreground/80 truncate max-w-[140px] italic">{item.client_name}</span>
                                             <span className="font-semibold text-muted-foreground">{item.quantity} {row.unit}</span>
