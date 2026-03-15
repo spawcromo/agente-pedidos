@@ -228,7 +228,7 @@ function RepartidoresPage() {
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center gap-2 group"
                                                 >
-                                                    <div className="h-8 px-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2 text-emerald-500 font-bold hover:bg-emerald-500/20 transition-colors">
+                                                    <div className="h-8 px-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center gap-2 text-emerald-500 font-bold hover:bg-emerald-500/20 transition-all active:scale-95">
                                                         <MessageCircle className="h-4 w-4" />
                                                         <span>{rep.phone}</span>
                                                     </div>

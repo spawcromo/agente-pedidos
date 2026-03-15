@@ -432,8 +432,8 @@ function PedidosPage() {
                         <span className="text-sm text-muted-foreground w-full sm:w-auto text-center">{selected.size} seleccionados</span>
                         <DropdownMenu>
                             <DropdownMenuTrigger className={cn(
-                                buttonVariants({ size: 'sm' }),
-                                "w-full sm:w-auto gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none cursor-pointer"
+                                buttonVariants(),
+                                "w-full sm:w-auto h-10 px-6 gap-2 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold border-none rounded-xl transition-all shadow-lg shadow-amber-500/10 active:scale-95 cursor-pointer"
                             )}>
                                 <CheckCircle2 className="w-4 h-4" /> Acciones masivas
                             </DropdownMenuTrigger>
