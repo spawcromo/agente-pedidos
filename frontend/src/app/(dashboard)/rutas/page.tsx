@@ -361,7 +361,7 @@ function RutasPage() {
                                 <Button
                                     variant={date === today ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        "flex-1 sm:flex-none font-bold !h-10 rounded-xl transition-all active:scale-95 border-border",
                                         date === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(today)}
@@ -371,7 +371,7 @@ function RutasPage() {
                                 <Button
                                     variant={date === tomorrow ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        "flex-1 sm:flex-none font-bold !h-10 rounded-xl transition-all active:scale-95 border-border",
                                         date === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(tomorrow)}
@@ -385,7 +385,7 @@ function RutasPage() {
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="w-40 h-10 rounded-xl"
+                        className="w-40 !h-10 rounded-xl"
                     />
                 </div>
             </header>

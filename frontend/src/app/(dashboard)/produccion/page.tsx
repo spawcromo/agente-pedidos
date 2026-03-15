@@ -86,7 +86,7 @@ function ProduccionPage() {
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="flex-1 sm:w-44 h-10 rounded-xl"
+                        className="flex-1 sm:w-44 !h-10 rounded-xl"
                     />
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
@@ -104,7 +104,7 @@ function ProduccionPage() {
                                 <Button
                                     variant={isToday ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95",
+                                        "flex-1 sm:flex-none font-bold !h-10 rounded-xl transition-all active:scale-95",
                                         isToday && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(today)}
@@ -114,7 +114,7 @@ function ProduccionPage() {
                                 <Button
                                     variant={isTomorrow ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95 border-border",
+                                        "flex-1 sm:flex-none font-bold !h-10 rounded-xl transition-all active:scale-95 border-border",
                                         isTomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDate(tomorrow)}

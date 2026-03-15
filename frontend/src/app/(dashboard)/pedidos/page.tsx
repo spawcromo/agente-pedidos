@@ -358,13 +358,13 @@ function PedidosPage() {
                         type="date"
                         value={dateFilter}
                         onChange={(e) => setDateFilter(e.target.value)}
-                        className="flex-1 sm:w-40 h-10 rounded-xl"
+                        className="flex-1 sm:w-40 !h-10 rounded-xl"
                     />
                     <Select
                         value={statusFilter}
                         onValueChange={(v) => setStatusFilter(v as OrderStatus | 'all' | 'active' | 'assigned')}
                     >
-                        <SelectTrigger className="w-fit min-w-[200px] h-10 rounded-xl" id="filter-estado">
+                        <SelectTrigger className="w-fit min-w-[200px] !h-10 rounded-xl" id="filter-estado">
                             <SelectValue placeholder="Pendientes + Conf.">
                                 {{
                                     'active': 'Pendientes + Confirmados',
@@ -403,7 +403,7 @@ function PedidosPage() {
                                 <Button
                                     variant={dateFilter === today ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95 border-border",
+                                        "flex-1 sm:flex-none font-bold !h-10 rounded-xl transition-all active:scale-95 border-border",
                                         dateFilter === today && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDateFilter(today)}
@@ -413,7 +413,7 @@ function PedidosPage() {
                                 <Button
                                     variant={dateFilter === tomorrow ? "default" : "outline"}
                                     className={cn(
-                                        "flex-1 sm:flex-none font-bold h-10 rounded-xl transition-all active:scale-95 border-border",
+                                        "flex-1 sm:flex-none font-bold !h-10 rounded-xl transition-all active:scale-95 border-border",
                                         dateFilter === tomorrow && "bg-amber-500 hover:bg-amber-600 text-amber-950 border-none shadow-lg shadow-amber-500/10"
                                     )}
                                     onClick={() => setDateFilter(tomorrow)}
