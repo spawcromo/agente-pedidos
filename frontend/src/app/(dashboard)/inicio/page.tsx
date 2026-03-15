@@ -493,20 +493,6 @@ function DashboardPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-[#1A261A] border-0 shadow-none rounded-xl relative overflow-hidden group">
-                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
-                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
-                            <CardTitle className="text-sm font-medium text-emerald-50">Confirmados</CardTitle>
-                            <div className="bg-emerald-900/50 text-emerald-500 p-1.5 rounded-md"><CheckCircle2 className="w-4 h-4" /></div>
-                        </CardHeader>
-                        <CardContent className="pb-4 px-6 z-10 relative">
-                            <div className="flex items-baseline gap-2">
-                                <div className="text-4xl font-black text-emerald-50">{stats.pedidos_manana_confirmados}</div>
-                                <span className="text-sm font-medium text-emerald-500/60">aprobados</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-
                     <Card className="bg-[#2D2110] border-0 shadow-none rounded-xl relative overflow-hidden group">
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-amber-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
@@ -517,6 +503,20 @@ function DashboardPage() {
                             <div className="flex items-baseline gap-2">
                                 <div className="text-4xl font-black text-amber-50">{stats.pedidos_manana_pendientes}</div>
                                 <span className="text-sm font-medium text-amber-500/60">en espera</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-[#1A261A] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-emerald-50">Confirmados</CardTitle>
+                            <div className="bg-emerald-900/50 text-emerald-500 p-1.5 rounded-md"><CheckCircle2 className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-emerald-50">{stats.pedidos_manana_confirmados}</div>
+                                <span className="text-sm font-medium text-emerald-500/60">aprobados</span>
                             </div>
                         </CardContent>
                     </Card>
