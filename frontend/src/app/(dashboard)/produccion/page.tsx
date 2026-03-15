@@ -2,12 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
-import { Package, Copy } from "lucide-react"
+import { Package, Copy, ClipboardList } from "lucide-react"
 import { getProductionSummary, type ProductionSummaryRow } from '@/services/production'
 import { withRole } from '@/components/hoc/withRole'
 import { cn } from '@/lib/utils'
@@ -129,65 +127,65 @@ function ProduccionPage() {
                     })()}
                 </div>
                 {!loading && rows.length > 0 && (
-                    <span className="text-sm text-muted-foreground">
-                        {rows.length} productos · {totalItems} pedidos
-                    </span>
+                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20 py-1.5 px-3 rounded-full text-xs font-bold gap-2 ml-auto">
+                        <Package className="w-3.5 h-3.5" /> {rows.length} Productos · <ClipboardList className="w-3.5 h-3.5" /> {totalItems} Pedidos
+                    </Badge>
                 )}
             </div>
 
-            {/* Summary table */}
-            <div className="rounded-lg border border-border bg-card overflow-hidden">
-                <div className="overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="hover:bg-transparent">
-                                <TableHead className="min-w-[150px] pl-6">Producto</TableHead>
-                                <TableHead className="text-center">Unidad</TableHead>
-                                <TableHead className="text-right text-lg font-bold">
-                                    Total
-                                </TableHead>
-                                <TableHead className="text-right whitespace-nowrap">Cant. Pedidos</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="py-12 text-center text-muted-foreground">
-                                        Cargando...
-                                    </TableCell>
-                                </TableRow>
-                            ) : rows.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="py-16 text-center text-muted-foreground">
-                                        <div className="flex justify-center mb-3">
-                                            <Package className="w-10 h-10 opacity-20" />
-                                        </div>
-                                        <div>
-                                            Sin pedidos para el <span className="font-medium text-foreground">{date}</span>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                rows.map((row) => (
-                                    <TableRow key={row.product_id} className="hover:bg-muted/30">
-                                        <TableCell className="font-semibold text-base pl-6">{row.product_name}</TableCell>
-                                        <TableCell className="text-center text-muted-foreground uppercase text-xs">{row.unit}</TableCell>
-                                        <TableCell className="text-right">
-                                            <span className="text-2xl font-bold tabular-nums text-amber-500">
-                                                {row.total_quantity}
-                                            </span>{' '}
-                                            <span className="text-sm text-muted-foreground">{row.unit}</span>
-                                        </TableCell>
-                                        <TableCell className="text-right text-muted-foreground">
-                                            {row.order_count}
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+            {/* Production Content - Card Grid */}
+            {loading ? (
+                <div className="py-20 flex flex-col items-center justify-center text-muted-foreground gap-4 bg-card/20 border border-dashed border-border rounded-xl">
+                    <div className="animate-spin text-amber-500">
+                        <Package className="w-8 h-8" />
+                    </div>
+                    <p className="font-medium">Cargando datos de producción...</p>
                 </div>
-            </div>
+            ) : rows.length === 0 ? (
+                <div className="py-20 text-center bg-card/20 border border-dashed border-border rounded-xl">
+                    <div className="flex justify-center mb-4">
+                        <Package className="w-12 h-12 text-muted-foreground/30" />
+                    </div>
+                    <h3 className="text-xl font-bold text-muted-foreground">Sin pedidos para el {date}</h3>
+                    <p className="text-sm text-muted-foreground/60 mt-1">Cuando se confirmen pedidos para esta fecha, aparecerán aquí.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {rows.map((row) => (
+                        <div 
+                            key={row.product_id}
+                            className="bg-card border border-border/50 hover:border-amber-500/30 transition-all rounded-xl p-5 group relative overflow-hidden"
+                        >
+                            <div className="flex flex-col h-full justify-between gap-4">
+                                <div>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h3 className="text-lg font-bold leading-tight group-hover:text-amber-500 transition-colors">
+                                            {row.product_name}
+                                        </h3>
+                                        <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-60 uppercase">
+                                            {row.unit}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest flex items-center gap-1">
+                                        <ClipboardList className="w-3 h-3" /> {row.order_count} Pedidos
+                                    </p>
+                                </div>
+
+                                <div className="flex items-baseline gap-2 mt-2">
+                                    <span className="text-4xl font-black text-amber-500 tabular-nums">
+                                        {row.total_quantity}
+                                    </span>
+                                    <span className="text-sm font-bold text-muted-foreground uppercase">
+                                        {row.unit}
+                                    </span>
+                                </div>
+                            </div>
+                            {/* Accent decorative element */}
+                            <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/10 transition-all" />
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* Bottom copy hint */}
             {rows.length > 0 && (
