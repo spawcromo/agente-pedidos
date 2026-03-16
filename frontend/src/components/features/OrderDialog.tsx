@@ -103,17 +103,18 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
     // Auto-fill unit_price when product is selected, based on client type
     function handleProductChange(index: number, productId: string) {
         setValue(`items.${index}.product_id`, productId)
+        const product = products.find((p) => p.id === productId)
         const customPrice = currentPrices.find(p => p.product_id === productId)
-        
-        if (customPrice) {
+
+        if (product?.pricing_type === 'by_weight') {
+            // For by_weight products, calculate estimated price
+            const estimatedPrice = (product.price_per_kg ?? 0) * (product.estimated_weight_kg ?? 0)
+            setValue(`items.${index}.unit_price`, estimatedPrice.toString())
+        } else if (customPrice) {
             setValue(`items.${index}.unit_price`, customPrice.price.toString())
-        } else {
-            // Fallback to product.base_price if no custom list price found
-            const product = products.find((p) => p.id === productId)
-            if (product) {
-                const price = product.base_price ?? 0
-                setValue(`items.${index}.unit_price`, price.toString())
-            }
+        } else if (product) {
+            const price = product.base_price ?? 0
+            setValue(`items.${index}.unit_price`, price.toString())
         }
     }
 
@@ -132,8 +133,18 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                 return
             }
 
+            // Tag by_weight items as not finalized
+            const itemsWithMeta = items.map((i) => {
+                const prod = products.find(p => p.id === i.product_id)
+                return {
+                    ...i,
+                    is_price_final: prod?.pricing_type !== 'by_weight',
+                    actual_weight_kg: null as number | null,
+                }
+            })
+
             if (isEditing && order) {
-                await updateOrderItems(order.id, items)
+                await updateOrderItems(order.id, itemsWithMeta)
                 await updateOrderMetadata(order.id, {
                     delivery_date: data.delivery_date,
                     delivery_time: data.delivery_time || null,
@@ -147,7 +158,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                     delivery_time: data.delivery_time || null,
                     notes: data.notes.trim() || null,
                     source: 'manual',
-                    items,
+                    items: itemsWithMeta,
                 })
                 toast.success('Pedido creado')
             }
@@ -261,11 +272,22 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                             <SelectContent>
                                                 {products.filter((p) => p.active || p.id === watch(`items.${index}.product_id`)).map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>
-                                                        {p.name} ({p.unit})
+                                                        {p.name} ({p.unit}){p.pricing_type === 'by_weight' ? ' ⚖️' : ''}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
+                                        {(() => {
+                                            const prod = products.find(p => p.id === watch(`items.${index}.product_id`))
+                                            if (prod?.pricing_type === 'by_weight') {
+                                                return (
+                                                    <p className="text-[10px] text-amber-500 mt-0.5 font-medium">
+                                                        ⚖️ Precio estimado — se ajusta al pesar
+                                                    </p>
+                                                )
+                                            }
+                                            return null
+                                        })()}
                                     </div>
                                     <div className="col-span-3">
                                         <Input

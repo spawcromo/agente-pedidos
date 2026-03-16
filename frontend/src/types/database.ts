@@ -1,6 +1,7 @@
 // Types matching Supabase schema from docs/architecture.md
 export type OrderStatus = 'pending' | 'confirmed' | 'rejected' | 'delivered' | 'cancelled'
 export type OrderSource = 'whatsapp' | 'manual'
+export type PricingType = 'fixed' | 'by_weight'
 export type RouteStatus = 'draft' | 'active' | 'completed'
 export type StopStatus = 'pending' | 'delivered'
 
@@ -40,6 +41,9 @@ export interface Product {
   price_wholesale?: number
   active: boolean
   sort_order: number
+  pricing_type: PricingType
+  price_per_kg: number | null
+  estimated_weight_kg: number | null
 }
 
 export interface Order {
@@ -64,6 +68,8 @@ export interface OrderItem {
   product_id: string
   quantity: number
   unit_price: number
+  actual_weight_kg: number | null
+  is_price_final: boolean
   // Joined
   product?: Product
 }

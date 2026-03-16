@@ -21,13 +21,16 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { createProduct, updateProduct } from '@/services/products'
-import type { Product } from '@/types/database'
+import type { Product, PricingType } from '@/types/database'
 
 interface ProductFormData {
     name: string
     unit: string
     sort_order: number
     active: boolean
+    pricing_type: PricingType
+    price_per_kg: string
+    estimated_weight_kg: string
 }
 
 interface ProductDialogProps {
@@ -56,8 +59,13 @@ export function ProductDialog({
             unit: 'kg',
             sort_order: 0,
             active: true,
+            pricing_type: 'fixed',
+            price_per_kg: '',
+            estimated_weight_kg: '',
         },
     })
+
+    const pricingType = watch('pricing_type')
 
     useEffect(() => {
         if (product) {
@@ -66,6 +74,9 @@ export function ProductDialog({
                 unit: product.unit,
                 sort_order: product.sort_order,
                 active: product.active,
+                pricing_type: product.pricing_type || 'fixed',
+                price_per_kg: product.price_per_kg?.toString() || '',
+                estimated_weight_kg: product.estimated_weight_kg?.toString() || '',
             })
         } else {
             reset({
@@ -73,15 +84,23 @@ export function ProductDialog({
                 unit: 'kg',
                 sort_order: 0,
                 active: true,
+                pricing_type: 'fixed',
+                price_per_kg: '',
+                estimated_weight_kg: '',
             })
         }
     }, [product, reset])
 
     async function onSubmit(data: ProductFormData) {
         try {
-            const payload = {
-                ...data,
+            const payload: any = {
+                name: data.name,
+                unit: data.unit,
                 sort_order: Number(data.sort_order),
+                active: data.active,
+                pricing_type: data.pricing_type,
+                price_per_kg: data.pricing_type === 'by_weight' && data.price_per_kg ? parseFloat(data.price_per_kg) : null,
+                estimated_weight_kg: data.pricing_type === 'by_weight' && data.estimated_weight_kg ? parseFloat(data.estimated_weight_kg) : null,
             }
             if (isEditing) {
                 await updateProduct(product.id, payload)
@@ -136,6 +155,70 @@ export function ProductDialog({
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {/* Tipo de Precio */}
+                    <div className="space-y-1.5">
+                        <Label>Tipo de Precio</Label>
+                        <Select
+                            value={pricingType}
+                            onValueChange={(v) => setValue('pricing_type', v as PricingType)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="fixed">Precio fijo</SelectItem>
+                                <SelectItem value="by_weight">Precio por peso (⚖️ variable)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Campos de precio por peso */}
+                    {pricingType === 'by_weight' && (
+                        <div className="space-y-3 bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
+                            <p className="text-xs text-amber-500 font-bold uppercase tracking-wider">⚖️ Configuración por peso</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="price_per_kg">Precio por kg ($)</Label>
+                                    <Input
+                                        id="price_per_kg"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Ej: 3000"
+                                        {...register('price_per_kg', {
+                                            required: pricingType === 'by_weight' ? 'Requerido para precio por peso' : false
+                                        })}
+                                    />
+                                    {errors.price_per_kg && (
+                                        <p className="text-xs text-destructive">{errors.price_per_kg.message}</p>
+                                    )}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="estimated_weight_kg">Peso estimado (kg)</Label>
+                                    <Input
+                                        id="estimated_weight_kg"
+                                        type="number"
+                                        min="0"
+                                        step="0.1"
+                                        placeholder="Ej: 15"
+                                        {...register('estimated_weight_kg', {
+                                            required: pricingType === 'by_weight' ? 'Requerido para precio por peso' : false
+                                        })}
+                                    />
+                                    {errors.estimated_weight_kg && (
+                                        <p className="text-xs text-destructive">{errors.estimated_weight_kg.message}</p>
+                                    )}
+                                </div>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">
+                                Precio estimado: ${pricingType === 'by_weight' && watch('price_per_kg') && watch('estimated_weight_kg')
+                                    ? (parseFloat(watch('price_per_kg') || '0') * parseFloat(watch('estimated_weight_kg') || '0')).toLocaleString('es-AR')
+                                    : '---'
+                                }
+                            </p>
+                        </div>
+                    )}
 
                     {/* Estado de Stock */}
                     <div className="space-y-1.5">

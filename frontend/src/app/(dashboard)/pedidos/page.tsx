@@ -47,7 +47,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
-    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, deleteOrder, type OrderWithDetails,
+    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, deleteOrder, updateOrderItemWeight, type OrderWithDetails,
 } from '@/services/orders'
 import type { OrderStatus } from '@/types/database'
 import { withRole } from '@/components/hoc/withRole'
@@ -633,8 +633,14 @@ function PedidosPage() {
                                         <TableCell>
                                             <div className="space-y-0.5">
                                                 {(order.order_items ?? []).map((item) => (
-                                                    <div key={item.id} className="text-sm">
+                                                    <div key={item.id} className="text-sm flex items-center gap-1">
                                                         <span className="font-medium text-amber-500">{item.quantity}</span> {formatUnit(item.quantity, item.product?.unit || '')} {item.product?.name}
+                                                        {item.product?.pricing_type === 'by_weight' && !item.is_price_final && (
+                                                            <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">⚖️ ESTIMADO</span>
+                                                        )}
+                                                        {item.product?.pricing_type === 'by_weight' && item.is_price_final && item.actual_weight_kg && (
+                                                            <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-full font-bold">⚖️ {item.actual_weight_kg}kg</span>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>

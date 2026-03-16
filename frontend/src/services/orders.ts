@@ -3,7 +3,7 @@ import type { Order, OrderStatus, OrderItem } from '@/types/database'
 
 export type OrderWithDetails = Order & {
     client: { id: string; name: string; phone: string }
-    order_items: (OrderItem & { product: { name: string; unit: string } })[]
+    order_items: (OrderItem & { product: { name: string; unit: string; pricing_type: string; price_per_kg: number | null; estimated_weight_kg: number | null } })[]
     delivery_stops?: { id: string; status: string }[]
 }
 
@@ -17,7 +17,7 @@ export async function getOrders(filters?: {
         .select(`
       *,
       client:clients(id, name, phone),
-      order_items(*, product:products(name, unit)),
+      order_items(*, product:products(name, unit, pricing_type, price_per_kg, estimated_weight_kg)),
       delivery_stops(id, status)
     `)
         .order('created_at', { ascending: false })
@@ -46,7 +46,7 @@ export async function getOrderById(id: string): Promise<OrderWithDetails> {
         .select(`
       *,
       client:clients(id, name, phone),
-      order_items(*, product:products(name, unit)),
+      order_items(*, product:products(name, unit, pricing_type, price_per_kg, estimated_weight_kg)),
       delivery_stops(id, status)
     `)
         .eq('id', id)
@@ -106,7 +106,7 @@ export interface CreateOrderPayload {
     delivery_time: string | null
     notes: string | null
     source: 'manual' | 'whatsapp'
-    items: { product_id: string; quantity: number; unit_price: number }[]
+    items: { product_id: string; quantity: number; unit_price: number; actual_weight_kg?: number | null; is_price_final?: boolean }[]
 }
 
 export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
@@ -140,7 +140,7 @@ export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
 // Replace all items of an order
 export async function updateOrderItems(
     orderId: string,
-    items: { product_id: string; quantity: number; unit_price: number }[]
+    items: { product_id: string; quantity: number; unit_price: number; actual_weight_kg?: number | null; is_price_final?: boolean }[]
 ): Promise<void> {
     const supabase = createClient()
 
@@ -178,4 +178,23 @@ export async function deleteOrder(id: string): Promise<void> {
         .delete()
         .eq('id', id)
     if (error) throw new Error(`Error al eliminar pedido: ${error.message}`)
+}
+
+// Update weight and recalculate price for a by_weight order item
+export async function updateOrderItemWeight(
+    itemId: string,
+    actualWeightKg: number,
+    pricePerKg: number
+): Promise<void> {
+    const supabase = createClient()
+    const finalPrice = Math.round(actualWeightKg * pricePerKg * 100) / 100
+    const { error } = await supabase
+        .from('order_items')
+        .update({
+            actual_weight_kg: actualWeightKg,
+            unit_price: finalPrice,
+            is_price_final: true,
+        })
+        .eq('id', itemId)
+    if (error) throw new Error(`Error al actualizar peso: ${error.message}`)
 }
