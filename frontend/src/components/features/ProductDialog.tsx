@@ -188,9 +188,8 @@ export function ProductDialog({
                                     <p className="text-xs text-destructive">{errors.estimated_weight_kg.message}</p>
                                 )}
                             </div>
-                            <p className="text-[11px] text-muted-foreground">
-                                El precio por kg se define en la sección de <span className="font-bold text-amber-500">Listas de Precios</span>.<br/>
-                                El total estimado por caja = precio/kg × {watch('estimated_weight_kg') || '??'} kg
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Definí acá el <span className="text-amber-500 font-bold">peso promedio</span> de referencia. Al gestionar los pedidos, podrás ingresar el <span className="font-bold text-foreground">peso real de cada caja</span> para calcular el precio final exacto (Peso real × $/kg).
                             </p>
                         </div>
                     )}
