@@ -46,7 +46,7 @@ export async function getOrderById(id: string): Promise<OrderWithDetails> {
         .select(`
       *,
       client:clients(id, name, phone),
-      order_items(*, product:products(name, unit, pricing_type, price_per_kg, estimated_weight_kg)),
+      order_items(*, product:products(name, unit, pricing_type, estimated_weight_kg)),
       delivery_stops(id, status)
     `)
         .eq('id', id)
