@@ -676,7 +676,7 @@ function PedidosPage() {
                                                                                     onKeyDown={(e) => {
                                                                                         if (e.key === 'Enter') {
                                                                                             const estWeight = item.product?.estimated_weight_kg || 1
-                                                                                            const pricePerKg = item.unit_price / estWeight
+                                                                                            const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
                                                                                             handleWeightUpdate(item.id, (e.target as HTMLInputElement).value, pricePerKg)
                                                                                         }
                                                                                     }}
@@ -688,7 +688,7 @@ function PedidosPage() {
                                                                                     onClick={(e) => {
                                                                                         const input = (e.currentTarget.parentElement?.firstChild as HTMLInputElement)
                                                                                         const estWeight = item.product?.estimated_weight_kg || 1
-                                                                                        const pricePerKg = item.unit_price / estWeight
+                                                                                        const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
                                                                                         handleWeightUpdate(item.id, input.value, pricePerKg)
                                                                                     }}
                                                                                     className="h-8 w-8 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold"

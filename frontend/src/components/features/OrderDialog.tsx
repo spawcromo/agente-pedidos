@@ -135,13 +135,18 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
             }
 
             // Expand by_weight items: if quantity > 1, create N rows with quantity=1
-            const expandedItems: typeof rawItems = []
+            const expandedItems: (typeof rawItems[0] & { pricePerKg?: number })[] = []
             for (const item of rawItems) {
                 const prod = products.find(p => p.id === item.product_id)
+                const customPrice = currentPrices.find(p => p.product_id === item.product_id)
+                const currentPricePerKg = customPrice?.price ?? prod?.base_price ?? 0
+
                 if (prod?.pricing_type === 'by_weight' && item.quantity > 1) {
                     for (let i = 0; i < item.quantity; i++) {
-                        expandedItems.push({ ...item, quantity: 1 })
+                        expandedItems.push({ ...item, quantity: 1, pricePerKg: currentPricePerKg })
                     }
+                } else if (prod?.pricing_type === 'by_weight') {
+                    expandedItems.push({ ...item, pricePerKg: currentPricePerKg })
                 } else {
                     expandedItems.push(item)
                 }
@@ -151,7 +156,10 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
             const itemsWithMeta = expandedItems.map((i) => {
                 const prod = products.find(p => p.id === i.product_id)
                 return {
-                    ...i,
+                    product_id: i.product_id,
+                    quantity: i.quantity,
+                    unit_price: i.unit_price,
+                    price_per_kg: i.pricePerKg || null,
                     is_price_final: prod?.pricing_type !== 'by_weight',
                     actual_weight_kg: null as number | null,
                 }

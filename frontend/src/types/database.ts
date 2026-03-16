@@ -67,6 +67,7 @@ export interface OrderItem {
   product_id: string
   quantity: number
   unit_price: number
+  price_per_kg: number | null
   actual_weight_kg: number | null
   is_price_final: boolean
   // Joined
