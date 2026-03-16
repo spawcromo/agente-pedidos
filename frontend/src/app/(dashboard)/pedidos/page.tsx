@@ -257,6 +257,21 @@ function PedidosPage() {
         }
     }
 
+    async function handleWeightUpdate(itemId: string, weightStr: string, pricePerKg: number) {
+        const weight = parseFloat(weightStr)
+        if (isNaN(weight) || weight <= 0) {
+            toast.error('Ingresá un peso válido')
+            return
+        }
+        try {
+            await updateOrderItemWeight(itemId, weight, pricePerKg)
+            toast.success('Peso guardado y precio actualizado')
+            load()
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al actualizar peso')
+        }
+    }
+
     async function handleDeleteSubmit() {
         if (deletePassword !== 'borrar') {
             toast.error('Contraseña incorrecta')
@@ -631,15 +646,67 @@ function PedidosPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="space-y-0.5">
+                                            <div className="space-y-1.5 min-w-[180px]">
                                                 {(order.order_items ?? []).map((item) => (
-                                                    <div key={item.id} className="text-sm flex items-center gap-1">
-                                                        <span className="font-medium text-amber-500">{item.quantity}</span> {formatUnit(item.quantity, item.product?.unit || '')} {item.product?.name}
-                                                        {item.product?.pricing_type === 'by_weight' && !item.is_price_final && (
-                                                            <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">⚖️ ESTIMADO</span>
-                                                        )}
-                                                        {item.product?.pricing_type === 'by_weight' && item.is_price_final && item.actual_weight_kg && (
-                                                            <span className="text-[9px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-full font-bold">⚖️ {item.actual_weight_kg}kg</span>
+                                                    <div key={item.id} className="text-sm flex flex-col gap-1 items-start py-0.5">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="font-medium text-amber-500">{item.quantity}</span> {formatUnit(item.quantity, item.product?.unit || '')} {item.product?.name}
+                                                        </div>
+
+                                                        {item.product?.pricing_type === 'by_weight' && (
+                                                            <div className="mt-1.5 w-full">
+                                                                {!item.is_price_final ? (
+                                                                    <div className="flex items-center gap-2 bg-amber-500/10 p-1.5 rounded-lg border border-amber-500/30 shadow-sm animate-in slide-in-from-left-2 duration-300 w-fit">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[9px] text-amber-500 font-black uppercase tracking-widest leading-none mb-1">Cargar Peso Real</span>
+                                                                            <div className="flex items-center gap-1.5">
+                                                                                <Input 
+                                                                                    type="number" 
+                                                                                    placeholder="0.00" 
+                                                                                    className="w-20 h-8 text-sm px-2 rounded-md bg-background border-amber-500/40 font-bold focus-visible:ring-amber-500"
+                                                                                    onKeyDown={(e) => {
+                                                                                        if (e.key === 'Enter') {
+                                                                                            handleWeightUpdate(item.id, (e.target as HTMLInputElement).value, item.product?.price_per_kg || 0)
+                                                                                        }
+                                                                                    }}
+                                                                                />
+                                                                                <span className="text-xs font-bold text-amber-500/70 mr-1">kg</span>
+                                                                                <Button 
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    onClick={(e) => {
+                                                                                        const input = (e.currentTarget.parentElement?.firstChild as HTMLInputElement)
+                                                                                        handleWeightUpdate(item.id, input.value, item.product?.price_per_kg || 0)
+                                                                                    }}
+                                                                                    className="h-8 w-8 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold"
+                                                                                >
+                                                                                    <Check className="w-4 h-4" />
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div 
+                                                                        className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit"
+                                                                    >
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-[9px] opacity-70 font-black uppercase tracking-widest leading-none">Peso Confirmado</span>
+                                                                            <span className="text-sm font-black italic tracking-tighter">⚖️ {item.actual_weight_kg} kg</span>
+                                                                        </div>
+                                                                        <Button 
+                                                                            variant="ghost" 
+                                                                            size="sm" 
+                                                                            className="h-7 w-7 p-0 text-emerald-500 hover:bg-emerald-500/20 ml-2"
+                                                                            onClick={() => {
+                                                                                // Lógica para resetear y volver a pesar si fuera necesario
+                                                                                // Por ahora lo dejamos así pero se puede habilitar
+                                                                            }}
+                                                                        >
+                                                                            <Edit2 className="w-3 h-3" />
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         )}
                                                     </div>
                                                 ))}
