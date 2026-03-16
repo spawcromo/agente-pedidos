@@ -663,56 +663,46 @@ function PedidosPage() {
                                                         </div>
 
                                                         {item.product?.pricing_type === 'by_weight' && (
-                                                            <div className="mt-1.5 w-full">
+                                                            <div className="mt-0.5">
                                                                 {!item.is_price_final ? (
-                                                                    <div className="flex items-center gap-2 bg-amber-500/10 p-1.5 rounded-lg border border-amber-500/30 shadow-sm animate-in slide-in-from-left-2 duration-300 w-fit">
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[9px] text-amber-500 font-black uppercase tracking-widest leading-none mb-1">Cargar Peso Real</span>
-                                                                            <div className="flex items-center gap-1.5">
-                                                                                <Input 
-                                                                                    type="number" 
-                                                                                    placeholder="0.00" 
-                                                                                    className="w-20 h-8 text-sm px-2 rounded-md bg-background border-amber-500/40 font-bold focus-visible:ring-amber-500"
-                                                                                    onKeyDown={(e) => {
-                                                                                        if (e.key === 'Enter') {
-                                                                                            const estWeight = item.product?.estimated_weight_kg || 1
-                                                                                            const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
-                                                                                            handleWeightUpdate(item.id, (e.target as HTMLInputElement).value, pricePerKg)
-                                                                                        }
-                                                                                    }}
-                                                                                />
-                                                                                <span className="text-xs font-bold text-amber-500/70 mr-1">kg</span>
-                                                                                <Button 
-                                                                                    size="sm"
-                                                                                    variant="ghost"
-                                                                                    onClick={(e) => {
-                                                                                        const input = (e.currentTarget.parentElement?.firstChild as HTMLInputElement)
-                                                                                        const estWeight = item.product?.estimated_weight_kg || 1
-                                                                                        const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
-                                                                                        handleWeightUpdate(item.id, input.value, pricePerKg)
-                                                                                    }}
-                                                                                    className="h-8 w-8 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold"
-                                                                                >
-                                                                                    <Check className="w-4 h-4" />
-                                                                                </Button>
-                                                                            </div>
-                                                                        </div>
+                                                                    <div className="flex items-center gap-1.5 bg-amber-500/10 p-1 rounded-md border border-amber-500/30 w-fit animate-in slide-in-from-left-1 duration-200">
+                                                                        <span className="text-[10px] font-black text-amber-500 ml-1">⚖️</span>
+                                                                        <Input 
+                                                                            type="number" 
+                                                                            placeholder="kg" 
+                                                                            className="w-14 h-6 text-[11px] px-1 rounded-sm bg-background border-amber-500/40 font-bold focus-visible:ring-amber-500 text-center"
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') {
+                                                                                    const estWeight = item.product?.estimated_weight_kg || 1
+                                                                                    const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
+                                                                                    handleWeightUpdate(item.id, (e.target as HTMLInputElement).value, pricePerKg)
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                        <Button 
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            onClick={(e) => {
+                                                                                const input = (e.currentTarget.parentElement?.querySelector('input') as HTMLInputElement)
+                                                                                const estWeight = item.product?.estimated_weight_kg || 1
+                                                                                const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
+                                                                                handleWeightUpdate(item.id, input.value, pricePerKg)
+                                                                            }}
+                                                                            className="h-6 w-6 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400"
+                                                                        >
+                                                                            <Check className="w-3.5 h-3.5" />
+                                                                        </Button>
                                                                     </div>
                                                                 ) : (
-                                                                    <div 
-                                                                        className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit"
-                                                                    >
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[9px] opacity-70 font-black uppercase tracking-widest leading-none">Peso Confirmado</span>
-                                                                            <span className="text-sm font-black italic tracking-tighter">⚖️ {item.actual_weight_kg} kg</span>
-                                                                        </div>
+                                                                    <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-md border border-emerald-500/20 w-fit">
+                                                                        <span className="text-[11px] font-black italic">⚖️ {item.actual_weight_kg} kg</span>
                                                                         <Button 
                                                                             variant="ghost" 
                                                                             size="sm" 
-                                                                            className="h-7 w-7 p-0 text-emerald-500 hover:bg-emerald-500/20 ml-2"
+                                                                            className="h-6 w-6 p-0 text-emerald-500 hover:bg-emerald-500/20"
                                                                             onClick={() => handleWeightReset(item.id)}
                                                                         >
-                                                                            <Edit2 className="w-3 h-3" />
+                                                                            <Edit2 className="w-2.5 h-2.5 outline-none" />
                                                                         </Button>
                                                                     </div>
                                                                 )}
