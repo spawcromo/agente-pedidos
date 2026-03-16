@@ -42,7 +42,6 @@ export interface Product {
   active: boolean
   sort_order: number
   pricing_type: PricingType
-  price_per_kg: number | null
   estimated_weight_kg: number | null
 }
 

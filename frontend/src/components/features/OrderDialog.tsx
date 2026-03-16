@@ -107,8 +107,9 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
         const customPrice = currentPrices.find(p => p.product_id === productId)
 
         if (product?.pricing_type === 'by_weight') {
-            // For by_weight products, calculate estimated price
-            const estimatedPrice = (product.price_per_kg ?? 0) * (product.estimated_weight_kg ?? 0)
+            // For by_weight: price list price IS the $/kg
+            const pricePerKg = customPrice?.price ?? product.base_price ?? 0
+            const estimatedPrice = pricePerKg * (product.estimated_weight_kg ?? 0)
             setValue(`items.${index}.unit_price`, estimatedPrice.toString())
         } else if (customPrice) {
             setValue(`items.${index}.unit_price`, customPrice.price.toString())
@@ -120,7 +121,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
 
     async function onSubmit(data: FormData) {
         try {
-            const items = data.items
+            const rawItems = data.items
                 .filter((i) => i.product_id)
                 .map((i) => ({
                     product_id: i.product_id,
@@ -128,13 +129,26 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                     unit_price: parseFloat(i.unit_price),
                 }))
 
-            if (items.length === 0) {
+            if (rawItems.length === 0) {
                 toast.error('Agregá al menos un producto')
                 return
             }
 
+            // Expand by_weight items: if quantity > 1, create N rows with quantity=1
+            const expandedItems: typeof rawItems = []
+            for (const item of rawItems) {
+                const prod = products.find(p => p.id === item.product_id)
+                if (prod?.pricing_type === 'by_weight' && item.quantity > 1) {
+                    for (let i = 0; i < item.quantity; i++) {
+                        expandedItems.push({ ...item, quantity: 1 })
+                    }
+                } else {
+                    expandedItems.push(item)
+                }
+            }
+
             // Tag by_weight items as not finalized
-            const itemsWithMeta = items.map((i) => {
+            const itemsWithMeta = expandedItems.map((i) => {
                 const prod = products.find(p => p.id === i.product_id)
                 return {
                     ...i,

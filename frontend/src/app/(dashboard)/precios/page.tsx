@@ -143,7 +143,7 @@ function PreciosPage() {
                         </Button>
                         <div>
                             <h1 className="text-lg font-bold text-white leading-tight">{selectedList.name}</h1>
-                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Edición de precios x unidad</p>
+                            <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">Edición de precios</p>
                         </div>
                     </div>
 
@@ -224,8 +224,11 @@ function PreciosPage() {
                                             </TableCell>
                                             <TableCell className="text-center py-0.5 h-8">
                                                 <span className="text-[9px] text-muted-foreground uppercase font-black opacity-60">
-                                                    {p.product?.unit === 'kg' ? 'Kg' : 'Ud'}
+                                                    {p.product?.unit === 'kg' ? 'Kg' : p.product?.unit === 'caja' ? 'Caja' : 'Ud'}
                                                 </span>
+                                                {p.product?.pricing_type === 'by_weight' && (
+                                                    <span className="text-[8px] text-amber-500 font-black block leading-none">⚖️ $/kg</span>
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-right py-0.5 px-4 h-8">
                                                 <div className="flex items-center justify-end gap-1.5 h-full">

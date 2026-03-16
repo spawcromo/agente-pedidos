@@ -15,6 +15,7 @@ export interface ProductPrice {
         name: string
         unit: string
         active: boolean
+        pricing_type: string
     }
 }
 
@@ -35,7 +36,7 @@ export async function getPriceListWithPrices(priceListId: string): Promise<Produ
     // 1. Get all products (even those without stock)
     const { data: products, error: prodError } = await supabase
         .from('products')
-        .select('id, name, unit, active')
+        .select('id, name, unit, active, pricing_type')
         .order('name', { ascending: true })
 
     if (prodError) throw new Error(`Error al obtener productos: ${prodError.message}`)

@@ -2,8 +2,8 @@ import { createClient } from '@/lib/supabase/client'
 import type { Order, OrderStatus, OrderItem } from '@/types/database'
 
 export type OrderWithDetails = Order & {
-    client: { id: string; name: string; phone: string }
-    order_items: (OrderItem & { product: { name: string; unit: string; pricing_type: string; price_per_kg: number | null; estimated_weight_kg: number | null } })[]
+    client: { id: string; name: string; phone: string; price_list_id: string | null }
+    order_items: (OrderItem & { product: { name: string; unit: string; pricing_type: string; estimated_weight_kg: number | null } })[]
     delivery_stops?: { id: string; status: string }[]
 }
 
@@ -16,8 +16,8 @@ export async function getOrders(filters?: {
         .from('orders')
         .select(`
       *,
-      client:clients(id, name, phone),
-      order_items(*, product:products(name, unit, pricing_type, price_per_kg, estimated_weight_kg)),
+      client:clients(id, name, phone, price_list_id),
+      order_items(*, product:products(name, unit, pricing_type, estimated_weight_kg)),
       delivery_stops(id, status)
     `)
         .order('created_at', { ascending: false })
@@ -197,4 +197,16 @@ export async function updateOrderItemWeight(
         })
         .eq('id', itemId)
     if (error) throw new Error(`Error al actualizar peso: ${error.message}`)
+}
+
+// Reset weight to allow re-editing
+export async function resetOrderItemWeight(itemId: string): Promise<void> {
+    const supabase = createClient()
+    const { error } = await supabase
+        .from('order_items')
+        .update({
+            is_price_final: false,
+        })
+        .eq('id', itemId)
+    if (error) throw new Error(`Error al resetear peso: ${error.message}`)
 }

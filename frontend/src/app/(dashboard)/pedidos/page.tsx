@@ -47,7 +47,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import {
-    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, deleteOrder, updateOrderItemWeight, type OrderWithDetails,
+    getOrders, updateOrderStatus, bulkUpdateOrderStatus, bulkUpdateOrderDate, deleteOrder, updateOrderItemWeight, resetOrderItemWeight, type OrderWithDetails,
 } from '@/services/orders'
 import type { OrderStatus } from '@/types/database'
 import { withRole } from '@/components/hoc/withRole'
@@ -269,6 +269,15 @@ function PedidosPage() {
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error al actualizar peso')
+        }
+    }
+
+    async function handleWeightReset(itemId: string) {
+        try {
+            await resetOrderItemWeight(itemId)
+            load()
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Error al resetear peso')
         }
     }
 
@@ -666,7 +675,9 @@ function PedidosPage() {
                                                                                     className="w-20 h-8 text-sm px-2 rounded-md bg-background border-amber-500/40 font-bold focus-visible:ring-amber-500"
                                                                                     onKeyDown={(e) => {
                                                                                         if (e.key === 'Enter') {
-                                                                                            handleWeightUpdate(item.id, (e.target as HTMLInputElement).value, item.product?.price_per_kg || 0)
+                                                                                            const estWeight = item.product?.estimated_weight_kg || 1
+                                                                                            const pricePerKg = item.unit_price / estWeight
+                                                                                            handleWeightUpdate(item.id, (e.target as HTMLInputElement).value, pricePerKg)
                                                                                         }
                                                                                     }}
                                                                                 />
@@ -676,7 +687,9 @@ function PedidosPage() {
                                                                                     variant="ghost"
                                                                                     onClick={(e) => {
                                                                                         const input = (e.currentTarget.parentElement?.firstChild as HTMLInputElement)
-                                                                                        handleWeightUpdate(item.id, input.value, item.product?.price_per_kg || 0)
+                                                                                        const estWeight = item.product?.estimated_weight_kg || 1
+                                                                                        const pricePerKg = item.unit_price / estWeight
+                                                                                        handleWeightUpdate(item.id, input.value, pricePerKg)
                                                                                     }}
                                                                                     className="h-8 w-8 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400 font-bold"
                                                                                 >
@@ -697,10 +710,7 @@ function PedidosPage() {
                                                                             variant="ghost" 
                                                                             size="sm" 
                                                                             className="h-7 w-7 p-0 text-emerald-500 hover:bg-emerald-500/20 ml-2"
-                                                                            onClick={() => {
-                                                                                // Lógica para resetear y volver a pesar si fuera necesario
-                                                                                // Por ahora lo dejamos así pero se puede habilitar
-                                                                            }}
+                                                                            onClick={() => handleWeightReset(item.id)}
                                                                         >
                                                                             <Edit2 className="w-3 h-3" />
                                                                         </Button>
