@@ -224,7 +224,7 @@ function PreciosPage() {
                                             </TableCell>
                                             <TableCell className="text-center py-0.5 h-8">
                                                 <span className="text-[9px] text-muted-foreground uppercase font-black opacity-60">
-                                                    {p.product?.unit === 'kg' ? 'Kg' : p.product?.unit === 'caja' ? 'Caja' : 'Ud'}
+                                                    {p.product?.unit === 'kg' ? 'Kg' : 'Ud'}
                                                 </span>
                                                 {p.product?.pricing_type === 'by_weight' && (
                                                     <span className="text-[8px] text-amber-500 font-black block leading-none">⚖️ $/kg</span>

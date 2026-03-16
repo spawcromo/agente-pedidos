@@ -10,8 +10,5 @@ export function formatUnit(quantity: number, unit: string) {
   if (u === 'unidad' && quantity !== 1) {
     return 'unidades';
   }
-  if (u === 'caja' && quantity !== 1) {
-    return 'cajas';
-  }
   return unit;
 }

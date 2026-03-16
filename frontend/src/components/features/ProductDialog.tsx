@@ -139,12 +139,7 @@ export function ProductDialog({
                         <Label htmlFor="unit">Unidad</Label>
                         <Select
                             value={watch('unit')}
-                            onValueChange={(v) => {
-                                setValue('unit', v ?? 'kg')
-                                if (v === 'caja') {
-                                    setValue('pricing_type', 'by_weight')
-                                }
-                            }}
+                            onValueChange={(v) => setValue('unit', v ?? 'kg')}
                         >
                             <SelectTrigger id="unit">
                                 <SelectValue />
@@ -152,7 +147,6 @@ export function ProductDialog({
                             <SelectContent>
                                 <SelectItem value="kg">Kilogramo (kg)</SelectItem>
                                 <SelectItem value="unidad">Unidad</SelectItem>
-                                <SelectItem value="caja">⚖️ Caja (precio por peso)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
