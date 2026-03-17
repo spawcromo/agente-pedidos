@@ -26,7 +26,7 @@ export interface EnhancedDashboardStats {
     pedidos_manana_asignados: number
 }
 
-export type ProductionEstimate = Record<string, { quantity: number; unit: string }>
+export type ProductionEstimate = Record<string, { quantity: number; unit: string; pricing_type?: string }>
 
 export interface PlanificacionStats {
     rutas_armadas: number
@@ -66,7 +66,7 @@ export async function getEnhancedDashboardStats(): Promise<{
             delivery_stops(id),
             order_items(
                 quantity,
-                product:products(name, unit)
+                product:products(name, unit, pricing_type)
             )
         `)
         .eq('delivery_date', tomorrow)
@@ -137,7 +137,11 @@ export async function getEnhancedDashboardStats(): Promise<{
                     if (item.product && item.product.name) {
                         const prodName = item.product.name
                         if (!production[prodName]) {
-                            production[prodName] = { quantity: 0, unit: item.product.unit || 'u' }
+                            production[prodName] = { 
+                                quantity: 0, 
+                                unit: item.product.unit || 'u',
+                                pricing_type: item.product.pricing_type
+                            }
                         }
                         production[prodName].quantity += Number(item.quantity) || 0
                     }

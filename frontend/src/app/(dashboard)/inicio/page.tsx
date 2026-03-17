@@ -643,7 +643,12 @@ function DashboardPage() {
                                     <Package className="w-4 h-4 text-emerald-500/60" />
                                     <span className="text-muted-foreground">{name}:</span>
                                 </div>
-                                <span className="font-bold text-white">{prod.quantity} {formatUnit(prod.quantity, prod.unit)}</span>
+                                <span className="font-bold text-white">
+                                    {prod.quantity} {prod.pricing_type === 'by_weight' 
+                                        ? (prod.quantity === 1 ? 'Bulto' : 'Bultos') 
+                                        : formatUnit(prod.quantity, prod.unit)
+                                    }
+                                </span>
                             </div>
                         ))}
                         {Object.entries(production).length === 0 && (
