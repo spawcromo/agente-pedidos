@@ -688,9 +688,9 @@ function PedidosPage() {
                                                 <div className="flex items-center gap-2">
                                                     <span className="font-bold text-foreground">{order.client?.name ?? '—'}</span>
                                                     {order.client_id && clientOrderCounts[order.client_id] > 1 && (
-                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full border border-destructive/20 animate-pulse">
+                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full border border-destructive/20 animate-pulse uppercase">
                                                             <AlertCircle className="w-3 h-3" />
-                                                            DUPLICADO
+                                                            REPETIDO EN EL DÍA
                                                         </div>
                                                     )}
                                                 </div>
