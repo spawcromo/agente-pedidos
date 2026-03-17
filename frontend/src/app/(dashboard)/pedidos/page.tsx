@@ -422,7 +422,8 @@ function PedidosPage() {
                             </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="active">Pendientes + Confirmados</SelectItem>
+                            <SelectItem value="active">Pendientes + En Prep. + Conf.</SelectItem>
+                            <SelectItem value="preparing">En Preparación</SelectItem>
                             <SelectItem value="assigned">Solo Asignados a Ruta</SelectItem>
                             <SelectItem value="all">Todos los estados</SelectItem>
                             <SelectItem value="pending">Solo Pendientes</SelectItem>

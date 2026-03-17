@@ -49,7 +49,11 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
         useForm<FormData>({
             defaultValues: {
                 client_id: '',
-                delivery_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                delivery_date: (() => {
+                    const d = new Date()
+                    d.setDate(d.getDate() + 1)
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                })(),
                 delivery_time: '09:00',
                 notes: '',
                 items: [{ product_id: '', quantity: '1', unit_price: '0' }],
@@ -92,7 +96,11 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
         } else {
             reset({
                 client_id: '',
-                delivery_date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+                delivery_date: (() => {
+                    const d = new Date()
+                    d.setDate(d.getDate() + 1)
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                })(),
                 delivery_time: '09:00',
                 notes: '',
                 items: [{ product_id: '', quantity: '1', unit_price: '0' }],
