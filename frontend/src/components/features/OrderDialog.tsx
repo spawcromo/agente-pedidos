@@ -315,13 +315,16 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                         <Input
                                             type="number"
                                             min="0"
-                                            step={products.find(p => p.id === watch(`items.${index}.product_id`))?.unit === 'unidad' ? '1' : '0.1'}
+                                            step={(() => {
+                                                const p = products.find(p => p.id === watch(`items.${index}.product_id`));
+                                                return (p?.unit === 'unidad' || p?.pricing_type === 'by_weight') ? '1' : '0.1';
+                                            })()}
                                             className="text-center"
                                             {...register(`items.${index}.quantity`, {
                                                 validate: (value) => {
                                                     const prod = products.find(p => p.id === watch(`items.${index}.product_id`))
-                                                    if (prod?.unit === 'unidad' && !Number.isInteger(Number(value))) {
-                                                        return 'Para productos por unidad use números enteros'
+                                                    if ((prod?.unit === 'unidad' || prod?.pricing_type === 'by_weight') && !Number.isInteger(Number(value))) {
+                                                        return 'Use números enteros para este tipo de producto'
                                                     }
                                                     return true
                                                 }
