@@ -333,8 +333,9 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                             type="number"
                                             min="0"
                                             step="0.01"
-                                            className="text-center"
+                                            className="text-center disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-muted"
                                             {...register(`items.${index}.unit_price`)}
+                                            disabled={products.find(p => p.id === watch(`items.${index}.product_id`))?.pricing_type === 'by_weight'}
                                         />
                                     </div>
                                     <div className="col-span-1 flex justify-center">
