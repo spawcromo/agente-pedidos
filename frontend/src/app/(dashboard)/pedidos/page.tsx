@@ -37,7 +37,8 @@ import {
     AlertCircle,
     Trash2,
     Ban,
-    Plus
+    Plus,
+    PackageCheck
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -204,7 +205,7 @@ function PedidosPage() {
     }
 
     const selectedOrdersData = orders.filter(o => selected.has(o.id))
-    const isBulkAssigned = selectedOrdersData.some(o => o.status === 'confirmed' && (o.delivery_stops?.length ?? 0) > 0)
+    const isBulkAssigned = selectedOrdersData.some(o => (o.status === 'confirmed' || o.status === 'preparing') && (o.delivery_stops?.length ?? 0) > 0)
     const isBulkDelivered = selectedOrdersData.some(o => o.status === 'delivered')
     const hasCancelled = selectedOrdersData.some(o => o.status === 'cancelled')
 
@@ -225,28 +226,29 @@ function PedidosPage() {
             setCancelDialogOpen(true)
             return
         }
-        
-        let targetStatus = status
-        if (status === 'confirmed') {
+
+        // Validate "Preparing" transition: must have all weights
+        if (status === 'preparing') {
             const order = orders.find(o => o.id === id)
             const hasMissingWeights = order?.order_items?.some(
                 item => item.product?.pricing_type === 'by_weight' && !item.actual_weight_kg
             )
             if (hasMissingWeights) {
-                targetStatus = 'preparing'
+                toast.error('No se puede preparar: faltan cargar pesos reales')
+                return
             }
         }
 
         try {
-            await updateOrderStatus(id, targetStatus)
+            await updateOrderStatus(id, status)
             const labels: Record<string, string> = {
                 confirmed: 'confirmado',
-                preparing: 'en preparación (faltan pesos)',
+                preparing: 'marcado como preparado',
                 rejected: 'rechazado',
                 pending: 'vuelto a pendiente',
                 delivered: 'marcado como entregado'
             }
-            toast.success(`Pedido ${labels[targetStatus] || targetStatus}`)
+            toast.success(`Pedido ${labels[status] || status}`)
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
@@ -270,25 +272,7 @@ function PedidosPage() {
         }
     }
 
-    async function handleStatusAutoUpdate(orderId: string) {
-        // Find the most fresh data from internal state
-        const order = orders.find(o => o.id === orderId)
-        if (!order || order.status !== 'preparing') return
 
-        const stillMissingWeights = order.order_items?.some(
-            item => item.product?.pricing_type === 'by_weight' && !item.actual_weight_kg
-        )
-
-        if (!stillMissingWeights) {
-            try {
-                await updateOrderStatus(orderId, 'confirmed')
-                toast.success('¡Pesaje completo! Pedido confirmado automaticamente')
-                load()
-            } catch (err) {
-                console.error('Error auto-confirming order:', err)
-            }
-        }
-    }
 
     async function handleWeightUpdate(itemId: string, weightStr: string, pricePerKg: number) {
         const weight = parseFloat(weightStr)
@@ -298,34 +282,8 @@ function PedidosPage() {
         }
         try {
             await updateOrderItemWeight(itemId, weight, pricePerKg)
-            toast.success('Peso guardado y precio actualizado')
-            
-            // Re-load and then check for auto-confirm
-            const data = await getOrders({
-                delivery_date: dateFilter || undefined,
-            })
-            setOrders(data)
-            
-            const item = data.flatMap(o => o.order_items ?? []).find(i => i.id === itemId)
-            if (item?.order_id) {
-                const order = data.find(o => o.id === item.order_id)
-                if (order?.status === 'preparing') {
-                    const stillMissing = order.order_items?.some(
-                        i => i.product?.pricing_type === 'by_weight' && !i.actual_weight_kg
-                    )
-                    if (!stillMissing) {
-                        await updateOrderStatus(order.id, 'confirmed')
-                        toast.success('¡Pesaje completo! Pedido confirmado')
-                        load()
-                    } else {
-                        load()
-                    }
-                } else {
-                    load()
-                }
-            } else {
-                load()
-            }
+            toast.success('Peso guardado')
+            load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error al actualizar peso')
         }
@@ -785,7 +743,7 @@ function PedidosPage() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1.5 items-start">
-                                                <OrderStatusBadge status={order.status} isAssigned={order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0} />
+                                                <OrderStatusBadge status={order.status} isAssigned={(order.status === 'confirmed' || order.status === 'preparing') && (order.delivery_stops?.length ?? 0) > 0} />
                                                 {order.status === 'cancelled' && order.cancel_reason && (
                                                     <span
                                                         className="text-[10px] text-muted-foreground max-w-[130px] leading-tight line-clamp-2"
@@ -816,12 +774,17 @@ function PedidosPage() {
 
                                                     {/* Status Transitions */}
                                                     {(() => {
-                                                        const isAssigned = order.status === 'confirmed' && (order.delivery_stops?.length ?? 0) > 0;
+                                                        const isAssigned = (order.status === 'confirmed' || order.status === 'preparing') && (order.delivery_stops?.length ?? 0) > 0;
                                                         return (
                                                             <>
-                                                                {!isAssigned && order.status !== 'confirmed' && order.status !== 'cancelled' && (
+                                                                {order.status === 'pending' && (
                                                                     <DropdownMenuItem onClick={() => handleStatus(order.id, 'confirmed')} className="gap-2">
-                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar
+                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar Pedido
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {order.status === 'confirmed' && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'preparing')} className="gap-2">
+                                                                        <PackageCheck className="w-4 h-4 text-orange-500" /> Marcar como Preparado
                                                                     </DropdownMenuItem>
                                                                 )}
                                                                 {!isAssigned && order.status !== 'rejected' && order.status !== 'cancelled' && (
@@ -832,6 +795,11 @@ function PedidosPage() {
                                                                 {!isAssigned && order.status !== 'pending' && order.status !== 'cancelled' && (
                                                                     <DropdownMenuItem onClick={() => handleStatus(order.id, 'pending')} className="gap-2">
                                                                         <Clock className="w-4 h-4 text-amber-500" /> Volver a Pendiente
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {order.status === 'preparing' && !isAssigned && (
+                                                                    <DropdownMenuItem onClick={() => handleStatus(order.id, 'confirmed')} className="gap-2">
+                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Volver a Confirmado
                                                                     </DropdownMenuItem>
                                                                 )}
 

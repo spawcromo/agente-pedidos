@@ -33,7 +33,7 @@ type OrderStatus = keyof typeof STATUS_CONFIG
 
 export function OrderStatusBadge({ status, isAssigned }: { status: OrderStatus | string, isAssigned?: boolean }) {
     let finalStatus = status as OrderStatus;
-    if (status === 'confirmed' && isAssigned) {
+    if ((status === 'confirmed' || status === 'preparing') && isAssigned) {
         finalStatus = 'assigned';
     }
     const config = STATUS_CONFIG[finalStatus] ?? {
