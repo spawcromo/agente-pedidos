@@ -20,7 +20,9 @@ import {
     ListTodo,
     Users,
     XCircle,
-    Ban
+    Ban,
+    PackageCheck,
+    Scale
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -477,7 +479,7 @@ function DashboardPage() {
                 <h2 className="text-xs uppercase tracking-widest font-black text-muted-foreground mb-4">
                     PEDIDOS PARA MAÑANA
                 </h2>
-                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-7">
                     <Card className="bg-[#151D2A] border-0 shadow-none rounded-xl relative overflow-hidden group">
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-blue-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
@@ -516,6 +518,20 @@ function DashboardPage() {
                             <div className="flex items-baseline gap-2">
                                 <div className="text-4xl font-black text-emerald-50">{stats.pedidos_manana_confirmados}</div>
                                 <span className="text-sm font-medium text-emerald-500/60">aprobados</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-[#2A1510] border-0 shadow-none rounded-xl relative overflow-hidden group">
+                        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/10 to-transparent pointer-events-none" />
+                        <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
+                            <CardTitle className="text-sm font-medium text-orange-50">En Prep.</CardTitle>
+                            <div className="bg-orange-900/50 text-orange-500 p-1.5 rounded-md"><PackageCheck className="w-4 h-4" /></div>
+                        </CardHeader>
+                        <CardContent className="pb-4 px-6 z-10 relative">
+                            <div className="flex items-baseline gap-2">
+                                <div className="text-4xl font-black text-orange-50">{stats.pedidos_manana_preparacion}</div>
+                                <span className="text-sm font-medium text-orange-500/60">listos</span>
                             </div>
                         </CardContent>
                     </Card>

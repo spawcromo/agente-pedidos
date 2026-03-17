@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { Plus, Tags, Trash2, ChevronRight, ArrowLeft, Save, X as CloseIcon, Filter } from 'lucide-react'
+import { Plus, Tags, Trash2, ChevronRight, ArrowLeft, Save, X as CloseIcon, Filter, Scale } from 'lucide-react'
 import { toast } from 'sonner'
 import {
     getPriceLists,
@@ -227,7 +227,9 @@ function PreciosPage() {
                                                     {p.product?.unit === 'kg' ? 'Kg' : 'Ud'}
                                                 </span>
                                                 {p.product?.pricing_type === 'by_weight' && (
-                                                    <span className="text-[8px] text-amber-500 font-black block leading-none">⚖️ $/kg</span>
+                                                    <span className="text-[8px] text-amber-500 font-black flex items-center gap-0.5 leading-none">
+                                                        <Scale className="w-2 h-2" /> $/KG
+                                                    </span>
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right py-0.5 px-4 h-8">

@@ -22,6 +22,7 @@ export interface EnhancedDashboardStats {
     pedidos_manana_pendientes: number
     pedidos_manana_rechazados: number
     pedidos_manana_cancelados: number
+    pedidos_manana_preparacion: number
     pedidos_manana_asignados: number
 }
 
@@ -106,6 +107,7 @@ export async function getEnhancedDashboardStats(): Promise<{
     let pedidos_manana_pendientes = statsData?.pedidos_manana_pendientes || 0
     let pedidos_manana_rechazados = statsData?.pedidos_manana_rechazados || 0
     let pedidos_manana_cancelados = 0
+    let pedidos_manana_preparacion = 0
     let pedidos_manana_asignados = 0
 
     // Transform production items and calculate order states
@@ -119,16 +121,18 @@ export async function getEnhancedDashboardStats(): Promise<{
             if (order.status === 'pending') pedidos_manana_pendientes++
             else if (order.status === 'rejected') pedidos_manana_rechazados++
             else if (order.status === 'cancelled') pedidos_manana_cancelados++
-            else if (order.status === 'confirmed') {
+            else {
+                // If it has stops, it's counted as "Asignado" regardless of status
                 if (order.delivery_stops?.length > 0) {
                     pedidos_manana_asignados++
                 } else {
-                    pedidos_manana_confirmados++
+                    if (order.status === 'preparing') pedidos_manana_preparacion++
+                    else if (order.status === 'confirmed') pedidos_manana_confirmados++
                 }
             }
 
-            // production only counts confirmed and pending
-            if (order.status === 'pending' || order.status === 'confirmed') {
+            // production only counts active orders (ready or being ready)
+            if (['pending', 'confirmed', 'preparing'].includes(order.status)) {
                 (order.order_items || []).forEach((item: any) => {
                     if (item.product && item.product.name) {
                         const prodName = item.product.name
@@ -151,6 +155,7 @@ export async function getEnhancedDashboardStats(): Promise<{
         pedidos_manana_pendientes,
         pedidos_manana_rechazados,
         pedidos_manana_cancelados,
+        pedidos_manana_preparacion,
         pedidos_manana_asignados
     } : null
 

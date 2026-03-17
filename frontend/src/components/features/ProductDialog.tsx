@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { Scale } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -163,7 +164,11 @@ export function ProductDialog({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="fixed">Precio fijo</SelectItem>
-                                <SelectItem value="by_weight">Precio por peso (⚖️ variable)</SelectItem>
+                                <SelectItem value="by_weight">
+                                    <div className="flex items-center gap-2">
+                                        Precio por peso <Scale className="w-3 h-3 text-amber-500" />
+                                    </div>
+                                </SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -171,7 +176,9 @@ export function ProductDialog({
                     {/* Campos de precio por peso */}
                     {pricingType === 'by_weight' && (
                         <div className="space-y-3 bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-                            <p className="text-xs text-amber-500 font-bold uppercase tracking-wider">⚖️ Configuración por peso</p>
+                            <p className="text-xs text-amber-500 font-bold uppercase tracking-wider flex items-center gap-2">
+                                <Scale className="w-3 h-3" /> Configuración por peso
+                            </p>
                             <div className="space-y-1.5">
                                 <Label htmlFor="estimated_weight_kg">Peso promedio por caja (kg)</Label>
                                 <Input

@@ -38,7 +38,8 @@ import {
     Trash2,
     Ban,
     Plus,
-    PackageCheck
+    PackageCheck,
+    Scale
 } from "lucide-react"
 import { OrderStatusBadge } from '@/components/features/OrderStatusBadge'
 import { OrderDialog } from '@/components/features/OrderDialog'
@@ -718,7 +719,7 @@ function PedidosPage() {
                                                             <div className="flex-shrink-0">
                                                                 {!item.is_price_final ? (
                                                                     <div className="flex items-center gap-1.5 bg-amber-500/10 p-0.5 px-1 rounded-sm border border-amber-500/30 animate-in fade-in slide-in-from-left-1 duration-200">
-                                                                        <span className="text-[9px] font-black text-amber-500">⚖️</span>
+                                                                        <Scale className="w-3 h-3 text-amber-500" />
                                                                         <Input 
                                                                             type="number" 
                                                                             placeholder="kg" 
@@ -747,7 +748,10 @@ function PedidosPage() {
                                                                     </div>
                                                                 ) : (
                                                                     <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-sm border border-emerald-500/20">
-                                                                        <span className="text-[10px] font-black italic whitespace-nowrap">⚖️ {item.actual_weight_kg} kg</span>
+                                                                        <div className="flex items-center gap-1 text-[10px] font-bold italic whitespace-nowrap text-amber-600/80">
+                                                                            <Scale className="w-3 h-3" />
+                                                                            {item.actual_weight_kg} kg
+                                                                        </div>
                                                                         <Button 
                                                                             variant="ghost" 
                                                                             size="sm" 

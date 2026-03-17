@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, Scale } from 'lucide-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
@@ -302,7 +302,12 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                             <SelectContent>
                                                 {products.filter((p) => p.active || p.id === watch(`items.${index}.product_id`)).map((p) => (
                                                     <SelectItem key={p.id} value={p.id}>
-                                                        {p.name} ({p.unit}){p.pricing_type === 'by_weight' ? ' ⚖️' : ''}
+                                                        <div className="flex items-center justify-between w-full gap-2">
+                                                            <span>{p.name} ({p.unit})</span>
+                                                            {p.pricing_type === 'by_weight' && (
+                                                                <Scale className="w-3 h-3 text-amber-500/70" />
+                                                            )}
+                                                        </div>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -312,7 +317,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                                             if (prod?.pricing_type === 'by_weight') {
                                                 return (
                                                     <p className="text-[10px] text-amber-500 mt-0.5 font-medium">
-                                                        ⚖️ Precio estimado — se ajusta al pesar
+                                                        <Scale className="w-3 h-3" /> Precio estimado — se ajusta al pesar
                                                     </p>
                                                 )
                                             }
