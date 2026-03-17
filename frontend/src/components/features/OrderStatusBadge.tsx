@@ -3,6 +3,10 @@ const STATUS_CONFIG = {
         label: "Pendiente",
         className: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
     },
+    preparing: {
+        label: "En Preparación",
+        className: "bg-orange-500/10 text-orange-400 border border-orange-500/20 shadow-[0_0_10px_rgba(251,146,60,0.05)]",
+    },
     confirmed: {
         label: "Confirmado",
         className: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",

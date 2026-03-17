@@ -1,5 +1,5 @@
 // Types matching Supabase schema from docs/architecture.md
-export type OrderStatus = 'pending' | 'confirmed' | 'rejected' | 'delivered' | 'cancelled'
+export type OrderStatus = 'pending' | 'preparing' | 'confirmed' | 'rejected' | 'delivered' | 'cancelled'
 export type OrderSource = 'whatsapp' | 'manual'
 export type PricingType = 'fixed' | 'by_weight'
 export type RouteStatus = 'draft' | 'active' | 'completed'

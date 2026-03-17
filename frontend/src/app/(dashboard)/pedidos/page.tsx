@@ -110,7 +110,7 @@ function PedidosPage() {
             const data = await getOrders({
                 delivery_date: dateFilter || undefined,
                 status: statusFilter === 'active' || statusFilter === 'assigned'
-                    ? ['pending', 'confirmed']
+                    ? ['pending', 'preparing', 'confirmed']
                     : (statusFilter !== 'all' ? statusFilter : undefined),
             })
 
@@ -225,15 +225,28 @@ function PedidosPage() {
             setCancelDialogOpen(true)
             return
         }
+        
+        let targetStatus = status
+        if (status === 'confirmed') {
+            const order = orders.find(o => o.id === id)
+            const hasMissingWeights = order?.order_items?.some(
+                item => item.product?.pricing_type === 'by_weight' && !item.actual_weight_kg
+            )
+            if (hasMissingWeights) {
+                targetStatus = 'preparing'
+            }
+        }
+
         try {
-            await updateOrderStatus(id, status)
+            await updateOrderStatus(id, targetStatus)
             const labels: Record<string, string> = {
                 confirmed: 'confirmado',
+                preparing: 'en preparación (faltan pesos)',
                 rejected: 'rechazado',
                 pending: 'vuelto a pendiente',
                 delivered: 'marcado como entregado'
             }
-            toast.success(`Pedido ${labels[status] || status}`)
+            toast.success(`Pedido ${labels[targetStatus] || targetStatus}`)
             load()
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error')
@@ -257,6 +270,26 @@ function PedidosPage() {
         }
     }
 
+    async function handleStatusAutoUpdate(orderId: string) {
+        // Find the most fresh data from internal state
+        const order = orders.find(o => o.id === orderId)
+        if (!order || order.status !== 'preparing') return
+
+        const stillMissingWeights = order.order_items?.some(
+            item => item.product?.pricing_type === 'by_weight' && !item.actual_weight_kg
+        )
+
+        if (!stillMissingWeights) {
+            try {
+                await updateOrderStatus(orderId, 'confirmed')
+                toast.success('¡Pesaje completo! Pedido confirmado automaticamente')
+                load()
+            } catch (err) {
+                console.error('Error auto-confirming order:', err)
+            }
+        }
+    }
+
     async function handleWeightUpdate(itemId: string, weightStr: string, pricePerKg: number) {
         const weight = parseFloat(weightStr)
         if (isNaN(weight) || weight <= 0) {
@@ -266,7 +299,33 @@ function PedidosPage() {
         try {
             await updateOrderItemWeight(itemId, weight, pricePerKg)
             toast.success('Peso guardado y precio actualizado')
-            load()
+            
+            // Re-load and then check for auto-confirm
+            const data = await getOrders({
+                delivery_date: dateFilter || undefined,
+            })
+            setOrders(data)
+            
+            const item = data.flatMap(o => o.order_items ?? []).find(i => i.id === itemId)
+            if (item?.order_id) {
+                const order = data.find(o => o.id === item.order_id)
+                if (order?.status === 'preparing') {
+                    const stillMissing = order.order_items?.some(
+                        i => i.product?.pricing_type === 'by_weight' && !i.actual_weight_kg
+                    )
+                    if (!stillMissing) {
+                        await updateOrderStatus(order.id, 'confirmed')
+                        toast.success('¡Pesaje completo! Pedido confirmado')
+                        load()
+                    } else {
+                        load()
+                    }
+                } else {
+                    load()
+                }
+            } else {
+                load()
+            }
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'Error al actualizar peso')
         }
@@ -303,6 +362,7 @@ function PedidosPage() {
         if (selected.size === 0) return
         const statusLabels: Record<OrderStatus, string> = {
             pending: 'puestos en pendiente',
+            preparing: 'puestos en preparación',
             confirmed: 'confirmados',
             delivered: 'marcados como entregados',
             rejected: 'rechazados',
@@ -391,10 +451,11 @@ function PedidosPage() {
                         <SelectTrigger className="w-fit min-w-[200px] !h-10 rounded-xl" id="filter-estado">
                             <SelectValue placeholder="Pendientes + Conf.">
                                 {{
-                                    'active': 'Pendientes + Confirmados',
+                                    'active': 'Pendientes + En Prep. + Conf.',
                                     'assigned': 'Solo Asignados a Ruta',
                                     'all': 'Todos los estados',
                                     'pending': 'Solo Pendientes',
+                                    'preparing': 'En Preparación',
                                     'confirmed': 'Solo Confirmados',
                                     'delivered': 'Solo Entregados',
                                     'rejected': 'Solo Rechazados',
