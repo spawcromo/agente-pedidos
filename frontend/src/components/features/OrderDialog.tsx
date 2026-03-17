@@ -280,7 +280,7 @@ export function OrderDialog({ open, order, onClose, onSaved }: OrderDialogProps)
                             </div>
 
                             {fields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-12 gap-2 items-center">
+                                <div key={field.id} className="grid grid-cols-12 gap-2 items-start">
                                     <div className="col-span-5">
                                         <Select
                                             value={watch(`items.${index}.product_id`)}
