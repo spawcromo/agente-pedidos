@@ -35,7 +35,7 @@
 ### M4: Inteligencia y Polish — ~1 semana
 **Goal**: Dashboard con estadísticas de negocio. Precios diferenciados activos en el bot. Sistema pulido para uso diario.
 
-- [ ] US-12: Dashboard de estadísticas (ranking clientes, productos top, tendencia por día, frecuencia)
+- [x] US-12: Dashboard de estadísticas (ranking clientes, productos top, tendencia por día, frecuencia)
 - [ ] Precios diferenciados por tipo de cliente activos en el bot (Should)
 - [ ] Historial completo de pedidos por cliente (Should)
 - [ ] QA general, edge cases, y polish de UX
