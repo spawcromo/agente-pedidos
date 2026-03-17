@@ -66,7 +66,12 @@ function ProduccionPage() {
                     variant="outline"
                     onClick={() => {
                         const text = rows
-                            .map(r => `${r.total_quantity} ${formatUnit(r.total_quantity, r.unit)} ${r.product_name}`)
+                            .map(r => {
+                                const unitLabel = r.pricing_type === 'by_weight' 
+                                    ? (r.total_quantity === 1 ? 'Bulto' : 'Bultos') 
+                                    : formatUnit(r.total_quantity, r.unit)
+                                return `${r.total_quantity} ${unitLabel} ${r.product_name}`
+                            })
                             .join('\n')
                         navigator.clipboard.writeText(text)
                         toast.success('Copiado al portapapeles')
@@ -161,7 +166,10 @@ function ProduccionPage() {
                                         {row.product_name}
                                     </h3>
                                     <Badge variant="outline" className="text-[10px] h-4 px-1 opacity-60 uppercase">
-                                        {formatUnit(row.total_quantity, row.unit)}
+                                        {row.pricing_type === 'by_weight' 
+                                            ? (row.total_quantity === 1 ? 'Bulto' : 'Bultos') 
+                                            : formatUnit(row.total_quantity, row.unit)
+                                        }
                                     </Badge>
                                 </div>
 
@@ -171,9 +179,17 @@ function ProduccionPage() {
                                             {row.total_quantity}
                                         </span>
                                         <span className="text-sm font-bold text-muted-foreground uppercase">
-                                            {formatUnit(row.total_quantity, row.unit)}
+                                            {row.pricing_type === 'by_weight' 
+                                                ? (row.total_quantity === 1 ? 'Bulto' : 'Bultos') 
+                                                : formatUnit(row.total_quantity, row.unit)
+                                            }
                                         </span>
                                     </div>
+                                    {row.pricing_type === 'by_weight' && row.total_actual_weight > 0 && (
+                                        <div className="text-[10px] font-bold text-emerald-500/80 flex items-center gap-1 mt-0.5">
+                                            <Package className="w-3 h-3" /> {row.total_actual_weight} KG VERIFICADOS
+                                        </div>
+                                    )}
                                     <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-widest flex items-center gap-1.5 mt-1">
                                         <ClipboardList className="w-3.5 h-3.5 text-amber-500/50" /> {row.order_count} {row.order_count === 1 ? 'Pedido' : 'Pedidos'}
                                     </p>
@@ -183,7 +199,10 @@ function ProduccionPage() {
                                     {(row.client_breakdown || []).map((item, i) => (
                                         <div key={i} className="flex justify-between items-center text-[10px]">
                                             <span className="text-muted-foreground/80 truncate max-w-[140px] italic">{item.client_name}</span>
-                                            <span className="font-semibold text-muted-foreground">{item.quantity} {row.unit}</span>
+                                            <span className="font-semibold text-muted-foreground">
+                                                {item.quantity} {row.pricing_type === 'by_weight' ? (item.quantity === 1 ? 'bulto' : 'bultos') : row.unit}
+                                                {item.actual_weight && item.actual_weight > 0 && ` (${item.actual_weight}kg)`}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>

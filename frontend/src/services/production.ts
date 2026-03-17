@@ -5,9 +5,16 @@ export interface ProductionSummaryRow {
     product_id: string
     product_name: string
     unit: string
+    pricing_type: 'fixed' | 'by_weight'
     total_quantity: number
+    total_actual_weight: number
     order_count: number
-    client_breakdown: { client_name: string; quantity: number }[]
+    client_breakdown: { 
+        client_name: string; 
+        quantity: number; 
+        actual_weight?: number; 
+        is_final?: boolean 
+    }[]
 }
 
 export async function getProductionSummary(
