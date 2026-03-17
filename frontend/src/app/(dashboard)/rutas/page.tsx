@@ -102,7 +102,7 @@ function RutasPage() {
         try {
             if (role === 'admin') {
                 const [allOrders, allRoutes, allDrivers] = await Promise.all([
-                    getOrders({ delivery_date: date, status: ['confirmed', 'preparing'] }),
+                    getOrders({ delivery_date: date, status: 'preparing' }),
                     getRoutes(date),
                     getDrivers()
                 ])
