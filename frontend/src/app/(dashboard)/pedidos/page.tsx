@@ -171,6 +171,17 @@ function PedidosPage() {
         return items
     }, [orders, sortConfig])
 
+    // Detect duplicate orders for same client on same day
+    const clientOrderCounts = useMemo(() => {
+        const counts: Record<string, number> = {}
+        sortedOrders.forEach(o => {
+            if (o.client_id) {
+                counts[o.client_id] = (counts[o.client_id] || 0) + 1
+            }
+        })
+        return counts
+    }, [sortedOrders])
+
     const paginatedOrders = useMemo(() => {
         const startIndex = (currentPage - 1) * itemsPerPage
         return sortedOrders.slice(startIndex, startIndex + itemsPerPage)
@@ -583,14 +594,18 @@ function PedidosPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                paginatedOrders.map((order) => (
-                                    <TableRow
-                                        key={order.id}
-                                        className={cn(
-                                            "transition-colors",
-                                            selected.has(order.id) ? 'bg-amber-500/5' : ''
-                                        )}
-                                    >
+                                paginatedOrders.map((order) => {
+                                    const isDuplicated = order.client_id && clientOrderCounts[order.client_id] > 1
+
+                                    return (
+                                        <TableRow
+                                            key={order.id}
+                                            className={cn(
+                                                "transition-colors",
+                                                selected.has(order.id) ? 'bg-amber-500/5' : '',
+                                                isDuplicated ? 'bg-destructive/5 hover:bg-destructive/10' : ''
+                                            )}
+                                        >
                                         <TableCell className="pl-6">
                                             <Checkbox
                                                 checked={selected.has(order.id)}
@@ -669,9 +684,19 @@ function PedidosPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="font-bold text-foreground">{order.client?.name ?? '—'}</div>
-                                            <div className="text-[10px] text-muted-foreground uppercase opacity-70">
-                                                {order.source}
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-foreground">{order.client?.name ?? '—'}</span>
+                                                    {order.client_id && clientOrderCounts[order.client_id] > 1 && (
+                                                        <div className="flex items-center gap-1 text-[10px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded-full border border-destructive/20 animate-pulse">
+                                                            <AlertCircle className="w-3 h-3" />
+                                                            DUPLICADO
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="text-[10px] text-muted-foreground uppercase opacity-70">
+                                                    {order.source}
+                                                </div>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -838,8 +863,9 @@ function PedidosPage() {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
-                                    </TableRow>
-                                ))
+                                        </TableRow>
+                                    )
+                                })
                             )}
                         </TableBody>
                     </Table>
