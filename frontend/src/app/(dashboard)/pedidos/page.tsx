@@ -225,7 +225,14 @@ function PedidosPage() {
     // Asignados: Solo pueden cancelarse.
     // Delivered: Terminal, no moves.
     // Cancelados: Solo pueden volver a pendiente, ni fecha.
+    const hasMissingWeightsInSelected = selectedOrdersData.some(o => 
+        o.order_items?.some(item => 
+            item.product?.pricing_type === 'by_weight' && !item.is_price_final
+        )
+    )
+
     const canBulkPending = !isBulkAssigned && !isBulkDelivered
+    const canBulkPreparing = !isBulkAssigned && !isBulkDelivered && !hasCancelled && !hasMissingWeightsInSelected
     const canBulkConfirm = !isBulkAssigned && !isBulkDelivered && !hasCancelled
     const canBulkReject = !isBulkAssigned && !isBulkDelivered && !hasCancelled
     const canBulkDate = !isBulkDelivered && !isBulkAssigned && !hasCancelled
@@ -340,6 +347,16 @@ function PedidosPage() {
         }
 
         if (status === 'rejected' && !confirm(`¿Rechazar ${selected.size} pedidos?`)) return
+
+        if (status === 'preparing') {
+            const hasMissingWeights = selectedOrdersData.some(o => 
+                o.order_items?.some(item => item.product?.pricing_type === 'by_weight' && !item.is_price_final)
+            )
+            if (hasMissingWeights) {
+                toast.error('No se puede mover a preparación: algunos pedidos tienen productos sin peso cargado')
+                return
+            }
+        }
 
         try {
             await bulkUpdateOrderStatus(Array.from(selected), status)
@@ -497,6 +514,9 @@ function PedidosPage() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatus('pending')} disabled={!canBulkPending} className="gap-2">
                                     <Clock className="w-4 h-4 text-muted-foreground" /> Mover a Pendiente
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatus('preparing')} disabled={!canBulkPreparing} className="gap-2">
+                                    <PackageCheck className="w-4 h-4 text-orange-500" /> Mover a Preparación
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatus('confirmed')} disabled={!canBulkConfirm} className="gap-2">
                                     <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Confirmar seleccionados

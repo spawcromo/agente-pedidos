@@ -525,7 +525,7 @@ function DashboardPage() {
                     <Card className="bg-[#2A1510] border-0 shadow-none rounded-xl relative overflow-hidden group">
                         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/10 to-transparent pointer-events-none" />
                         <CardHeader className="pt-4 pb-2 px-6 flex flex-row items-center justify-between z-10 relative">
-                            <CardTitle className="text-sm font-medium text-orange-50">En Prep.</CardTitle>
+                            <CardTitle className="text-sm font-medium text-orange-50">En Preparación</CardTitle>
                             <div className="bg-orange-900/50 text-orange-500 p-1.5 rounded-md"><PackageCheck className="w-4 h-4" /></div>
                         </CardHeader>
                         <CardContent className="pb-4 px-6 z-10 relative">
@@ -578,7 +578,7 @@ function DashboardPage() {
                         </CardContent>
                     </Card>
                 </div>
-                
+
                 {(stats.pedidos_manana_pendientes > 0 || planificacion.pedidos_sin_ruta > 0) && (
                     <div className="mt-6 bg-red-950/20 border border-red-900/50 rounded-lg p-4 flex items-center gap-3">
                         <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
