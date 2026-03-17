@@ -657,20 +657,27 @@ function PedidosPage() {
                                         <TableCell>
                                             <div className="space-y-1.5 min-w-[180px]">
                                                 {(order.order_items ?? []).map((item) => (
-                                                    <div key={item.id} className="text-sm flex flex-col gap-1 items-start py-0.5">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="font-medium text-amber-500">{item.quantity}</span> {formatUnit(item.quantity, item.product?.unit || '')} {item.product?.name}
+                                                    <div key={item.id} className="text-sm flex items-center gap-2 py-0.5 group">
+                                                        <div className="flex items-center gap-1.5 whitespace-nowrap">
+                                                            <span className="font-medium text-amber-500">{item.quantity}</span>
+                                                            <span className="text-muted-foreground mr-0.5">
+                                                                {item.product?.pricing_type === 'by_weight' 
+                                                                    ? (item.quantity === 1 ? 'bulto' : 'bultos') 
+                                                                    : formatUnit(item.quantity, item.product?.unit || '')
+                                                                }
+                                                            </span>
+                                                            <span className="font-medium">{item.product?.name}</span>
                                                         </div>
 
                                                         {item.product?.pricing_type === 'by_weight' && (
-                                                            <div className="mt-0.5">
+                                                            <div className="flex-shrink-0">
                                                                 {!item.is_price_final ? (
-                                                                    <div className="flex items-center gap-1.5 bg-amber-500/10 p-1 rounded-md border border-amber-500/30 w-fit animate-in slide-in-from-left-1 duration-200">
-                                                                        <span className="text-[10px] font-black text-amber-500 ml-1">⚖️</span>
+                                                                    <div className="flex items-center gap-1.5 bg-amber-500/10 p-0.5 px-1 rounded-sm border border-amber-500/30 animate-in fade-in slide-in-from-left-1 duration-200">
+                                                                        <span className="text-[9px] font-black text-amber-500">⚖️</span>
                                                                         <Input 
                                                                             type="number" 
                                                                             placeholder="kg" 
-                                                                            className="w-14 h-6 text-[11px] px-1 rounded-sm bg-background border-amber-500/40 font-bold focus-visible:ring-amber-500 text-center"
+                                                                            className="w-12 h-5 text-[10px] px-1 rounded-none bg-background border-amber-500/40 font-bold focus-visible:ring-amber-500 text-center"
                                                                             onKeyDown={(e) => {
                                                                                 if (e.key === 'Enter') {
                                                                                     const estWeight = item.product?.estimated_weight_kg || 1
@@ -688,21 +695,21 @@ function PedidosPage() {
                                                                                 const pricePerKg = item.price_per_kg || (item.unit_price / estWeight)
                                                                                 handleWeightUpdate(item.id, input.value, pricePerKg)
                                                                             }}
-                                                                            className="h-6 w-6 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400"
+                                                                            className="h-5 w-5 p-0 bg-amber-500 text-amber-950 hover:bg-amber-400"
                                                                         >
-                                                                            <Check className="w-3.5 h-3.5" />
+                                                                            <Check className="w-3 h-3" />
                                                                         </Button>
                                                                     </div>
                                                                 ) : (
-                                                                    <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-md border border-emerald-500/20 w-fit">
-                                                                        <span className="text-[11px] font-black italic">⚖️ {item.actual_weight_kg} kg</span>
+                                                                    <div className="flex items-center gap-1 bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded-sm border border-emerald-500/20">
+                                                                        <span className="text-[10px] font-black italic whitespace-nowrap">⚖️ {item.actual_weight_kg} kg</span>
                                                                         <Button 
                                                                             variant="ghost" 
                                                                             size="sm" 
-                                                                            className="h-6 w-6 p-0 text-emerald-500 hover:bg-emerald-500/20"
+                                                                            className="h-5 w-5 p-0 text-emerald-500 hover:bg-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                             onClick={() => handleWeightReset(item.id)}
                                                                         >
-                                                                            <Edit2 className="w-2.5 h-2.5 outline-none" />
+                                                                            <Edit2 className="w-2.5 h-2.5" />
                                                                         </Button>
                                                                     </div>
                                                                 )}
