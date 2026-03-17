@@ -227,14 +227,14 @@ function PedidosPage() {
             return
         }
 
-        // Validate "Preparing" transition: must have all weights
+        // Validate "Preparing" transition: must have all weights finalized
         if (status === 'preparing') {
             const order = orders.find(o => o.id === id)
             const hasMissingWeights = order?.order_items?.some(
-                item => item.product?.pricing_type === 'by_weight' && !item.actual_weight_kg
+                item => item.product?.pricing_type === 'by_weight' && !item.is_price_final
             )
             if (hasMissingWeights) {
-                toast.error('No se puede preparar: faltan cargar pesos reales')
+                toast.error('No se puede preparar: faltan cargar los kilogramos de algunos productos')
                 return
             }
         }
