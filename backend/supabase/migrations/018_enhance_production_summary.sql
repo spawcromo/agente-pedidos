@@ -1,7 +1,11 @@
 -- Migration: 018_enhance_production_summary
 -- Updates v_production_summary to include pricing_type and actual weight totals.
+-- MUST DROP first because we are adding new columns (pricing_type, total_actual_weight)
+-- and changing the client_breakdown structure.
 
-CREATE OR REPLACE VIEW v_production_summary AS
+DROP VIEW IF EXISTS v_production_summary;
+
+CREATE VIEW v_production_summary AS
 SELECT
   o.delivery_date,
   p.id AS product_id,

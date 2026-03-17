@@ -56,4 +56,13 @@ automations/       → n8n workflow documentation (if applicable)
 
 ## Database & Supabase Rules
 
-- **PostgreSQL Views:** When modifying an existing view, ALWAYS use `DROP VIEW IF EXISTS view_name;` before `CREATE OR REPLACE VIEW view_name AS ...` to prevent 'cannot change name of view column' errors when adding or reordering columns. PostgreSQL does not allow changing the return type or column names of an existing view without entirely dropping it first.
+- **PostgreSQL Views — CRITICAL:** `CREATE OR REPLACE VIEW` in PostgreSQL **CANNOT** add, remove, or reorder columns. It will throw `42P16: cannot change name of view column`. You MUST ALWAYS do:
+  ```sql
+  DROP VIEW IF EXISTS view_name;
+  CREATE VIEW view_name AS ...;
+  ```
+  Never use `CREATE OR REPLACE VIEW` when changing columns. No exceptions.
+
+- **Migrations:** Every migration file in `backend/supabase/migrations/` must be self-contained and idempotent where possible. Use `IF NOT EXISTS` / `IF EXISTS` guards.
+
+- **SQL for user execution:** When generating SQL that the user must run manually in Supabase, double-check syntax before handing it over. The user should never have to debug your SQL.
