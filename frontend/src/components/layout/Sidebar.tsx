@@ -136,7 +136,7 @@ export function SidebarContent({ onNavItemClick }: { onNavItemClick?: () => void
                     Cerrar sesión
                 </button>
                 <p className="text-[10px] text-[#4B5563] px-3 pt-1">
-                    Avícola Baccaro © {mounted ? new Date().getFullYear() : '2026'}
+                    Desarrollado por V~LABS © {mounted ? new Date().getFullYear() : '2026'}
                 </p>
             </div>
         </div>
