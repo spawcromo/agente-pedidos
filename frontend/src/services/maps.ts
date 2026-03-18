@@ -2,82 +2,69 @@
 
 import { WAREHOUSE_ADDRESS } from '@/lib/constants'
 
-export interface DistanceMatrixResponse {
-    origins: string[]
-    destinations: string[]
-    rows: {
-        elements: {
-            distance: { text: string; value: number }
-            duration: { text: string; value: number }
-            status: string
-        }[]
-    }[]
+interface DirectionsResponse {
     status: string
+    error_message?: string
+    routes: {
+        waypoint_order: number[]
+        legs: any[]
+    }[]
 }
 
+/**
+ * Optimizes a list of addresses starting from an origin.
+ * Uses Google Directions API with optimizeWaypoints:true.
+ * This is the professional way to solve the Traveling Salesperson Problem (TSP).
+ */
 export async function optimizeRoute(origin: string, destinations: string[]): Promise<number[]> {
-    console.log(`[OptimizeRoute] Starting optimization for ${destinations.length} destinations from ${origin}`);
+    console.log(`[ExpertOptimize] Optimizing ${destinations.length} stops from ${origin}`);
     
     if (destinations.length === 0) return []
     if (destinations.length === 1) return [0]
 
-    // Use secret key in server action if available
     const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
     if (!apiKey) {
-        console.error('[OptimizeRoute] API Key Missing');
+        console.error('[ExpertOptimize] API Key Missing');
         throw new Error('Google Maps API Key not configured in Vercel');
     }
 
-    // Keep track of original indices to handle duplicates and return correct order
-    const remaining = destinations.map((address, index) => ({ address, originalIndex: index }));
-    const optimizedIndices: number[] = []
-    let currentPos = origin
+    if (destinations.length > 25) {
+        throw new Error('Google limit exceeded: A single route cannot have more than 25 stops for optimization.');
+    }
+
+    // Expert Strategy:
+    // We set 'origin' as the Warehouse.
+    // We set 'destination' as the Warehouse as well to create a complete loop.
+    // We put all stops in 'waypoints' with 'optimize:true'.
+    // Google will find the best order to visit all waypoints.
+    
+    const waypointsEncoded = destinations.map(d => encodeURIComponent(d)).join('|');
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(origin)}&waypoints=optimize:true|${waypointsEncoded}&key=${apiKey}`;
 
     try {
-        while (remaining.length > 0) {
-            const destString = remaining.map(r => r.address).join('|')
-            const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(currentPos)}&destinations=${encodeURIComponent(destString)}&key=${apiKey}`
+        const res = await fetch(url);
+        const data: DirectionsResponse = await res.json();
+
+        if (data.status !== 'OK') {
+            const msg = data.error_message || data.status;
+            console.error(`[ExpertOptimize] Google API Error: ${msg}`);
             
-            const res = await fetch(url)
-            const data: DistanceMatrixResponse = await res.json()
-
-            if (data.status !== 'OK') {
-                console.error(`[OptimizeRoute] Google API Global Error: ${data.status}`, data);
-                throw new Error(`Google Maps Global Error: ${data.status}`);
+            if (data.status === 'NOT_FOUND') {
+                throw new Error('Una o más direcciones no fueron encontradas por Google Maps. Revisá las direcciones de los clientes.');
             }
-
-            const elements = data.rows[0].elements
-            let closestIdx = -1
-            let minDistance = Infinity
-
-            elements.forEach((el, idx) => {
-                // Ignore elements that Google can't find or calculate
-                if (el.status === 'OK' && el.distance.value < minDistance) {
-                    minDistance = el.distance.value
-                    closestIdx = idx
-                }
-            })
-
-            // If we can't find ANY more valid paths, just attach the rest as they were
-            if (closestIdx === -1) {
-                console.warn('[OptimizeRoute] Could not find valid routes for remaining points. Appending as-is.');
-                remaining.forEach(r => optimizedIndices.push(r.originalIndex));
-                break;
+            if (data.status === 'ZERO_RESULTS') {
+                throw new Error('No se encontró una ruta terrestre para estos destinos. ¿Son direcciones válidas en Mendoza?');
             }
-
-            // Pick the winner
-            const winner = remaining[closestIdx];
-            optimizedIndices.push(winner.originalIndex);
             
-            // Move forward
-            currentPos = winner.address;
-            remaining.splice(closestIdx, 1);
+            throw new Error(`Error de Google Maps: ${msg}`);
         }
+
+        const optimizedOrder = data.routes[0].waypoint_order;
+        console.log('[ExpertOptimize] Success. Optimized order:', optimizedOrder);
         
-        console.log('[OptimizeRoute] Success. Order:', optimizedIndices);
-        return optimizedIndices;
+        return optimizedOrder;
     } catch (err: any) {
-        console.error('[OptimizeRoute] Fatal Exception:', err.message);
+        console.error('[ExpertOptimize] Fatal Exception:', err.message);
         throw err;
     }
 }
