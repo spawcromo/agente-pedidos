@@ -38,7 +38,7 @@ export async function optimizeRoute(origin: string, destinations: string[]): Pro
     // We put all stops in 'waypoints' with 'optimize:true'.
     // Google will find the best order to visit all waypoints.
     
-    const waypointsEncoded = destinations.map(d => encodeURIComponent(d)).join('|');
+    const waypointsEncoded = destinations.map(d => encodeURIComponent(d + (d.toLowerCase().includes('mendoza') ? '' : ', Mendoza, Argentina'))).join('|');
     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(origin)}&waypoints=optimize:true|${waypointsEncoded}&key=${apiKey}`;
 
     try {

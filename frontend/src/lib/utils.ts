@@ -25,10 +25,13 @@ export function formatCurrency(value: number) {
 export function getGoogleWaypointsUrl(origin: string, destinations: string[]) {
   if (destinations.length === 0) return `https://www.google.com/maps/dir/${encodeURIComponent(origin)}`;
   
-  // Create a clean path: Origin -> Stops -> Origin
-  const path = [origin, ...destinations, origin]
-    .map(p => encodeURIComponent(p))
-    .join('/');
+  // We add 'Mendoza, Argentina' for total clarity in Google Maps
+  const processedDestinations = destinations.map(d => 
+    d.toLowerCase().includes('mendoza') ? d : `${d}, Mendoza, Argentina`
+  );
+
+  const waypoints = processedDestinations.map(d => encodeURIComponent(d)).join('/');
+  const originEncoded = encodeURIComponent(origin);
     
-  return `https://www.google.com/maps/dir/${path}`;
+  return `https://www.google.com/maps/dir/${originEncoded}/${waypoints}/${originEncoded}`;
 }

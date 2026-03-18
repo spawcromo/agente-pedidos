@@ -548,7 +548,12 @@ function RutasPage() {
                                                 )}
                                                 {route.stops.length > 0 && (
                                                     <a
-                                                        href={getGoogleWaypointsUrl(WAREHOUSE_ADDRESS, route.stops.map(s => s.order.client?.address || ''))}
+                                                        href={getGoogleWaypointsUrl(
+                                                            WAREHOUSE_ADDRESS, 
+                                                            [...route.stops]
+                                                                .sort((a, b) => a.position - b.position)
+                                                                .map(s => s.order.client?.address || '')
+                                                        )}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="h-8 px-2 text-[10px] font-bold bg-muted hover:bg-muted/80 text-muted-foreground border border-border rounded-lg flex items-center gap-1 transition-all"

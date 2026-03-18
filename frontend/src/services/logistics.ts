@@ -39,6 +39,7 @@ export async function getRoutes(date?: string): Promise<DeliveryRoute[]> {
             )
         `)
         .order('created_at', { ascending: false })
+        .order('position', { foreignTable: 'delivery_stops', ascending: true })
 
     if (date) {
         query = query.eq('delivery_date', date)
@@ -68,6 +69,7 @@ export async function getMyRoutes(driverId: string): Promise<DeliveryRoute[]> {
         .eq('driver_id', driverId)
         .gte('delivery_date', today) // Muestra rutas de hoy en adelante, estén completadas o no
         .order('delivery_date', { ascending: true })
+        .order('position', { foreignTable: 'delivery_stops', ascending: true })
 
     if (error) throw new Error(`Error al obtener mis rutas: ${error.message}`)
     return data as DeliveryRoute[]
