@@ -22,82 +22,84 @@ export async function optimizeRoute(origin: string, destinations: string[]): Pro
     const safeDests = destinations.map(sanitize);
     
     try {
-        const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
+        const url = 'https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix';
         
-        // OPEN TSP STRATEGY: 
-        // We do not want to force the driver to return to the warehouse (closed loop), which causes zig-zags.
-        // Google Routes API lacks a native "Open TSP" flag. So we test EVERY stop as the final destination concurrently.
-        const promises = safeDests.map(async (potentialEnd, endIdx) => {
-            const intermediates = safeDests.map((addr, i) => ({
-                address: addr,
-                originalIndex: i
-            })).filter(x => x.originalIndex !== endIdx);
+        // We fetching the matrix of all-to-all points to solve the TSP ourselves.
+        // This avoids Google's weird traffic-aware zig-zags.
+        const allPoints = [safeOrigin, ...safeDests];
+        
+        const body = {
+            origins: allPoints.map(addr => ({ waypoint: { address: addr } })),
+            destinations: safeDests.map(addr => ({ waypoint: { address: addr } })),
+            travelMode: "DRIVE",
+            routingPreference: "ROUTING_PREFERENCE_UNSPECIFIED" // Prioritize geometry over traffic hacks
+        };
 
-            const body = {
-                origin: { address: safeOrigin },
-                destination: { address: potentialEnd },
-                intermediates: intermediates.map(d => ({ address: d.address })),
-                travelMode: "DRIVE",
-                routingPreference: "TRAFFIC_AWARE",
-                optimizeWaypointOrder: true
-            };
-
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Goog-Api-Key': apiKey,
-                    'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex,routes.duration'
-                },
-                body: JSON.stringify(body),
-                cache: 'no-store'
-            });
-
-            const data = await res.json();
-            
-            // Handle specific Google errors inside the parallel request
-            if (data.error) {
-                if (data.error.status === 'PERMISSION_DENIED' && data.error.message.includes('Routes API has not been used')) {
-                    throw new Error('ATENCIÓN: La "Routes API" no está habilitada en tu cuenta de Google. Entrá a tu Consola de Google Cloud, buscá "Routes API" y dale a Habilitar (Enable).');
-                }
-                throw new Error(`Error de Google Maps: ${data.error.message}`);
-            }
-            
-            if (!data.routes || data.routes.length === 0) return null;
-            
-            const route = data.routes[0];
-            const durationSecs = parseInt(route.duration.replace('s', ''));
-            // If optimization is missing (e.g., only 1 intermediate), fallback to sequential
-            const optGoogleIndices = route.optimizedIntermediateWaypointIndex || intermediates.map((_, i) => i);
-            
-            // Reconstruct the full sequence mapped to our ORIGINAL array indices
-            const finalSequence = optGoogleIndices.map((optIdx: number) => intermediates[optIdx].originalIndex);
-            finalSequence.push(endIdx); // Append the forced destination
-
-            return {
-                duration: durationSecs,
-                sequence: finalSequence
-            };
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': apiKey,
+                'X-Goog-FieldMask': 'originIndex,destinationIndex,distanceMeters,error'
+            },
+            body: JSON.stringify(body),
+            cache: 'no-store'
         });
 
-        const results = await Promise.all(promises);
+        const matrixData = await res.json();
         
-        let bestResult: { duration: number, sequence: number[] } | null = null;
-        let minDuration = Infinity;
+        if (matrixData.error || (Array.isArray(matrixData) && matrixData[0]?.error)) {
+            const msg = matrixData.error?.message || matrixData[0]?.error?.message || 'Error en Matrix API';
+            return { success: false, error: `Error de Google Maps: ${msg}` };
+        }
 
-        for (const res of results) {
-            if (res && res.duration < minDuration) {
-                minDuration = res.duration;
-                bestResult = res;
+        // Build a cost matrix: dist[from][to]
+        // from: 0 (Origin), 1..N (Destinations)
+        // to: 0..N-1 (Destinations)
+        const numDests = safeDests.length;
+        const distMatrix: number[][] = Array.from({ length: numDests + 1 }, () => Array(numDests).fill(Infinity));
+        
+        matrixData.forEach((item: any) => {
+            if (item.originIndex !== undefined && item.destinationIndex !== undefined) {
+                distMatrix[item.originIndex][item.destinationIndex] = item.distanceMeters || 0;
+            }
+        });
+
+        // Solve Open TSP (Exhaustive search for small N)
+        // Since N <= 15 (usual route size), we can do a smart search.
+        // For N <= 8, exhaustive is fine (8! = 40320)
+        let bestSeq: number[] = [];
+        let minDist = Infinity;
+
+        function findBestRoute(currentIdx: number, remaining: number[], currentPath: number[], currentDist: number) {
+            if (remaining.length === 0) {
+                if (currentDist < minDist) {
+                    minDist = currentDist;
+                    bestSeq = [...currentPath];
+                }
+                return;
+            }
+
+            // Pruning
+            if (currentDist >= minDist) return;
+
+            for (let i = 0; i < remaining.length; i++) {
+                const next = remaining[i];
+                const nextRemaining = [...remaining.slice(0, i), ...remaining.slice(i + 1)];
+                findBestRoute(
+                    next + 1, // +1 because in distMatrix, index 1 is dest 0
+                    nextRemaining,
+                    [...currentPath, next],
+                    currentDist + distMatrix[currentIdx][next]
+                );
             }
         }
 
-        if (!bestResult) {
-            return { success: false, error: 'Google no pudo encontrar rutas terrestres para estas direcciones.' };
-        }
+        const destIndices = Array.from({ length: numDests }, (_, i) => i);
+        findBestRoute(0, destIndices, [], 0);
 
-        console.log(`[RoutesAPI] Optimal Open TSP Sequence (Duration: ${bestResult.duration}s):`, bestResult.sequence);
-        return { success: true, optimizedIndices: bestResult.sequence };
+        console.log(`[RoutesAPI] Optimal Expert TSP Sequence (Distance: ${minDist}m):`, bestSeq);
+        return { success: true, optimizedIndices: bestSeq };
 
     } catch (err: any) {
         console.error('[RoutesAPI] Fatal Error:', err.message);
