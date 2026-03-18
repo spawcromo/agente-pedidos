@@ -592,6 +592,9 @@ function RutasPage() {
                                                         <div className="flex-1 min-w-0">
                                                             <span className={cn("truncate block", stop.status === 'delivered' && "line-through opacity-50")}>
                                                                 {stop.order.client?.name}
+                                                                <span className="ml-2 text-[11px] text-muted-foreground font-normal">
+                                                                    • {stop.order.client?.address}
+                                                                </span>
                                                             </span>
                                                             {stop.order.status === 'cancelled' && stop.order.cancel_reason && (
                                                                 <span className="text-[10px] text-destructive/80 block italic truncate">
