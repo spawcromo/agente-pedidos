@@ -203,11 +203,15 @@ function RutasPage() {
     async function handleOptimizeRoute(routeId: string, stops: RouteStop[]) {
         setOptimizingRouteId(routeId)
         try {
-            await reorderRouteStops(routeId, stops)
-            toast.success('Ruta optimizada con IA')
-            loadData()
+            const result = await reorderRouteStops(routeId, stops)
+            if (!result.success) {
+                toast.error(`${result.error}`, { duration: 6000 })
+            } else {
+                toast.success('Ruta optimizada con IA')
+                loadData()
+            }
         } catch (err: any) {
-            toast.error(`Error al optimizar: ${err.message}`)
+            toast.error(`Error inesperado: ${err.message}`)
         } finally {
             setOptimizingRouteId(null)
         }

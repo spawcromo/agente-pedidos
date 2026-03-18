@@ -225,28 +225,34 @@ export async function getDrivers(): Promise<{ id: string; email: string; full_na
     return data
 }
 
-export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Promise<void> {
-    const supabase = createClient()
-    
-    // 1. Get addresses
-    const addresses = stops.map(s => s.order.client?.address || '')
-    
-    // 2. Clear out invalid addresses
-    if (addresses.some(a => !a)) throw new Error('Algunos pedidos no tienen dirección válida')
+export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Promise<{success: boolean; error?: string}> {
+    try {
+        const supabase = createClient()
+        
+        // 1. Get addresses
+        const addresses = stops.map(s => s.order.client?.address || '')
+        
+        // 2. Clear out invalid addresses
+        if (addresses.some(a => !a)) return { success: false, error: 'Algunos pedidos no tienen dirección válida' }
 
-    // 3. Optimize
-    const optimizedIndices = await optimizeRoute(WAREHOUSE_ADDRESS, addresses)
-    
-    // 4. Update positions in DB
-    const updates = optimizedIndices.map((originalIdx, newPos) => ({
-        id: stops[originalIdx].id,
-        position: newPos
-    }))
+        // 3. Optimize
+        const optimizedIndices = await optimizeRoute(WAREHOUSE_ADDRESS, addresses)
+        
+        // 4. Update positions in DB
+        const updates = optimizedIndices.map((originalIdx, newPos) => ({
+            id: stops[originalIdx].id,
+            position: newPos
+        }))
 
-    for (const update of updates) {
-        await supabase
-            .from('delivery_stops')
-            .update({ position: update.position })
-            .eq('id', update.id)
+        for (const update of updates) {
+            await supabase
+                .from('delivery_stops')
+                .update({ position: update.position })
+                .eq('id', update.id)
+        }
+        
+        return { success: true }
+    } catch (err: any) {
+        return { success: false, error: err.message || 'Error al optimizar la ruta' }
     }
 }
