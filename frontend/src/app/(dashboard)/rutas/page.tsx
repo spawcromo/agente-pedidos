@@ -47,6 +47,7 @@ import {
     updateStopStatus,
     deleteRoute,
     removeStopAndCancelOrder,
+    reorderRouteStops,
     type DeliveryRoute,
     type RouteStop
 } from '@/services/logistics'
@@ -92,6 +93,9 @@ function RutasPage() {
     // Delete Route state
     const [deleteRouteDialogOpen, setDeleteRouteDialogOpen] = useState(false)
     const [routeToDelete, setRouteToDelete] = useState<string | null>(null)
+
+    // Optimization loading
+    const [optimizingRouteId, setOptimizingRouteId] = useState<string | null>(null)
 
     const loadData = useCallback(async () => {
         if (!role || !user || !date) {
@@ -188,6 +192,19 @@ function RutasPage() {
             loadData()
         } catch (err) {
             toast.error('Error al eliminar ruta')
+        }
+    }
+
+    async function handleOptimizeRoute(routeId: string, stops: RouteStop[]) {
+        setOptimizingRouteId(routeId)
+        try {
+            await reorderRouteStops(routeId, stops)
+            toast.success('Ruta optimizada con IA')
+            loadData()
+        } catch (err: any) {
+            toast.error(`Error al optimizar: ${err.message}`)
+        } finally {
+            setOptimizingRouteId(null)
         }
     }
 
@@ -505,21 +522,38 @@ function RutasPage() {
                                             </div>
                                             <p className="font-bold text-amber-500 truncate">{route.driver?.full_name || route.driver?.email || 'Sin asignar'}</p>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
-                                            {(route.status === 'draft' || route.status === 'completed') && (
-                                                <button
-                                                    onClick={() => {
-                                                        setRouteToDelete(route.id)
-                                                        setDeleteRouteDialogOpen(true)
-                                                    }}
-                                                    className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
-                                                    title="Eliminar ruta"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            )}
-                                        </div>
+                                            <div className="flex items-center gap-1">
+                                                <Badge variant="outline" className="whitespace-nowrap">{route.stops.length} Paradas</Badge>
+                                                {route.status === 'draft' && (
+                                                    <button
+                                                        onClick={() => handleOptimizeRoute(route.id, route.stops)}
+                                                        disabled={optimizingRouteId === route.id}
+                                                        className={cn(
+                                                            "h-8 px-2 text-[10px] font-bold bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg flex items-center gap-1 transition-all",
+                                                            optimizingRouteId === route.id && "animate-pulse"
+                                                        )}
+                                                        title="Optimizar orden con Google Maps"
+                                                    >
+                                                        {optimizingRouteId === route.id ? (
+                                                            <RefreshCw className="w-3 h-3 animate-spin" />
+                                                        ) : (
+                                                            <>✨ Ruta Mágica</>
+                                                        )}
+                                                    </button>
+                                                )}
+                                                {(route.status === 'draft' || route.status === 'completed') && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setRouteToDelete(route.id)
+                                                            setDeleteRouteDialogOpen(true)
+                                                        }}
+                                                        className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover/route:opacity-100"
+                                                        title="Eliminar ruta"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                     </div>
                                     <div className="p-4 flex-1 space-y-2">
                                         {(() => {
