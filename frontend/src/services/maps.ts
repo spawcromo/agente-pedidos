@@ -85,12 +85,12 @@ export async function optimizeRoute(origin: string, destinations: string[]): Pro
         let bestResult: { duration: number, sequence: number[] } | null = null;
         let minDuration = Infinity;
 
-        results.forEach(res => {
+        for (const res of results) {
             if (res && res.duration < minDuration) {
                 minDuration = res.duration;
                 bestResult = res;
             }
-        });
+        }
 
         if (!bestResult) {
             return { success: false, error: 'Google no pudo encontrar rutas terrestres para estas direcciones.' };
