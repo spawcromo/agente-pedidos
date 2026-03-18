@@ -33,7 +33,10 @@ import {
     CircleDashed,
     CheckCircle2,
     X,
-    XCircle
+    XCircle,
+    Plus,
+    Navigation,
+    Map
 } from "lucide-react"
 import { getOrders, type OrderWithDetails } from '@/services/orders'
 import { useUser } from '@/contexts/UserContext'
@@ -52,6 +55,8 @@ import {
     type RouteStop
 } from '@/services/logistics'
 import { withRole } from '@/components/hoc/withRole'
+import { getGoogleWaypointsUrl } from '@/lib/utils'
+import { WAREHOUSE_ADDRESS } from '@/lib/constants'
 
 const ARS = new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -540,6 +545,18 @@ function RutasPage() {
                                                             <>✨ Ruta Mágica</>
                                                         )}
                                                     </button>
+                                                )}
+                                                {route.stops.length > 0 && (
+                                                    <a
+                                                        href={getGoogleWaypointsUrl(WAREHOUSE_ADDRESS, route.stops.map(s => s.order.client?.address || ''))}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="h-8 px-2 text-[10px] font-bold bg-muted hover:bg-muted/80 text-muted-foreground border border-border rounded-lg flex items-center gap-1 transition-all"
+                                                        title="Ver ruta completa en Google Maps"
+                                                    >
+                                                        <Map className="w-3 h-3" />
+                                                        Mapa
+                                                    </a>
                                                 )}
                                                 {(route.status === 'draft' || route.status === 'completed') && (
                                                     <button

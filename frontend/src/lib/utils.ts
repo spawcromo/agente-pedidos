@@ -21,3 +21,14 @@ export function formatCurrency(value: number) {
     maximumFractionDigits: 0
   }).format(value);
 }
+
+export function getGoogleWaypointsUrl(origin: string, destinations: string[]) {
+  if (destinations.length === 0) return `https://www.google.com/maps/dir/${encodeURIComponent(origin)}`;
+  
+  // Create a clean path: Origin -> Stops -> Origin
+  const path = [origin, ...destinations, origin]
+    .map(p => encodeURIComponent(p))
+    .join('/');
+    
+  return `https://www.google.com/maps/dir/${path}`;
+}
