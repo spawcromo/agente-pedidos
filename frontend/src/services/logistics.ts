@@ -236,10 +236,13 @@ export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Pr
         if (addresses.some(a => !a)) return { success: false, error: 'Algunos pedidos no tienen dirección válida' }
 
         // 3. Optimize
-        const optimizedIndices = await optimizeRoute(WAREHOUSE_ADDRESS, addresses)
+        const optimizeResult = await optimizeRoute(WAREHOUSE_ADDRESS, addresses)
+        if (!optimizeResult.success) {
+            return { success: false, error: optimizeResult.error };
+        }
         
         // 4. Update positions in DB
-        const updates = optimizedIndices.map((originalIdx, newPos) => ({
+        const updates = optimizeResult.optimizedIndices.map((originalIdx, newPos) => ({
             id: stops[originalIdx].id,
             position: newPos
         }))
