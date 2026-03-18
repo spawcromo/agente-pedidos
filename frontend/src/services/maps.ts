@@ -40,7 +40,7 @@ export async function optimizeRoute(origin: string, destinations: string[]): Pro
             headers: {
                 'Content-Type': 'application/json',
                 'X-Goog-Api-Key': apiKey,
-                'X-Goog-FieldMask': 'originIndex,destinationIndex,distanceMeters,error'
+                'X-Goog-FieldMask': 'originIndex,destinationIndex,distanceMeters'
             },
             body: JSON.stringify(body),
             cache: 'no-store'
