@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
-import { optimizeRoute, WAREHOUSE_ADDRESS } from './maps'
+import { optimizeRoute } from './maps'
+import { WAREHOUSE_ADDRESS } from '@/lib/constants'
 import type { OrderWithDetails } from './orders'
 
 export interface RouteStop {

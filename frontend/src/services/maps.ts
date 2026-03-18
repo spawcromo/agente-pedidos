@@ -1,7 +1,6 @@
 'use server'
 
-export const WAREHOUSE_ADDRESS = 'Tropero Sosa 4614, M5513 Coquimbito, Mendoza'
-export const WAREHOUSE_COORDS = { lat: -32.99042, lng: -68.75621 } // Estimated for Coquimbito, will be refined by API if needed
+import { WAREHOUSE_ADDRESS } from '@/lib/constants'
 
 export interface DistanceMatrixResponse {
     origins: string[]
