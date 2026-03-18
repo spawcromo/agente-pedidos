@@ -316,12 +316,28 @@ function RutasPage() {
                                     <h3 className="text-xl font-bold text-white">¿Listo para salir?</h3>
                                     <p className="text-sm text-muted-foreground px-4">Al iniciar la ruta, el administrador podrá ver que ya estás en camino.</p>
                                 </div>
-                                <Button 
-                                    onClick={() => handleStartRoute(activeRoute.id)}
-                                    className="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-black h-14 text-lg uppercase tracking-tighter"
-                                >
-                                    Iniciar Ruta Ahora 🚛💨
-                                </Button>
+                                <div className="flex gap-2">
+                                    <a
+                                        href={getGoogleWaypointsUrl(
+                                            WAREHOUSE_ADDRESS, 
+                                            [...activeRoute.stops]
+                                                .sort((a, b) => a.position - b.position)
+                                                .map(s => s.order.client?.address || '')
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-14 bg-blue-500/10 text-blue-400 h-14 rounded-xl flex items-center justify-center border border-blue-500/20 active:scale-95 transition-transform shadow-lg shadow-blue-500/5"
+                                        title="Ver recorrido inteligente en Google Maps"
+                                    >
+                                        <Map className="w-7 h-7" />
+                                    </a>
+                                    <Button 
+                                        onClick={() => handleStartRoute(activeRoute.id)}
+                                        className="flex-1 bg-amber-500 hover:bg-amber-600 text-amber-950 font-black h-14 text-lg uppercase tracking-tighter rounded-xl"
+                                    >
+                                        INICIAR RUTA AHORA 🚛💨
+                                    </Button>
+                                </div>
                             </div>
                         )}
                         {activeRoute.stops.sort((a, b) => a.position - b.position).map((stop, index) => (
@@ -743,9 +759,10 @@ function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: Rout
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.order.client?.address || '')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center text-sm font-bold border border-blue-500/20 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                        className="w-12 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center flex items-center justify-center border border-blue-500/20 active:scale-95 transition-transform"
+                        title="Abrir GPS"
                     >
-                        <ExternalLink className="w-4 h-4" /> Abrir GPS
+                        <MapPin className="w-5 h-5" />
                     </a>
                     {isCancelled ? (
                         <div className="space-y-3 flex-1">
