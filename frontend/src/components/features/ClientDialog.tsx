@@ -25,6 +25,9 @@ import { createClientRecord, updateClientRecord, type ClientPayload } from '@/se
 import { getPriceLists, type PriceList } from '@/services/prices'
 import type { Client } from '@/types/database'
 
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
+import { MapPicker } from '@/components/ui/map-picker'
+
 type FormData = {
     name: string
     phone: string
@@ -78,6 +81,9 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
         },
     })
 
+    const lat = watch('lat')
+    const lng = watch('lng')
+
     useEffect(() => {
         if (client) {
             reset({
@@ -128,124 +134,127 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
 
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>{isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="sm:max-w-xl max-h-[95vh] overflow-y-auto p-0 border-none bg-card shadow-2xl">
+                <div className="absolute top-0 left-0 w-full h-[6px] bg-amber-500 shadow-[0_4px_10px_rgba(245,158,11,0.3)]" />
+                
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className="p-6 pb-4">
+                        <DialogHeader className="mb-6">
+                            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                                {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
+                            </DialogTitle>
+                        </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* Nombre y Teléfono */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="name">Nombre</Label>
-                            <Input
-                                id="name"
-                                placeholder="Ej: Carnicería Don Pedro"
-                                {...register('name', { required: 'Requerido' })}
-                            />
-                            {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
-                        </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="phone">Teléfono (WhatsApp)</Label>
-                            <Input
-                                id="phone"
-                                placeholder="+5492614001001"
-                                {...register('phone', { required: 'Requerido' })}
-                            />
-                            {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
-                        </div>
-                    </div>
-
-                    {/* Lista de Precios */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="price_list_id">Lista de Precios</Label>
-                        {loadingLists ? (
-                            <div className="h-10 w-full animate-pulse bg-muted/50 rounded-md border border-border flex items-center px-3 text-xs text-muted-foreground outline-none">
-                                Cargando listas...
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="name" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Nombre</Label>
+                                    <Input
+                                        id="name"
+                                        placeholder="Ej: Carnicería Don Pedro"
+                                        className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
+                                        {...register('name', { required: 'Requerido' })}
+                                    />
+                                    {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="phone" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Teléfono (WhatsApp)</Label>
+                                    <Input
+                                        id="phone"
+                                        placeholder="+5492614001001"
+                                        className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
+                                        {...register('phone', { required: 'Requerido' })}
+                                    />
+                                    {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
+                                </div>
                             </div>
-                        ) : (
-                            <Select
-                                value={watch('price_list_id') || undefined}
-                                onValueChange={(v) => setValue('price_list_id', v || '')}
-                            >
-                                <SelectTrigger id="price_list_id" className="w-full">
-                                    <SelectValue placeholder="Seleccionar lista de precios..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {priceLists.map(pl => (
-                                        <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
-                                    ))}
-                                    {priceLists.length === 0 && (
-                                        <div className="p-2 text-xs text-center text-muted-foreground">
-                                            No hay listas creadas
-                                        </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Lista de Precios</Label>
+                                    {loadingLists ? (
+                                        <div className="h-10 w-full animate-pulse bg-muted/30 rounded-xl border border-border flex items-center px-3" />
+                                    ) : (
+                                        <Select
+                                            value={watch('price_list_id') || undefined}
+                                            onValueChange={(v) => setValue('price_list_id', v || '')}
+                                        >
+                                            <SelectTrigger className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all">
+                                                <SelectValue placeholder="Seleccionar lista..." />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-popover border-border">
+                                                {priceLists.map(pl => (
+                                                    <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
                                     )}
-                                </SelectContent>
-                            </Select>
-                        )}
-                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="opening_hours" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Horario</Label>
+                                    <Input
+                                        id="opening_hours"
+                                        placeholder="Ej: 08:00-13:00"
+                                        className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
+                                        {...register('opening_hours')}
+                                    />
+                                </div>
+                            </div>
 
-                    {/* Dirección */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="address">Dirección</Label>
-                        <Input
-                            id="address"
-                            placeholder="Ej: San Martín 450, Ciudad, Mendoza"
-                            {...register('address', { required: 'Requerido' })}
-                        />
-                        {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
-                    </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Dirección Inteligente</Label>
+                                <AddressAutocomplete
+                                    value={watch('address')}
+                                    placeholder="Escribí para buscar dirección o negocio..."
+                                    onChange={(addr, lat, lng) => {
+                                        setValue('address', addr)
+                                        setValue('lat', lat.toString())
+                                        setValue('lng', lng.toString())
+                                    }}
+                                />
+                                {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
+                            </div>
 
-                    {/* Coordenadas */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="lat">Latitud</Label>
-                            <Input
-                                id="lat"
-                                placeholder="-32.8895"
-                                {...register('lat')}
-                            />
+                            <div className="space-y-1.5">
+                                <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground flex justify-between items-center">
+                                    Ubicación en Mapa
+                                    {lat && <span className="text-[10px] text-muted-foreground font-mono">OK: {parseFloat(lat).toFixed(4)}, {parseFloat(lng).toFixed(4)}</span>}
+                                </Label>
+                                <MapPicker
+                                    lat={lat ? parseFloat(lat) : 0}
+                                    lng={lng ? parseFloat(lng) : 0}
+                                    onChange={(newLat, newLng) => {
+                                        setValue('lat', newLat.toString())
+                                        setValue('lng', newLng.toString())
+                                    }}
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="notes" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Notas para el repartidor</Label>
+                                <Textarea
+                                    id="notes"
+                                    placeholder="Ej: Tocar timbre..."
+                                    rows={2}
+                                    className="rounded-xl bg-muted/30 focus:bg-background transition-all resize-none"
+                                    {...register('notes')}
+                                />
+                            </div>
                         </div>
-                        <div className="space-y-1.5">
-                            <Label htmlFor="lng">Longitud</Label>
-                            <Input
-                                id="lng"
-                                placeholder="-68.8458"
-                                {...register('lng')}
-                            />
-                        </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground -mt-2">
-                        Opcional. Necesario para optimización de rutas.
-                    </p>
-
-                    {/* Horario */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="opening_hours">Horario de apertura</Label>
-                        <Input
-                            id="opening_hours"
-                            placeholder="Ej: 08:00-13:00, 17:00-21:00"
-                            {...register('opening_hours')}
-                        />
                     </div>
 
-                    {/* Notas */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="notes">Notas para el repartidor</Label>
-                        <Textarea
-                            id="notes"
-                            placeholder="Ej: Tocar timbre del costado, entrar por depósito trasero..."
-                            rows={2}
-                            {...register('notes')}
-                        />
+                    <div className="p-6 pt-2 bg-muted/20 border-t border-border/50">
+                        <DialogFooter className="gap-2">
+                            <Button type="button" variant="ghost" className="rounded-xl h-11 px-6 hover:bg-muted/50" onClick={onClose}>Cancelar</Button>
+                            <Button 
+                                type="submit" 
+                                disabled={isSubmitting}
+                                className="rounded-xl h-11 px-8 bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold shadow-lg shadow-amber-500/20"
+                            >
+                                {isSubmitting ? 'Guardando...' : isEditing ? 'Guardar Cambios' : 'Registrar Cliente'}
+                            </Button>
+                        </DialogFooter>
                     </div>
-
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Crear cliente'}
-                        </Button>
-                    </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>

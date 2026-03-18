@@ -4,6 +4,7 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { UserProvider } from "@/contexts/UserContext"
+import { MapsProvider } from "@/contexts/MapsContext"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 
@@ -22,7 +23,9 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-background text-foreground min-h-screen">
         <TooltipProvider delayDuration={200}>
           <UserProvider>
-            {children}
+            <MapsProvider>
+              {children}
+            </MapsProvider>
           </UserProvider>
         </TooltipProvider>
         <Toaster theme="dark" position="bottom-right" richColors toastOptions={{
