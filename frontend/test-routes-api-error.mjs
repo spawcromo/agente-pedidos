@@ -18,8 +18,9 @@ async function testRoutesApi() {
     const safeOrigin = sanitize(origin);
     const safeDests = dests.map(sanitize);
 
-    const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
-    const body = {
+    console.log("TESTING WITH LOOP (DEST = ORIGIN)");
+    let url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
+    let body = {
         origin: { address: safeOrigin },
         destination: { address: safeOrigin },
         intermediates: safeDests.map(d => ({ address: d })),
@@ -28,19 +29,44 @@ async function testRoutesApi() {
         optimizeWaypointOrder: true
     };
 
-    const res = await fetch(url, {
+    let res = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Goog-Api-Key': apiKey,
-            // 'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex,error'
-            'X-Goog-FieldMask': '*' // get all error details
+            'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex'
         },
         body: JSON.stringify(body)
     });
 
-    const data = await res.json();
-    console.log("Response:", JSON.stringify(data, null, 2));
+    let data = await res.json();
+    console.log("LOOP ORDER:", data.routes[0].optimizedIntermediateWaypointIndex);
+
+    console.log("TESTING WITH NO LOOP (Last stop in array as dest)");
+    const lastStop = safeDests[safeDests.length - 1];
+    const intermediates = safeDests.slice(0, safeDests.length - 1);
+    
+    body = {
+        origin: { address: safeOrigin },
+        destination: { address: lastStop },
+        intermediates: intermediates.map(d => ({ address: d })),
+        travelMode: "DRIVE",
+        routingPreference: "TRAFFIC_AWARE",
+        optimizeWaypointOrder: true
+    };
+
+    res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': apiKey,
+            'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex'
+        },
+        body: JSON.stringify(body)
+    });
+
+    data = await res.json();
+    console.log("NO LOOP (Ending at Chile 450) ORDER:", data.routes[0].optimizedIntermediateWaypointIndex);
 }
 
 testRoutesApi();

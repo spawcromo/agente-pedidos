@@ -23,50 +23,81 @@ export async function optimizeRoute(origin: string, destinations: string[]): Pro
     
     try {
         const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
-        const body = {
-            origin: { address: safeOrigin },
-            destination: { address: safeOrigin }, // Loop back to warehouse
-            intermediates: safeDests.map(d => ({ address: d })),
-            travelMode: "DRIVE",
-            routingPreference: "TRAFFIC_AWARE",
-            optimizeWaypointOrder: true
-        };
+        
+        // OPEN TSP STRATEGY: 
+        // We do not want to force the driver to return to the warehouse (closed loop), which causes zig-zags.
+        // Google Routes API lacks a native "Open TSP" flag. So we test EVERY stop as the final destination concurrently.
+        const promises = safeDests.map(async (potentialEnd, endIdx) => {
+            const intermediates = safeDests.map((addr, i) => ({
+                address: addr,
+                originalIndex: i
+            })).filter(x => x.originalIndex !== endIdx);
 
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Goog-Api-Key': apiKey,
-                'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex'
-            },
-            body: JSON.stringify(body),
-            cache: 'no-store' // Critical: prevent Vercel from caching bad routes
+            const body = {
+                origin: { address: safeOrigin },
+                destination: { address: potentialEnd },
+                intermediates: intermediates.map(d => ({ address: d.address })),
+                travelMode: "DRIVE",
+                routingPreference: "TRAFFIC_AWARE",
+                optimizeWaypointOrder: true
+            };
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Goog-Api-Key': apiKey,
+                    'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex,routes.duration'
+                },
+                body: JSON.stringify(body),
+                cache: 'no-store'
+            });
+
+            const data = await res.json();
+            
+            // Handle specific Google errors inside the parallel request
+            if (data.error) {
+                if (data.error.status === 'PERMISSION_DENIED' && data.error.message.includes('Routes API has not been used')) {
+                    throw new Error('ATENCIÓN: La "Routes API" no está habilitada en tu cuenta de Google. Entrá a tu Consola de Google Cloud, buscá "Routes API" y dale a Habilitar (Enable).');
+                }
+                throw new Error(`Error de Google Maps: ${data.error.message}`);
+            }
+            
+            if (!data.routes || data.routes.length === 0) return null;
+            
+            const route = data.routes[0];
+            const durationSecs = parseInt(route.duration.replace('s', ''));
+            // If optimization is missing (e.g., only 1 intermediate), fallback to sequential
+            const optGoogleIndices = route.optimizedIntermediateWaypointIndex || intermediates.map((_, i) => i);
+            
+            // Reconstruct the full sequence mapped to our ORIGINAL array indices
+            const finalSequence = optGoogleIndices.map((optIdx: number) => intermediates[optIdx].originalIndex);
+            finalSequence.push(endIdx); // Append the forced destination
+
+            return {
+                duration: durationSecs,
+                sequence: finalSequence
+            };
         });
 
-        const data = await res.json();
-
-        // Check if API is disabled or specific Google errors
-        if (data.error) {
-            console.error('[RoutesAPI] Google Error:', data.error.message);
-            if (data.error.status === 'PERMISSION_DENIED' && data.error.message.includes('Routes API has not been used')) {
-                return { success: false, error: 'ATENCIÓN: La "Routes API" no está habilitada en tu cuenta de Google. Entrá a tu Consola de Google Cloud, buscá "Routes API" y dale a Habilitar (Enable).' };
-            }
-            return { success: false, error: `Error de Google Maps: ${data.error.message}` };
-        }
-
-        if (!data.routes || data.routes.length === 0) {
-            return { success: false, error: 'Google no pudo encontrar una ruta terrestre válida para estas direcciones. Verifica que sean calles existentes.' };
-        }
-
-        const optimizedIndices = data.routes[0].optimizedIntermediateWaypointIndex;
+        const results = await Promise.all(promises);
         
-        if (!optimizedIndices) {
-            console.warn('[RoutesAPI] No optimization indices returned, returning sequential order.');
-            return { success: true, optimizedIndices: destinations.map((_, i) => i) };
+        let bestResult: { duration: number, sequence: number[] } | null = null;
+        let minDuration = Infinity;
+
+        results.forEach(res => {
+            if (res && res.duration < minDuration) {
+                minDuration = res.duration;
+                bestResult = res;
+            }
+        });
+
+        if (!bestResult) {
+            return { success: false, error: 'Google no pudo encontrar rutas terrestres para estas direcciones.' };
         }
 
-        console.log('[RoutesAPI] Optimal Sequence:', optimizedIndices);
-        return { success: true, optimizedIndices };
+        console.log(`[RoutesAPI] Optimal Open TSP Sequence (Duration: ${bestResult.duration}s):`, bestResult.sequence);
+        return { success: true, optimizedIndices: bestResult.sequence };
 
     } catch (err: any) {
         console.error('[RoutesAPI] Fatal Error:', err.message);
