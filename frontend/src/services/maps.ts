@@ -37,7 +37,7 @@ export async function optimizeRoute(origin: string, destinations: string[]): Pro
             headers: {
                 'Content-Type': 'application/json',
                 'X-Goog-Api-Key': apiKey,
-                'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex,error'
+                'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex'
             },
             body: JSON.stringify(body),
             cache: 'no-store' // Critical: prevent Vercel from caching bad routes
