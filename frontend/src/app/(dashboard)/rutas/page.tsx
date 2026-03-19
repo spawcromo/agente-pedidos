@@ -102,7 +102,8 @@ function RutasPage() {
     const [deleteRouteDialogOpen, setDeleteRouteDialogOpen] = useState(false)
     const [routeToDelete, setRouteToDelete] = useState<string | null>(null)
 
-    // Optimization loading
+    // Optimization data (arrivals, etc)
+    const [optimizationData, setOptimizationData] = useState<Record<string, any>>({})
     const [optimizingRouteId, setOptimizingRouteId] = useState<string | null>(null)
 
     const loadData = useCallback(async () => {
@@ -210,6 +211,9 @@ function RutasPage() {
             if (!result.success) {
                 toast.error(`${result.error}`, { duration: 6000 })
             } else {
+                if (result.optimizationData) {
+                    setOptimizationData(prev => ({ ...prev, [routeId]: result.optimizationData }))
+                }
                 toast.success('Ruta optimizada con IA')
                 loadData()
             }
@@ -355,6 +359,8 @@ function RutasPage() {
                                     setCancelReason('')
                                     setCancelDialogOpen(true)
                                 }}
+                                estimatedTime={optimizationData[activeRoute.id]?.estimatedArrivals?.[index]}
+                                showReturnMarker={optimizationData[activeRoute.id]?.returnsToBase?.includes(index)}
                             />
                         ))}
                     </div>
@@ -751,34 +757,62 @@ function RutasPage() {
     )
 }
 
-function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: RouteStop, index: number, isRouteActive: boolean, onDone: () => void, onCancel: () => void }) {
+function StopCard({ 
+    stop, 
+    index, 
+    isRouteActive, 
+    onDone, 
+    onCancel,
+    estimatedTime,
+    showReturnMarker
+}: { 
+    stop: RouteStop, 
+    index: number, 
+    isRouteActive: boolean, 
+    onDone: () => void, 
+    onCancel: () => void,
+    estimatedTime?: string,
+    showReturnMarker?: boolean
+}) {
     const isDelivered = stop.status === 'delivered'
     const isCancelled = stop.order.status === 'cancelled'
 
     return (
-        <div className={cn(
-            "relative bg-card border border-border rounded-lg p-5 transition-all shadow-sm",
-            (isDelivered || isCancelled) ? "opacity-60 grayscale" : "hover:border-amber-500/50"
-        )}>
+        <div className="space-y-4">
+            {showReturnMarker && (
+                <div className="mx-auto w-fit py-2 px-6 bg-blue-500/10 border border-blue-500/20 rounded-full flex items-center gap-3 text-xs text-blue-400 font-black uppercase tracking-widest animate-pulse shadow-lg shadow-blue-500/5">
+                    <RefreshCw className="w-4 h-4" /> Regresar a la Avícola (Recarga / Espera)
+                </div>
+            )}
+            
             <div className={cn(
-                "absolute -left-3 top-5 h-8 w-8 rounded-lg flex items-center justify-center font-bold shadow-lg border-4 border-background",
-                isCancelled ? "bg-muted text-muted-foreground" : "bg-amber-500 text-amber-950"
+                "relative bg-card border border-border rounded-lg p-5 transition-all shadow-sm",
+                (isDelivered || isCancelled) ? "opacity-60 grayscale" : "hover:border-amber-500/50"
             )}>
-                {index + 1}
-            </div>
+                <div className={cn(
+                    "absolute -left-3 top-5 h-8 w-8 rounded-lg flex items-center justify-center font-bold shadow-lg border-4 border-background",
+                    isCancelled ? "bg-muted text-muted-foreground" : "bg-amber-500 text-amber-950"
+                )}>
+                    {index + 1}
+                </div>
 
-            <div className="pl-6 space-y-4">
-                <div className="flex justify-between items-start gap-4">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h3 className="text-xl font-bold">{stop.order.client?.name}</h3>
-                            {isCancelled && (
-                                <Badge variant="destructive" className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-tighter">CANCELADO</Badge>
-                            )}
-                        </div>
-                        <p className="text-amber-400 font-medium text-sm flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4" /> {stop.order.client?.address}
-                        </p>
+                <div className="pl-6 space-y-4">
+                    <div className="flex justify-between items-start gap-4">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-xl font-bold">{stop.order.client?.name}</h3>
+                                {isCancelled && (
+                                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px] font-bold uppercase tracking-tighter">CANCELADO</Badge>
+                                )}
+                                {estimatedTime && (
+                                    <Badge variant="outline" className="h-6 bg-amber-500/10 text-amber-500 border-amber-500/20 flex items-center gap-1 font-mono font-bold">
+                                        <Clock className="w-3.5 h-3.5" /> ~{estimatedTime} hs
+                                    </Badge>
+                                )}
+                            </div>
+                            <p className="text-amber-400 font-medium text-sm flex items-center gap-1.5 mt-0.5">
+                                <MapPin className="w-4 h-4" /> {stop.order.client?.address}
+                            </p>
                         {stop.order.client?.opening_hours && (
                             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1 bg-muted/30 w-fit px-2 py-0.5 rounded-full border border-border">
                                 <Clock className="w-3 h-3 text-amber-500" /> Entrega: <span className="font-bold text-foreground">{stop.order.client.opening_hours} hs</span>
@@ -858,7 +892,8 @@ function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: Rout
                 )}
             </div>
         </div>
-    )
+    </div>
+)
 }
 
 export default withRole(RutasPage, ['admin', 'repartidor'])

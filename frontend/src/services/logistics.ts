@@ -225,7 +225,7 @@ export async function getDrivers(): Promise<{ id: string; email: string; full_na
     return data
 }
 
-export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Promise<{success: boolean; error?: string}> {
+export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Promise<{success: boolean; error?: string; optimizationData?: any}> {
     try {
         const supabase = createClient()
         
@@ -260,7 +260,7 @@ export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Pr
                 .eq('id', update.id)
         }
         
-        return { success: true }
+        return { success: true, optimizationData: optimizeResult }
     } catch (err: any) {
         return { success: false, error: err.message || 'Error al optimizar la ruta' }
     }
