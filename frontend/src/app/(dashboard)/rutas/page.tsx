@@ -436,9 +436,25 @@ function RutasPage() {
                 {/* Panel 1: Pedidos por asignar */}
                 <div className="lg:col-span-1 space-y-4">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-bold">Sin Asignar ({unassignedOrders.length})</h2>
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-xl font-bold">Sin Asignar ({unassignedOrders.length})</h2>
+                            {unassignedOrders.length > 0 && (
+                                <button
+                                    onClick={() => {
+                                        if (selectedOrders.length === unassignedOrders.length) {
+                                            setSelectedOrders([])
+                                        } else {
+                                            setSelectedOrders(unassignedOrders.map(o => o.id))
+                                        }
+                                    }}
+                                    className="text-[10px] uppercase tracking-wider font-black text-amber-500 hover:text-amber-400 h-6 px-2 rounded-md bg-amber-500/5 border border-amber-500/10 transition-colors"
+                                >
+                                    {selectedOrders.length === unassignedOrders.length ? 'Deseleccionar todo' : 'Seleccionar todo'}
+                                </button>
+                            )}
+                        </div>
                         {selectedOrders.length > 0 && (
-                            <Badge className="bg-amber-500 text-amber-950">
+                            <Badge className="bg-amber-500 text-amber-950 animate-in fade-in zoom-in duration-200">
                                 {selectedOrders.length} seleccionados
                             </Badge>
                         )}
