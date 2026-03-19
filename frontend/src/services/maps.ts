@@ -72,7 +72,6 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
         const windows = destObjects.map(d => parseWindow(d.opening_hours));
         
         // --- DYNAMIC START TIME ---
-        // We start the day as early as the first order requires (min window start)
         const earliestOrderStart = Math.min(...windows.map(w => w.start));
         const START_TIME_SEC = earliestOrderStart;
 
@@ -96,88 +95,118 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             return { dur: transitDirect, dist: distDirect, returned: false };
         }
 
-        let bestSeq: number[] = [];
-        let minScore = Infinity;
-        let bestMetrics = { dist: 0, dur: 0, wait: 0 };
-
-        function search(currentIdx: number, remaining: number[], currentPath: number[], currentDist: number, currentTimeSec: number, totalWaitSec: number, totalLateSec: number) {
-            if (remaining.length === 0) {
-                // High penalty for lateness ensures we respect windows
-                const score = currentDist + (totalLateSec * 500); 
-                if (score < minScore) {
-                    minScore = score;
-                    bestSeq = [...currentPath];
-                    bestMetrics = { dist: currentDist, dur: (currentTimeSec - START_TIME_SEC) / 60, wait: totalWaitSec / 60 };
-                }
-                return;
-            }
-            if (currentDist > minScore) return;
-
-            for (let i = 0; i < remaining.length; i++) {
-                const next = remaining[i];
-                const { dur, dist } = getTransition(currentIdx, next, currentTimeSec);
-                let arrival = currentTimeSec + dur;
-                let wait = Math.max(0, windows[next].start - arrival);
-                let late = Math.max(0, arrival - windows[next].end);
-
-                search(
-                    next + 1,
-                    [...remaining.slice(0, i), ...remaining.slice(i + 1)],
-                    [...currentPath, next],
-                    currentDist + dist,
-                    Math.max(arrival, windows[next].start) + SERVICE_TIME_SEC,
-                    totalWaitSec + wait,
-                    totalLateSec + late
-                );
-            }
-        }
+        const getStopScore = (toIdxDest: number, fromIdxMatrix: number, time: number) => {
+            const { dur, dist } = getTransition(fromIdxMatrix, toIdxDest, time);
+            const arrival = time + dur;
+            const window = windows[toIdxDest];
+            const wait = Math.max(0, window.start - arrival);
+            const late = Math.max(0, arrival - window.end);
+            
+            // Score = Distance + Lateness Penalty (Huge) + Wait Penalty (Moderate)
+            const score = dist + (late * 2000) + (wait * 0.5);
+            return { score, arrival, waitTime: wait, lateTime: late };
+        };
 
         const destIndices = Array.from({ length: destObjects.length }, (_, i) => i);
-        
-        // 1. Greedy Baseline with Return Logic
-        let baselineScore = 0;
-        let baselinePath: number[] = [];
-        let time = START_TIME_SEC;
-        let curr = 0;
-        let tempRem = [...destIndices];
-        while (tempRem.length > 0) {
-            let bestNextI = 0;
-            let bestS = Infinity;
-            for (let i = 0; i < tempRem.length; i++) {
-                const next = tempRem[i];
-                const { dur, dist } = getTransition(curr, next, time);
-                const arrival = time + dur;
-                // Penalize distance AND lateness heavily
-                const late = Math.max(0, arrival - windows[next].end);
-                const score = dist + (late * 1000); 
-                if (score < bestS) { bestS = score; bestNextI = i; }
+        let bestSeq: number[] = [];
+        let finalWaitSec = 0;
+        let finalLateSec = 0;
+
+        const MAX_EXHAUSTIVE_STOPS = 10; 
+
+        if (destIndices.length > MAX_EXHAUSTIVE_STOPS) {
+            // Greedy approach
+            let currentIdxMatrix = 0;
+            let currentTime = START_TIME_SEC;
+            const remaining = [...destIndices];
+            
+            while (remaining.length > 0) {
+                let bestNextIdxInRemaining = -1;
+                let bestNextScore = Infinity;
+                let bestArrivalTime = currentTime;
+                let bestWait = 0;
+                let bestLate = 0;
+
+                for (let i = 0; i < remaining.length; i++) {
+                    const { score, arrival, waitTime, lateTime } = getStopScore(remaining[i], currentIdxMatrix, currentTime);
+                    if (score < bestNextScore) {
+                        bestNextScore = score;
+                        bestNextIdxInRemaining = i;
+                        bestArrivalTime = arrival;
+                        bestWait = waitTime;
+                        bestLate = lateTime;
+                    }
+                }
+
+                const pickedDestIdx = remaining.splice(bestNextIdxInRemaining, 1)[0];
+                bestSeq.push(pickedDestIdx);
+                finalWaitSec += bestWait;
+                finalLateSec += bestLate;
+                
+                currentTime = Math.max(bestArrivalTime, windows[pickedDestIdx].start) + SERVICE_TIME_SEC;
+                currentIdxMatrix = pickedDestIdx + 1;
             }
-            const picked = tempRem[bestNextI];
-            baselinePath.push(picked);
-            const { dur, dist } = getTransition(curr, picked, time);
-            baselineScore += dist;
-            time = Math.max(time + dur, windows[picked].start) + SERVICE_TIME_SEC;
-            curr = picked + 1;
-            tempRem.splice(bestNextI, 1);
+        } else {
+            // Exhaustive for small sets
+            let minTotalScore = Infinity;
+
+            const solveRecursive = (
+                currentIdxMatrix: number,
+                remaining: number[],
+                currentPath: number[],
+                currentTime: number,
+                pathScore: number,
+                totalWaitSec: number,
+                totalLateSec: number
+            ) => {
+                if (remaining.length === 0) {
+                    if (pathScore < minTotalScore) {
+                        minTotalScore = pathScore;
+                        bestSeq = [...currentPath];
+                        finalWaitSec = totalWaitSec;
+                        finalLateSec = totalLateSec;
+                    }
+                    return;
+                }
+                if (pathScore >= minTotalScore) return;
+
+                for (let i = 0; i < remaining.length; i++) {
+                    const nextDestIdx = remaining[i];
+                    const { score, arrival, waitTime, lateTime } = getStopScore(nextDestIdx, currentIdxMatrix, currentTime);
+
+                    solveRecursive(
+                        nextDestIdx + 1,
+                        [...remaining.slice(0, i), ...remaining.slice(i + 1)],
+                        [...currentPath, nextDestIdx],
+                        Math.max(arrival, windows[nextDestIdx].start) + SERVICE_TIME_SEC,
+                        pathScore + score,
+                        totalWaitSec + waitTime,
+                        totalLateSec + lateTime
+                    );
+                }
+            };
+
+            solveRecursive(0, destIndices, [], START_TIME_SEC, 0, 0, 0);
         }
-        bestSeq = baselinePath;
-        minScore = baselineScore;
 
-        if (destIndices.length <= 10) search(0, destIndices, [], 0, START_TIME_SEC, 0, 0);
-
-        // 2. Final Construction
+        // --- FINAL RESULTS CONSTRUCTION ---
         const estimatedArrivals: string[] = [];
         const returnsToBase: number[] = [];
         let finalTime = START_TIME_SEC;
         let finalIdx = 0;
+        let totalDistance = 0;
+
         for (let i = 0; i < bestSeq.length; i++) {
             const stopIdx = bestSeq[i];
-            const { dur, returned } = getTransition(finalIdx, stopIdx, finalTime);
+            const { dur, dist, returned } = getTransition(finalIdx, stopIdx, finalTime);
             if (returned) returnsToBase.push(i);
+            
             const arrival = finalTime + dur;
             estimatedArrivals.push(formatTime(arrival));
+            
             finalTime = Math.max(arrival, windows[stopIdx].start) + SERVICE_TIME_SEC;
             finalIdx = stopIdx + 1;
+            totalDistance += dist;
         }
 
         return { 
@@ -186,15 +215,16 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             estimatedArrivals,
             returnsToBase,
             metrics: {
-                totalDistanceMeters: Math.round(minScore),
+                totalDistanceMeters: Math.round(totalDistance),
                 estimatedTotalMinutes: Math.round((finalTime - START_TIME_SEC) / 60),
-                lateWaitMinutes: Math.round(bestMetrics.wait)
+                lateWaitMinutes: Math.round((finalWaitSec + finalLateSec) / 60)
             }
         };
     } catch (err: any) { return { success: false, error: err.message }; }
 }
 
 function parseTime(t: string) {
+    if (!t || !t.includes(':')) return 0;
     const [h, m] = t.split(':').map(Number);
     return (h * 3600) + (m * 60);
 }
