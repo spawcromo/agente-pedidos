@@ -648,9 +648,26 @@ function RutasPage() {
                                                                     • {stop.order.client?.address}
                                                                 </span>
                                                             </span>
-                                                            {stop.order.client?.opening_hours && (
-                                                                <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground font-normal">
-                                                                    <Clock className="w-3 h-3 text-amber-500" /> {stop.order.client.opening_hours} hs
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                {stop.order.client?.opening_hours && (
+                                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-normal">
+                                                                        <Clock className="w-3 h-3 text-amber-500" /> {stop.order.client.opening_hours} hs
+                                                                    </div>
+                                                                )}
+                                                                {(() => {
+                                                                    const optData = optimizationData[route.id]
+                                                                    const arrival = optData?.estimatedArrivals?.[i]
+                                                                    if (!arrival) return null
+                                                                    return (
+                                                                        <Badge variant="outline" className="text-[9px] h-4 px-1 bg-amber-500/10 text-amber-500 border-amber-500/20 font-mono font-bold">
+                                                                            ~{arrival} hs
+                                                                        </Badge>
+                                                                    )
+                                                                })()}
+                                                            </div>
+                                                            {optimizationData[route.id]?.returnsToBase?.includes(i) && (
+                                                                <div className="mt-1 flex items-center gap-1 text-[9px] text-blue-400 font-bold uppercase tracking-tighter">
+                                                                    <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" /> Volver a Avícola antes de este stop
                                                                 </div>
                                                             )}
                                                             {stop.order.status === 'cancelled' && stop.order.cancel_reason && (
@@ -813,87 +830,87 @@ function StopCard({
                             <p className="text-amber-400 font-medium text-sm flex items-center gap-1.5 mt-0.5">
                                 <MapPin className="w-4 h-4" /> {stop.order.client?.address}
                             </p>
-                        {stop.order.client?.opening_hours && (
-                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1 bg-muted/30 w-fit px-2 py-0.5 rounded-full border border-border">
-                                <Clock className="w-3 h-3 text-amber-500" /> Entrega: <span className="font-bold text-foreground">{stop.order.client.opening_hours} hs</span>
-                            </div>
-                        )}
-                    </div>
-                    <p className="text-xl font-mono font-bold">
-                        {ARS.format(stop.order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
-                    </p>
-                </div>
-
-                <div className="flex gap-2">
-                    <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.order.client?.address || '')}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-12 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center flex items-center justify-center border border-blue-500/20 active:scale-95 transition-transform"
-                        title="Abrir GPS"
-                    >
-                        <MapPin className="w-5 h-5" />
-                    </a>
-                    {isCancelled ? (
-                        <div className="space-y-3 flex-1">
-                            <div className="bg-red-500/10 text-red-500 py-3 rounded-lg text-center text-sm font-bold border border-red-500/20 flex items-center justify-center gap-2">
-                                <XCircle className="w-4 h-4" /> PEDIDO CANCELADO
-                            </div>
-                            {stop.order.cancel_reason && (
-                                <div className="p-3 bg-destructive/5 border border-destructive/20 rounded-lg text-xs">
-                                    <p className="font-bold text-destructive uppercase mb-1">Motivo del Admin/Sistema:</p>
-                                    <p className="text-foreground/80 italic">"{stop.order.cancel_reason}"</p>
+                            {stop.order.client?.opening_hours && (
+                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1 bg-muted/30 w-fit px-2 py-0.5 rounded-full border border-border">
+                                    <Clock className="w-3 h-3 text-amber-500" /> Entrega: <span className="font-bold text-foreground">{stop.order.client.opening_hours} hs</span>
                                 </div>
                             )}
                         </div>
-                    ) : !isDelivered ? (
-                        <>
-                            <button
-                                onClick={onCancel}
-                                className="w-12 bg-red-500/10 text-destructive py-3 rounded-lg text-center flex items-center justify-center border border-destructive/20 active:scale-95 transition-transform"
-                                title="Cancelar Pedido"
-                            >
-                                <XCircle className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={onDone}
-                                disabled={!isRouteActive}
-                                className={cn(
-                                    "flex-1 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 border shadow-lg",
-                                    isRouteActive 
-                                        ? "bg-amber-500 text-amber-950 border-amber-500/20 shadow-amber-500/10" 
-                                        : "bg-muted text-muted-foreground border-border opacity-50 cursor-not-allowed"
+                        <p className="text-xl font-mono font-bold">
+                            {ARS.format(stop.order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
+                        </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.order.client?.address || '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="w-12 bg-blue-500/10 text-blue-400 py-3 rounded-lg text-center flex items-center justify-center border border-blue-500/20 active:scale-95 transition-transform"
+                            title="Abrir GPS"
+                        >
+                            <MapPin className="w-5 h-5" />
+                        </a>
+                        {isCancelled ? (
+                            <div className="space-y-3 flex-1">
+                                <div className="bg-red-500/10 text-red-500 py-3 rounded-lg text-center text-sm font-bold border border-red-500/20 flex items-center justify-center gap-2">
+                                    <XCircle className="w-4 h-4" /> PEDIDO CANCELADO
+                                </div>
+                                {stop.order.cancel_reason && (
+                                    <div className="p-3 bg-destructive/5 border border-destructive/20 rounded-lg text-xs">
+                                        <p className="font-bold text-destructive uppercase mb-1">Motivo del Admin/Sistema:</p>
+                                        <p className="text-foreground/80 italic">"{stop.order.cancel_reason}"</p>
+                                    </div>
                                 )}
-                            >
-                                <Check className="w-4 h-4" /> Entregar
-                            </button>
-                        </>
-                    ) : (
-                        <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-lg text-center text-sm font-bold border border-emerald-500/20 flex items-center justify-center gap-2">
-                            <CheckCircle2 className="w-4 h-4" /> Entregado
+                            </div>
+                        ) : !isDelivered ? (
+                            <>
+                                <button
+                                    onClick={onCancel}
+                                    className="w-12 bg-red-500/10 text-destructive py-3 rounded-lg text-center flex items-center justify-center border border-destructive/20 active:scale-95 transition-transform"
+                                    title="Cancelar Pedido"
+                                >
+                                    <XCircle className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={onDone}
+                                    disabled={!isRouteActive}
+                                    className={cn(
+                                        "flex-1 py-3 rounded-lg text-center text-sm font-bold active:scale-95 transition-transform flex items-center justify-center gap-2 border shadow-lg",
+                                        isRouteActive 
+                                            ? "bg-amber-500 text-amber-950 border-amber-500/20 shadow-amber-500/10" 
+                                            : "bg-muted text-muted-foreground border-border opacity-50 cursor-not-allowed"
+                                    )}
+                                >
+                                    <Check className="w-4 h-4" /> Entregar
+                                </button>
+                            </>
+                        ) : (
+                            <div className="flex-1 bg-emerald-500/10 text-emerald-500 py-3 rounded-lg text-center text-sm font-bold border border-emerald-500/20 flex items-center justify-center gap-2">
+                                <CheckCircle2 className="w-4 h-4" /> Entregado
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="pt-4 border-t border-border/50 grid grid-cols-1 gap-2">
+                        {stop.order.order_items.map(item => (
+                            <div key={item.id} className="flex justify-between text-xs bg-muted/40 px-3 py-2 rounded-lg">
+                                <span>{item.product?.name}</span>
+                                <span className="font-bold">{item.quantity} {item.product?.unit}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {stop.order.notes && (
+                        <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-lg text-xs flex gap-2">
+                            <span className="font-bold text-amber-500">NOTAS:</span>
+                            <span className="flex-1">{stop.order.notes}</span>
                         </div>
                     )}
                 </div>
-
-                <div className="pt-4 border-t border-border/50 grid grid-cols-1 gap-2">
-                    {stop.order.order_items.map(item => (
-                        <div key={item.id} className="flex justify-between text-xs bg-muted/40 px-3 py-2 rounded-lg">
-                            <span>{item.product?.name}</span>
-                            <span className="font-bold">{item.quantity} {item.product?.unit}</span>
-                        </div>
-                    ))}
-                </div>
-
-                {stop.order.notes && (
-                    <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-lg text-xs flex gap-2">
-                        <span className="font-bold text-amber-500">NOTAS:</span>
-                        <span className="flex-1">{stop.order.notes}</span>
-                    </div>
-                )}
             </div>
         </div>
-    </div>
-)
+    )
 }
 
 export default withRole(RutasPage, ['admin', 'repartidor'])
