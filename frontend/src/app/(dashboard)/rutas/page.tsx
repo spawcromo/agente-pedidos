@@ -18,26 +18,29 @@ import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
 import {
-    Truck,
-    MapPin,
-    ExternalLink,
-    Trash2,
-    Check,
-    RefreshCw,
-    Clock,
-    Package,
-    LayoutDashboard,
-    Search,
-    User,
-    ChevronRight,
-    CircleDashed,
-    CheckCircle2,
-    X,
-    XCircle,
     Plus,
+    Trash2,
+    Truck,
+    Calendar,
+    MapPin,
+    User,
+    Clock,
+    AlertCircle,
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
     Navigation,
-    Map
-} from "lucide-react"
+    Route as RouteIcon,
+    AlertTriangle,
+    Check,
+    XCircle,
+    Copy,
+    Share2,
+    CheckSquare,
+    Square,
+    RefreshCw,
+    Map as MapIcon
+} from 'lucide-react'
 import { getOrders, type OrderWithDetails } from '@/services/orders'
 import { useUser } from '@/contexts/UserContext'
 import { createClient } from '@/lib/supabase/client'
@@ -329,7 +332,7 @@ function RutasPage() {
                                         className="w-14 bg-blue-500/10 text-blue-400 h-14 rounded-xl flex items-center justify-center border border-blue-500/20 active:scale-95 transition-transform shadow-lg shadow-blue-500/5"
                                         title="Ver recorrido inteligente en Google Maps"
                                     >
-                                        <Map className="w-7 h-7" />
+                                        <MapIcon className="w-7 h-7" />
                                     </a>
                                     <Button 
                                         onClick={() => handleStartRoute(activeRoute.id)}
@@ -487,7 +490,14 @@ function RutasPage() {
                                         />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-bold truncate">{order.client?.name}</p>
-                                            <p className="text-xs text-muted-foreground truncate">{order.client?.address}</p>
+                                            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                                                <MapPin className="w-3 h-3" /> {order.client?.address}
+                                            </p>
+                                            {order.client?.opening_hours && (
+                                                <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-500 font-bold bg-amber-500/5 w-fit px-1.5 py-0.5 rounded border border-amber-500/10">
+                                                    <Clock className="w-3 h-3" /> {order.client.opening_hours} hs
+                                                </div>
+                                            )}
                                             <p className="text-[10px] mt-1 text-amber-500 font-mono">
                                                 {ARS.format(order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}
                                             </p>
@@ -595,7 +605,7 @@ function RutasPage() {
                                                         className="h-8 px-2 text-[10px] font-bold bg-muted hover:bg-muted/80 text-muted-foreground border border-border rounded-lg flex items-center gap-1 transition-all"
                                                         title="Ver ruta completa en Google Maps"
                                                     >
-                                                        <Map className="w-3 h-3" />
+                                                        <MapIcon className="w-7 h-7" />
                                                         Mapa
                                                     </a>
                                                 )}
@@ -632,6 +642,11 @@ function RutasPage() {
                                                                     • {stop.order.client?.address}
                                                                 </span>
                                                             </span>
+                                                            {stop.order.client?.opening_hours && (
+                                                                <div className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground font-normal">
+                                                                    <Clock className="w-3 h-3 text-amber-500" /> {stop.order.client.opening_hours} hs
+                                                                </div>
+                                                            )}
                                                             {stop.order.status === 'cancelled' && stop.order.cancel_reason && (
                                                                 <span className="text-[10px] text-destructive/80 block italic truncate">
                                                                     Motivo: {stop.order.cancel_reason}
@@ -764,6 +779,11 @@ function StopCard({ stop, index, isRouteActive, onDone, onCancel }: { stop: Rout
                         <p className="text-amber-400 font-medium text-sm flex items-center gap-1.5">
                             <MapPin className="w-4 h-4" /> {stop.order.client?.address}
                         </p>
+                        {stop.order.client?.opening_hours && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-1 bg-muted/30 w-fit px-2 py-0.5 rounded-full border border-border">
+                                <Clock className="w-3 h-3 text-amber-500" /> Entrega: <span className="font-bold text-foreground">{stop.order.client.opening_hours} hs</span>
+                            </div>
+                        )}
                     </div>
                     <p className="text-xl font-mono font-bold">
                         {ARS.format(stop.order.order_items.reduce((s, i) => s + (i.quantity * i.unit_price), 0))}

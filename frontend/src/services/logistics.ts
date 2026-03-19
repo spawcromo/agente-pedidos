@@ -33,7 +33,7 @@ export async function getRoutes(date?: string): Promise<DeliveryRoute[]> {
                 *,
                 order:orders(
                     *,
-                    client:clients(id, name, phone, address),
+                    client:clients(id, name, phone, address, opening_hours),
                     order_items(*, product:products(name, unit))
                 )
             )
@@ -61,7 +61,7 @@ export async function getMyRoutes(driverId: string): Promise<DeliveryRoute[]> {
                 *,
                 order:orders(
                     *,
-                    client:clients(id, name, phone, address),
+                    client:clients(id, name, phone, address, opening_hours),
                     order_items(*, product:products(name, unit))
                 )
             )
@@ -229,14 +229,20 @@ export async function reorderRouteStops(routeId: string, stops: RouteStop[]): Pr
     try {
         const supabase = createClient()
         
-        // 1. Get addresses
-        const addresses = stops.map(s => s.order.client?.address || '')
+        // 1. Get location and time window data
+        const destinations = stops.map(s => ({
+            address: s.order.client?.address || '',
+            opening_hours: s.order.client?.opening_hours
+        }))
         
         // 2. Clear out invalid addresses
-        if (addresses.some(a => !a)) return { success: false, error: 'Algunos pedidos no tienen dirección válida' }
+        if (destinations.some(d => !d.address)) {
+            return { success: false, error: 'Algunos pedidos no tienen dirección válida' }
+        }
 
-        // 3. Optimize
-        const optimizeResult = await optimizeRoute(WAREHOUSE_ADDRESS, addresses)
+        // 3. Optimize (considering Time Windows)
+        console.log(`[Logistics] Reordering ${stops.length} stops for route ${routeId}, considering Time Windows...`);
+        const optimizeResult = await optimizeRoute(WAREHOUSE_ADDRESS, destinations)
         if (!optimizeResult.success) {
             return { success: false, error: optimizeResult.error };
         }
