@@ -34,7 +34,8 @@ type FormData = {
     address: string
     lat: string
     lng: string
-    opening_hours: string
+    start_time: string
+    end_time: string
     notes: string
     price_list_id: string
 }
@@ -76,7 +77,8 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
             address: '',
             lat: '',
             lng: '',
-            opening_hours: '',
+            start_time: '08:00',
+            end_time: '18:00',
             notes: '',
             price_list_id: ''
         },
@@ -87,20 +89,22 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
 
     useEffect(() => {
         if (client) {
+            const [start = '08:00', end = '18:00'] = (client.opening_hours || '').split('-').map(s => s.trim())
             reset({
                 name: client.name,
                 phone: client.phone,
                 address: client.address,
                 lat: client.lat?.toString() ?? '',
                 lng: client.lng?.toString() ?? '',
-                opening_hours: client.opening_hours ?? '',
+                start_time: start || '08:00',
+                end_time: end || '18:00',
                 notes: client.notes ?? '',
                 price_list_id: client.price_list_id ?? ''
             })
         } else {
             reset({
                 name: '', phone: '', address: '', lat: '', lng: '',
-                opening_hours: '', notes: '',
+                start_time: '08:00', end_time: '18:00', notes: '',
                 price_list_id: ''
             })
         }
@@ -114,7 +118,7 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                 address: data.address.trim(),
                 lat: data.lat ? parseFloat(data.lat) : null,
                 lng: data.lng ? parseFloat(data.lng) : null,
-                opening_hours: data.opening_hours.trim() || null,
+                opening_hours: `${data.start_time}-${data.end_time}`,
                 notes: data.notes.trim() || null,
                 price_list_id: data.price_list_id.trim() || null,
             }
@@ -200,13 +204,27 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                                     )}
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="opening_hours" className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Horario</Label>
-                                    <Input
-                                        id="opening_hours"
-                                        placeholder="Ej: 08:00-13:00"
-                                        className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
-                                        {...register('opening_hours')}
-                                    />
+                                    <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Franja Horaria de Entrega</Label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 relative">
+                                            <Input
+                                                id="start_time"
+                                                type="time"
+                                                className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
+                                                {...register('start_time')}
+                                            />
+                                        </div>
+                                        <span className="text-muted-foreground font-medium text-sm">a</span>
+                                        <div className="flex-1 relative">
+                                            <Input
+                                                id="end_time"
+                                                type="time"
+                                                className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
+                                                {...register('end_time')}
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground italic">Rango en el que el cliente puede recibir mercadería.</p>
                                 </div>
                             </div>
 
