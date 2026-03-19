@@ -96,15 +96,19 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
         }
 
         const getStopScore = (toIdxDest: number, fromIdxMatrix: number, time: number) => {
-            const { dur, dist } = getTransition(fromIdxMatrix, toIdxDest, time);
+            const { dur, dist, returned } = getTransition(fromIdxMatrix, toIdxDest, time);
             const arrival = time + dur;
             const window = windows[toIdxDest];
             const wait = Math.max(0, window.start - arrival);
             const late = Math.max(0, arrival - window.end);
             
-            // Score = Distance + Lateness Penalty (Huge) + Wait Penalty (Moderate)
-            const score = dist + (late * 2000) + (wait * 0.5);
-            return { score, arrival, waitTime: wait, lateTime: late };
+            // Si el chofer volvió a la base, el tiempo de espera no penaliza (es productivo)
+            const actualWaitPenalty = returned ? 0 : wait * 1.5;
+            
+            // Score = Distance + Lateness Penalty (Mega) + Wait Penalty (Aumentado)
+            // Usamos una penalización por latencia mucho mayor para forzar puntualidad
+            const score = dist + (late * 10000) + actualWaitPenalty;
+            return { score, arrival, waitTime: returned ? 0 : wait, lateTime: late };
         };
 
         const destIndices = Array.from({ length: destObjects.length }, (_, i) => i);
@@ -201,10 +205,15 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             const { dur, dist, returned } = getTransition(finalIdx, stopIdx, finalTime);
             if (returned) returnsToBase.push(i);
             
-            const arrival = finalTime + dur;
-            estimatedArrivals.push(formatTime(arrival));
+            const physicalArrival = finalTime + dur;
+            const window = windows[stopIdx];
             
-            finalTime = Math.max(arrival, windows[stopIdx].start) + SERVICE_TIME_SEC;
+            // La hora estimada que ve el usuario debe ser la hora de inicio de descarga,
+            // que nunca puede ser antes de que abra el local.
+            const serviceStart = Math.max(physicalArrival, window.start);
+            estimatedArrivals.push(formatTime(serviceStart));
+            
+            finalTime = serviceStart + SERVICE_TIME_SEC;
             finalIdx = stopIdx + 1;
             totalDistance += dist;
         }
