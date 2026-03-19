@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import {
     Dialog,
     DialogContent,
@@ -46,6 +47,12 @@ interface ClientDialogProps {
     onClose: () => void
     onSaved: () => void
 }
+
+const HOURS_OPTIONS = Array.from({ length: 48 }, (_, i) => {
+    const h = Math.floor(i / 2).toString().padStart(2, '0')
+    const m = (i % 2 === 0 ? '00' : '30')
+    return `${h}:${m}`
+})
 
 export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogProps) {
     const isEditing = !!client
@@ -206,25 +213,52 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                                 <div className="space-y-1.5">
                                     <Label className="text-xs uppercase tracking-wider font-bold text-muted-foreground">Franja Horaria de Entrega</Label>
                                     <div className="flex items-center gap-3">
-                                        <div className="flex-1 relative">
-                                            <Input
-                                                id="start_time"
-                                                type="time"
-                                                className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
-                                                {...register('start_time')}
+                                        <div className="flex-1">
+                                            <Controller
+                                                name="start_time"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Select value={field.value} onValueChange={field.onChange}>
+                                                        <SelectTrigger className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="max-h-60">
+                                                            {HOURS_OPTIONS.map(h => (
+                                                                <SelectItem key={`start-${h}`} value={h}>{h} hs</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
                                             />
                                         </div>
                                         <span className="text-muted-foreground font-medium text-sm">a</span>
-                                        <div className="flex-1 relative">
-                                            <Input
-                                                id="end_time"
-                                                type="time"
-                                                className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all"
-                                                {...register('end_time')}
+                                        <div className="flex-1">
+                                            <Controller
+                                                name="end_time"
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <Select value={field.value} onValueChange={field.onChange}>
+                                                        <SelectTrigger className={cn(
+                                                            "h-10 rounded-xl bg-muted/30 focus:bg-background transition-all",
+                                                            watch('end_time') <= watch('start_time') && "border-destructive/50"
+                                                        )}>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="max-h-60">
+                                                            {HOURS_OPTIONS.map(h => (
+                                                                <SelectItem key={`end-${h}`} value={h}>{h} hs</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                )}
                                             />
                                         </div>
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground italic">Rango en el que el cliente puede recibir mercadería.</p>
+                                    {watch('end_time') <= watch('start_time') ? (
+                                        <p className="text-[10px] text-destructive font-bold animate-pulse">La hora de fin debe ser posterior a la de inicio.</p>
+                                    ) : (
+                                        <p className="text-[10px] text-muted-foreground italic">Rango en el que el cliente puede recibir mercadería.</p>
+                                    )}
                                 </div>
                             </div>
 
