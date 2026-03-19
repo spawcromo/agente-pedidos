@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import {
     Dialog,
@@ -67,6 +67,7 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
         reset,
         setValue,
         watch,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         defaultValues: {
@@ -175,19 +176,27 @@ export function ClientDialog({ open, client, onClose, onSaved }: ClientDialogPro
                                     {loadingLists ? (
                                         <div className="h-10 w-full animate-pulse bg-muted/30 rounded-xl border border-border flex items-center px-3" />
                                     ) : (
-                                        <Select
-                                            value={watch('price_list_id') || undefined}
-                                            onValueChange={(v) => setValue('price_list_id', v || '')}
-                                        >
-                                            <SelectTrigger className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all">
-                                                <SelectValue placeholder="Seleccionar lista..." />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-popover border-border">
-                                                {priceLists.map(pl => (
-                                                    <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Controller
+                                            name="price_list_id"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <Select
+                                                    value={field.value || ""}
+                                                    onValueChange={field.onChange}
+                                                >
+                                                    <SelectTrigger className="h-10 rounded-xl bg-muted/30 focus:bg-background transition-all">
+                                                        <SelectValue placeholder="Seleccionar lista...">
+                                                            {priceLists.find(pl => pl.id === field.value)?.name}
+                                                        </SelectValue>
+                                                    </SelectTrigger>
+                                                    <SelectContent className="bg-popover border-border">
+                                                        {priceLists.map(pl => (
+                                                            <SelectItem key={pl.id} value={pl.id}>{pl.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        />
                                     )}
                                 </div>
                                 <div className="space-y-1.5">
