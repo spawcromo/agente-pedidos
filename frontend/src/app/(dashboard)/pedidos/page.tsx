@@ -118,7 +118,8 @@ function PedidosPage() {
 
             // Client-side filtering for "Assigned" logic
             let filteredData = data
-            if (statusFilter === 'active') {
+            const unassignedFilter = ['active', 'pending', 'preparing', 'confirmed']
+            if (unassignedFilter.includes(statusFilter)) {
                 // Return only those NOT assigned to a route
                 filteredData = data.filter(o => !o.delivery_stops || o.delivery_stops.length === 0)
             } else if (statusFilter === 'assigned') {
