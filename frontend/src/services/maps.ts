@@ -10,8 +10,8 @@ export type OptimizeResult = {
         estimatedTotalMinutes: number;
         lateWaitMinutes: number;
     };
-    estimatedArrivals?: string[]; // "HH:mm" for each optimized stop
-    returnsToBase?: number[]; // indices of stops after which a return to base is suggested
+    estimatedArrivals?: string[];
+    returnsToBase?: number[];
 } | { success: false; error: string };
 
 type DestInfo = {
@@ -20,7 +20,8 @@ type DestInfo = {
 }
 
 /**
- * Optimizes a list of addresses considering Time Windows, Distance, and returning to Warehouse for long gaps.
+ * Optimizes a list of addresses considering Time Windows, Distance, and multi-trip gaps.
+ * Uses a dynamic starting time based on the earliest order.
  */
 export async function optimizeRoute(origin: string, destinations: (string | DestInfo)[]): Promise<OptimizeResult> {
     const destObjects: DestInfo[] = destinations.map(d => 
@@ -66,12 +67,15 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             durMatrix[item.originIndex][item.destinationIndex] = parseInt(dur) || 0;
         });
 
-        const windows = destObjects.map(d => parseWindow(d.opening_hours));
         const SERVICE_TIME_SEC = 10 * 60; 
-        const START_TIME_SEC = 7 * 3600; 
-        const GAP_THRESHOLD_SEC = 90 * 60; // 1.5 horas
+        const GAP_THRESHOLD_SEC = 90 * 60; 
+        const windows = destObjects.map(d => parseWindow(d.opening_hours));
+        
+        // --- DYNAMIC START TIME ---
+        // We start the day as early as the first order requires (min window start)
+        const earliestOrderStart = Math.min(...windows.map(w => w.start));
+        const START_TIME_SEC = earliestOrderStart;
 
-        // Helper: Calculate transition including "Return to Warehouse" logic
         function getTransition(fromIdxMatrix: number, toIdxDest: number, currentTime: number) {
             const transitDirect = durMatrix[fromIdxMatrix][toIdxDest + 1];
             const distDirect = distMatrix[fromIdxMatrix][toIdxDest + 1];
@@ -79,7 +83,6 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             const window = windows[toIdxDest];
 
             if (window.start - arrivalDirect > GAP_THRESHOLD_SEC) {
-                // Gap detected -> GO BACK TO WAREHOUSE (index 0)
                 const toWSec = durMatrix[fromIdxMatrix][0];
                 const fromWSec = durMatrix[0][toIdxDest + 1];
                 const toWDist = distMatrix[fromIdxMatrix][0];
@@ -99,7 +102,8 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
 
         function search(currentIdx: number, remaining: number[], currentPath: number[], currentDist: number, currentTimeSec: number, totalWaitSec: number, totalLateSec: number) {
             if (remaining.length === 0) {
-                const score = currentDist + (totalLateSec * 100); 
+                // High penalty for lateness ensures we respect windows
+                const score = currentDist + (totalLateSec * 500); 
                 if (score < minScore) {
                     minScore = score;
                     bestSeq = [...currentPath];
@@ -115,7 +119,6 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
                 let arrival = currentTimeSec + dur;
                 let wait = Math.max(0, windows[next].start - arrival);
                 let late = Math.max(0, arrival - windows[next].end);
-                if (late > 7200) continue;
 
                 search(
                     next + 1,
@@ -143,7 +146,10 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             for (let i = 0; i < tempRem.length; i++) {
                 const next = tempRem[i];
                 const { dur, dist } = getTransition(curr, next, time);
-                const score = dist + (Math.max(0, (time + dur) - windows[next].end) * 100);
+                const arrival = time + dur;
+                // Penalize distance AND lateness heavily
+                const late = Math.max(0, arrival - windows[next].end);
+                const score = dist + (late * 1000); 
                 if (score < bestS) { bestS = score; bestNextI = i; }
             }
             const picked = tempRem[bestNextI];
@@ -156,11 +162,10 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
         }
         bestSeq = baselinePath;
         minScore = baselineScore;
-        bestMetrics = { dist: baselineScore, dur: (time - START_TIME_SEC) / 60, wait: 0 /* approx */ };
 
         if (destIndices.length <= 10) search(0, destIndices, [], 0, START_TIME_SEC, 0, 0);
 
-        // 2. Final Construction with Return Markers
+        // 2. Final Construction
         const estimatedArrivals: string[] = [];
         const returnsToBase: number[] = [];
         let finalTime = START_TIME_SEC;
@@ -182,7 +187,7 @@ export async function optimizeRoute(origin: string, destinations: (string | Dest
             returnsToBase,
             metrics: {
                 totalDistanceMeters: Math.round(minScore),
-                estimatedTotalMinutes: Math.round(bestMetrics.dur),
+                estimatedTotalMinutes: Math.round((finalTime - START_TIME_SEC) / 60),
                 lateWaitMinutes: Math.round(bestMetrics.wait)
             }
         };
@@ -195,13 +200,13 @@ function parseTime(t: string) {
 }
 
 function formatTime(s: number) {
-    const h = Math.floor(s / 3600) % 24;
+    const h = (Math.floor(s / 3600)) % 24;
     const m = Math.floor((s % 3600) / 60);
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 }
 
 function parseWindow(w: string | null | undefined) {
     if (!w || !w.includes('-')) return { start: 0, end: 86400 };
-    const [s, e] = w.split('-');
-    return { start: parseTime(s), end: parseTime(e) };
+    const parts = w.split('-');
+    return { start: parseTime(parts[0]), end: parseTime(parts[1]) };
 }
